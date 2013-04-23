@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/newsletter/db" VERSION="20101203" COMMENT="XMLDB file for Moodle mod/newsletter"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="newsletter" COMMENT="" NEXT="newsletter_issues">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="course" NEXT="intro"/>
+        <FIELD NAME="intro" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="introformat"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="intro" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="introformat" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timecreated" NEXT="allowedcontent"/>
+        <FIELD NAME="allowedcontent" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timemodified"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="newsletter_issues" COMMENT="" PREVIOUS="newsletter" NEXT="newsletter_subscriptions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="newsletterid"/>
+        <FIELD NAME="newsletterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="title"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="newsletterid" NEXT="plaincontent"/>
+        <FIELD NAME="plaincontent" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="title" NEXT="htmlcontent"/>
+        <FIELD NAME="htmlcontent" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="plaincontent" NEXT="publishon"/>
+        <FIELD NAME="publishon" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="htmlcontent" NEXT="status"/>
+        <FIELD NAME="status" TYPE="text" LENGTH="big" SEQUENCE="false" PREVIOUS="publishon" NEXT="delivered"/>
+        <FIELD NAME="delivered" TYPE="int" LENGTH="4" UNSIGNED="true" SEQUENCE="false" PREVIOUS="status"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="newsletterid"/>
+        <KEY NAME="newsletterid" TYPE="foreign" FIELDS="newsletterid" REFTABLE="newsletter" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="newsletter_subscriptions" COMMENT="" PREVIOUS="newsletter_issues" NEXT="newsletter_deliveries">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="newsletterid"/>
+        <FIELD NAME="newsletterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="newsletterid" NEXT="email"/>
+        <FIELD NAME="email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="userid" NEXT="format"/>
+        <FIELD NAME="format" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="email" NEXT="blackliststatus"/>
+        <FIELD NAME="blackliststatus" TYPE="int" LENGTH="4" UNSIGNED="true" SEQUENCE="false" PREVIOUS="format"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="newsletterid"/>
+        <KEY NAME="newsletterid" TYPE="foreign" FIELDS="newsletterid" REFTABLE="newsletter" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

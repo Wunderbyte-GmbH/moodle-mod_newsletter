@@ -1,0 +1,1 @@
+M.mod_newsletter = {};
