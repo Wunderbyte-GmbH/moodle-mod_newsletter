@@ -122,3 +122,13 @@
   margin: 0.25em;
   padding: 0.5em;
 }
+
+/* line 2, sass/partials/components/_pager.scss */
+.mod_newsletter__pager ul {
+  list-style-type: none;
+}
+/* line 5, sass/partials/components/_pager.scss */
+.mod_newsletter__pager ul li {
+  display: inline;
+  padding: 0px 3px 0px 3px;
+}

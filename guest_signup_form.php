@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of newsletter
+ * The form for guest user signups
  *
  * @package    mod_newsletter
  * @copyright  2013 Ivan Šakić <ivan.sakic3@gmail.com>
@@ -25,7 +25,28 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2013041202;      // If version == 0 then module will not be installed
-$module->requires  = 2012120300;      // Requires this Moodle version
-$module->cron      = 300;             // Period for cron to check this module (secs)
-$module->component = 'mod_newsletter';// To check on upgrade, that module sits in correct place
+global $CFG;
+require_once($CFG->libdir . '/formslib.php');
+
+class mod_newsletter_guest_signup_form extends moodleform {
+    /**
+     * Defines forms elements
+     */
+    public function definition() {
+
+        $mform = &$this->_form;
+        $data = &$this->_customdata;
+
+        $mform->addElement('hidden', 'id', $data['id']);
+        $mform->setType('id', PARAM_INT);
+
+        $mform->addElement('header', 'subscribe', "Subscribe now!");
+
+        $mform->addElement('text', 'email', get_string('email'), array('size' => '64'));
+        $mform->setType('email', PARAM_EMAIL);
+        $mform->addRule('email', null, 'required', null, 'client');
+        $mform->addRule('email', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+
+        $mform->addElement('submit', 'submitbutton', get_string('subscribe', 'newsletter'));
+    }
+}

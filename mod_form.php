@@ -53,12 +53,8 @@ class mod_newsletter_mod_form extends moodleform_mod {
 
         $this->add_intro_editor();
 
-        $options = array();
-        $options[NEWSLETTER_CONTENT_PLAINTEXT_ONLY] = get_string('content_plaintext_only', 'newsletter');
-        $options[NEWSLETTER_CONTENT_HTML_ONLY] = get_string('content_html_only', 'newsletter');
-        $options[NEWSLETTER_CONTENT_ALL] = get_string('content_all', 'newsletter');
-
-        $mform->addElement('select', 'allowedcontent', get_string('allowedcontent', 'newsletter'), $options);
+        $mform->addElement('select', 'subscriptionmode', get_string('subscription_mode', 'newsletter'), $this->make_subscription_option_list());
+        $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'newsletter');
 
         $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'newsletter'),
                             array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => array('css')));
@@ -74,5 +70,26 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $entry->stylesheets = $draftitemid;
 
         parent::set_data($entry);
+    }
+
+    function make_subscription_option_list() {
+        $options = array();
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in', 'newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT] = get_string('sub_mode_opt_out', 'newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_FORCED] = get_string('sub_mode_forced', 'newsletter');
+        return $options;
+    }
+
+    function make_cohort_option_list() {
+        $cohorts = cohort_get_cohorts($this->context->id);
+        $options = array();
+        foreach ($cohorts as $cohortid -> $cohort) {
+            $options[$cohortid] = $cohort->name;
+        }
+        return $options;
+
+
+        // $select = $mform->addElement('select', 'cohorts', get_string('cohorts', 'newsletter'), make_cohort_option_list());
+        // $select->setMultiple(true);
     }
 }

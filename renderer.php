@@ -133,6 +133,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $link .= html_writer::end_tag('span');
         $url = new moodle_url('/mod/newsletter/view.php', array('id' => $issue->cmid, 'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $issue->id));
 
+        $now = time();
         $output = '';
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary'));
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary__link-read'));
@@ -141,7 +142,16 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary__link-edit'));
         $output .= $this->render(new newsletter_action_button($issue->cmid, $issue->id, NEWSLETTER_ACTION_EDIT_ISSUE, get_string('edit_issue', 'newsletter')));
         $output .= html_writer::end_tag('div');
-        $output .= $this->render(new newsletter_progressbar($issue->numdelivered, $issue->numsubscriptions));
+        if ($now < $issue->publishon) {
+            $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary__link-edit'));
+            $output .= $this->render(new newsletter_action_button($issue->cmid, $issue->id, NEWSLETTER_ACTION_DELETE_ISSUE, get_string('delete_issue', 'newsletter')));
+            $output .= html_writer::end_tag('div');
+        }
+        if ($now > $issue->publishon) {
+            $output .= $this->render(new newsletter_progressbar($issue->numdelivered, $issue->numsubscriptions));
+        } else {
+            $output .= $this->render(new newsletter_publish_countdown($now, $issue->publishon));
+        }
         $output .= html_writer::end_tag('div');
 
         return $output;
@@ -186,8 +196,16 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     }
 
     public function render_newsletter_action_button(newsletter_action_button $button) {
-        $url = new moodle_url('/mod/newsletter/view.php', array('id' => $button->cmid, 'action' => $button->action, 'issue' => $button->issueid));
-        return html_writer::link($url, $button->label);
+        if ($button->issueid !== 0) {
+            $url = new moodle_url('/mod/newsletter/view.php', array('id' => $button->cmid, 'action' => $button->action, 'issue' => $button->issueid));
+        } else {
+            $url = new moodle_url('/mod/newsletter/view.php', array('id' => $button->cmid, 'action' => $button->action));
+        }
+        $output = '';
+        $output .= html_writer::start_tag('div', array('class' => 'mod-newsletter__action-link'));
+        $output .= html_writer::link($url, $button->label);
+        $output .= html_writer::end_tag('div');
+        return $output;
     }
 
     public function render_newsletter_main_toolbar(newsletter_main_toolbar $toolbar) {
@@ -204,8 +222,10 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('form', array('method' => 'GET', 'action' => new moodle_url('/mod/newsletter/view.php')));
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $toolbar->cmid));
         $output .= html_writer::select($options, NEWSLETTER_PARAM_GROUP_BY, $toolbar->groupby, false);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => 'Refresh'));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('refresh')));
         $output .= html_writer::end_tag('form');
+        $output .= $this->render(new newsletter_action_button($toolbar->cmid, 0, NEWSLETTER_ACTION_EDIT_ISSUE, get_string('create_new_issue', 'newsletter')));
+        $output .= $this->render(new newsletter_action_button($toolbar->cmid, 0, NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS, get_string('manage_subscriptions', 'newsletter')));
         $output .= html_writer::end_tag('div');
         return $output;
     }
@@ -253,4 +273,197 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
         return $output;
     }
+
+    public function render_newsletter_subscription_list(newsletter_subscription_list $list) {
+        $table = new html_table();
+
+        $header = array();
+        foreach ($list->columns as $column) {
+            switch ($column) {
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL:
+                    $content = get_string('header_email', 'newsletter');
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME:
+                    $content = get_string('header_name', 'newsletter');
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
+                    $content = get_string('header_health', 'newsletter');
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
+                    $content = get_string('header_actions', 'newsletter');
+                    break;
+                default:
+                    print_error('Unsupported column type: ' . $column);
+                    break;
+            }
+            $cell = new html_table_cell($content);
+            $cell->header = true;
+            $header[] = $cell;
+        }
+        $table->head = $header;
+
+        $rows = array();
+        foreach ($list->subscriptions as $subscription) {
+            $row = $rows[] = new html_table_row();
+            foreach ($list->columns as $column) {
+                switch ($column) {
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL:
+                    $content = html_writer::link("mailto:{$subscription->email}", $subscription->email, array('target' => '_blank'));
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME:
+                    $profileurl = new moodle_url('/user/view.php', array('id' => $subscription->userid));
+                    $name = fullname($subscription);
+                    $content = html_writer::link($profileurl, $name);
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
+                    $content = get_string("health_{$subscription->health}", 'newsletter'); // TODO add health icons
+                    break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
+                    $url = new moodle_url('/mod/newsletter/view.php',
+                            array(NEWSLETTER_PARAM_ID => $list->cmid,
+                                  NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
+                                  NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
+                    $content = html_writer::link($url, get_string('delete')); // TODO add action links
+                    break;
+                default:
+                    print_error('Unsupported column type: ' . $column);
+                    break;
+                }
+                $cell = new html_table_cell($content);
+                $row->cells[] = $cell;
+            }
+        }
+        $table->data = $rows;
+        return html_writer::table($table);
+    }
+
+    public function render_newsletter_publish_countdown(newsletter_publish_countdown $countdown) {
+        $output = '';
+        $output .= html_writer::start_tag('span');
+        if ($countdown->now > $countdown->until) {
+            $output .= get_string('already_published', 'newsletter');
+        } else {
+            $a = array();
+            list($a['days'], $a['hours'], $a['minutes'], $a['seconds']) = $this->newsletter_get_countdown($countdown->until - $countdown->now);
+            $output .= get_string('publish_in', 'newsletter', $a);
+        }
+        $output .= html_writer::end_tag('span');
+        return $output;
+    }
+
+    private function newsletter_get_countdown($time) {
+        $secsinday = 24 * ($secsinhour = 60 * ($secsinmin = 60));
+        $days = intval($time / $secsinday);
+        $hrs = intval(($time % $secsinday) / $secsinhour);
+        $min = intval(($time % $secsinhour) / $secsinmin);
+        $sec = intval($time % $secsinmin);
+        return array($days, $hrs, $min, $sec);
+    }
+
+    public function render_newsletter_pager(newsletter_pager $pager) {
+        $url = $pager->url;
+        $pagefrom = array_keys($pager->pages);
+        $currentfrom = $pager->from;
+        $firstpage = reset($pagefrom);
+        $lastpage = end($pagefrom);
+        $previouspage = ($currentfrom - $pager->count >= $pager->count) ? $currentfrom - $pager->count : $firstpage;
+        $nextpage = ($currentfrom + $pager->count <= $lastpage) ? $currentfrom + $pager->count : $lastpage;
+
+        $output = '';
+        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__pager'));
+        $output .= html_writer::start_tag('ul', array('style' => 'list-style-type: none;'));
+        if ($currentfrom != $firstpage) {
+            $output .= html_writer::start_tag('li');
+            $output .= html_writer::link(new moodle_url($url, array('from' => $firstpage, 'count' => $pager->count)), get_string('page_first', 'newsletter'), array('class' => 'mod_newsletter__pager__link'));
+            $output .= html_writer::end_tag('li');
+            $output .= html_writer::start_tag('li');
+            $output .= html_writer::link(new moodle_url($url, array('from' => $previouspage, 'count' => $pager->count)), get_string('page_previous', 'newsletter'), array('class' => 'mod_newsletter__pager__link'));
+            $output .= html_writer::end_tag('li');
+        } else {
+            $output .= html_writer::start_tag('li');
+            $output .= get_string('page_first', 'newsletter');
+            $output .= html_writer::end_tag('li');
+            $output .= html_writer::start_tag('li');
+            $output .= get_string('page_previous', 'newsletter');
+            $output .= html_writer::end_tag('li');
+        }
+
+        for ($i = max($firstpage, $currentfrom - $pager->count * 2); $i <= min($lastpage, $currentfrom + $pager->count * 2); $i += $pager->count) {
+            if ($i == $pager->from) {
+                $output .= html_writer::start_tag('li');
+                $output .=  $pager->pages[$i];
+                $output .= html_writer::end_tag('li');
+            } else {
+                $output .= html_writer::start_tag('li');
+                $output .=  html_writer::link(new moodle_url($url, array('from' => $i, 'count' => $pager->count)), $pager->pages[$i], array('class' => 'mod_newsletter__pager__link'));
+                $output .= html_writer::end_tag('li');
+            }
+        }
+
+        if ($currentfrom != $lastpage) {
+            $output .= html_writer::start_tag('li');
+            $output .= html_writer::link(new moodle_url($url, array('from' => $nextpage, 'count' => $pager->count)), get_string('page_next', 'newsletter'), array('class' => 'mod_newsletter__pager__link'));
+            $output .= html_writer::end_tag('li');
+            $output .= html_writer::start_tag('li');
+            $output .= html_writer::link(new moodle_url($url, array('from' => $lastpage, 'count' => $pager->count)), get_string('page_last', 'newsletter'), array('class' => 'mod_newsletter__pager__link'));
+            $output .= html_writer::end_tag('li');
+        } else {
+            $output .= html_writer::start_tag('li');
+            $output .= get_string('page_next', 'newsletter');
+            $output .= html_writer::end_tag('li');
+            $output .= html_writer::start_tag('li');
+            $output .= get_string('page_last', 'newsletter');
+            $output .= html_writer::end_tag('li');
+        }
+        $output .= html_writer::end_tag('ul');
+        $output .= html_writer::start_tag('form', array('method' => 'GET', 'action' => $url->get_path()));
+        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $url->get_param('id')));
+        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => NEWSLETTER_PARAM_ACTION, 'value' => $url->get_param(NEWSLETTER_PARAM_ACTION)));
+        $output .= html_writer::start_tag('span', array('class' => ''));
+        $output .= get_string('page');
+        $output .= html_writer::select($pager->pages, 'from', $pager->from, false);
+        $output .= html_writer::end_tag('span');
+        $output .= html_writer::start_tag('span', array('class' => ''));
+        $output .= get_string('entries_per_page', 'newsletter');
+        $output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'count', 'value' => $pager->count, 'size' => '1'));
+        $output .= html_writer::end_tag('span');
+        $output .= html_writer::start_tag('button', array('type' => 'submit'));
+        $output .= get_string('refresh');
+        $output .= html_writer::end_tag('button');
+        $output .= html_writer::end_tag('form');
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+
+
+    public function render_newsletter_attachment_list(newsletter_attachment_list $list) {
+        global $OUTPUT;
+        $output = '';
+        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__attachment_list'));
+        $output .= html_writer::start_tag('h3');
+        $output .= get_string('attachments', 'newsletter');
+        $output .= html_writer::end_tag('h3');
+        $output .= html_writer::start_tag('ul');
+        foreach ($list->files as $file) {
+            $output .= html_writer::start_tag('li');
+            $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle', array('class' => 'icon'));
+            $output .= html_writer::link($file->link, $iconimage . " " . $file->get_filename());
+            $output .= html_writer::end_tag('li');
+        }
+        $output .= html_writer::end_tag('ul');
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+
+    public function render_newsletter_action_link(newsletter_action_link $link) {
+        $output = '';
+        $output .= html_writer::start_tag('div');
+        $output .= html_writer::link($link->url, $link->text, array('class' => $link->class));
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+}
+
+class mod_newsletter_renderer_ajax extends mod_newsletter_renderer {
+
 }

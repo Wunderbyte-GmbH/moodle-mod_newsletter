@@ -27,28 +27,37 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 
-$id = required_param('id', PARAM_INT);
+$id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 
-$coursemodule = get_coursemodule_from_id('newsletter', $id, 0, false, MUST_EXIST);
-$course = $DB->get_record('course', array('id' => $coursemodule->course), '*', MUST_EXIST);
+$newsletter = new newsletter($id);
+
+$coursemodule = $newsletter->get_course_module();
+$course = $newsletter->get_course();
 
 require_login($course, true, $coursemodule);
-$context = context_module::instance($coursemodule->id);
 
-require_capability('mod/newsletter:view', $context);
-
-$url = new moodle_url('/mod/newsletter/view.php', array('id' => $id));
+$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $id));
 $PAGE->set_url($url);
 
-$newsletter = new newsletter($context, $coursemodule, $course);
-
 $params = array(
-    NEWSLETTER_PARAM_ACTION => optional_param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_VIEW_ISSUES_PUBLISHER, PARAM_ALPHA),
-    NEWSLETTER_PARAM_GROUP_BY => optional_param(NEWSLETTER_PARAM_GROUP_BY, NEWSLETTER_GROUP_ISSUES_BY_WEEK, PARAM_ALPHA),
+    NEWSLETTER_PARAM_ACTION => optional_param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_VIEW_NEWSLETTER, PARAM_ALPHA),
+    NEWSLETTER_PARAM_GROUP_BY => optional_param(NEWSLETTER_PARAM_GROUP_BY, get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, NEWSLETTER_GROUP_BY_DEFAULT), PARAM_ALPHA),
     NEWSLETTER_PARAM_ISSUE => optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT),
     NEWSLETTER_PARAM_FROM => optional_param(NEWSLETTER_PARAM_FROM, NEWSLETTER_FROM_DEFAULT, PARAM_INT),
+    NEWSLETTER_PARAM_COUNT => optional_param(NEWSLETTER_PARAM_COUNT, get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, NEWSLETTER_COUNT_DEFAULT), PARAM_INT),
     NEWSLETTER_PARAM_TO => optional_param(NEWSLETTER_PARAM_TO, NEWSLETTER_TO_DEFAULT, PARAM_INT),
+    NEWSLETTER_PARAM_SUBSCRIPTION => optional_param(NEWSLETTER_PARAM_SUBSCRIPTION, NEWSLETTER_SUBSCRIPTION_DEFAULT, PARAM_INT),
+    NEWSLETTER_PARAM_CONFIRM => optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, PARAM_INT),
+    NEWSLETTER_PARAM_USER => optional_param(NEWSLETTER_PARAM_USER, NEWSLETTER_NO_USER, PARAM_INT),
 );
+
+if (get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, false) || $params[NEWSLETTER_PARAM_GROUP_BY] != NEWSLETTER_GROUP_BY_DEFAULT) {
+    set_user_preference(NEWSLETTER_PREFERENCE_GROUP_BY, $params[NEWSLETTER_PARAM_GROUP_BY]);
+}
+
+if (get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, false) ||  $params[NEWSLETTER_PARAM_COUNT] != NEWSLETTER_COUNT_DEFAULT) {
+    set_user_preference(NEWSLETTER_PREFERENCE_COUNT, $params[NEWSLETTER_PARAM_COUNT]);
+}
 
 echo $newsletter->view($params);
 

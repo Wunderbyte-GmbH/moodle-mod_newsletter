@@ -94,7 +94,6 @@ class newsletter_issue implements renderable {
     var $cmid;
     var $newsletterid;
     var $title;
-    var $plaincontent;
     var $htmlcontent;
     var $publishon;
     var $numsubscriptions;
@@ -109,7 +108,6 @@ class newsletter_issue implements renderable {
         $this->newsletterid = $issue->newsletterid;
         $this->title = $issue->title;
         $this->publishon = $issue->publishon;
-        $this->plaincontent = $issue->plaincontent;
         $this->htmlcontent = $issue->htmlcontent;
         $this->numsubscriptions = isset($issue->numsubscriptions) ? $issue->numsubscriptions: 0;
         $this->numdelivered = isset($issue->numdelivered) ? $issue->numdelivered: 0;
@@ -117,6 +115,17 @@ class newsletter_issue implements renderable {
 }
 
 class newsletter_issue_summary extends newsletter_issue {
+}
+
+class newsletter_subscription_list implements renderable {
+    var $cmid;
+    var $subscriptions;
+    var $columns;
+    public function __construct($cmid, array $subscriptions, array $columns) {
+        $this->cmid = $cmid;
+        $this->subscriptions = $subscriptions;
+        $this->columns = $columns;
+    }
 }
 
 class newsletter_issue_summary_list implements renderable {
@@ -187,6 +196,20 @@ class newsletter_navigation_bar implements renderable {
     }
 }
 
+class newsletter_pager implements renderable {
+    var $url;
+    var $from;
+    var $count;
+    var $pages;
+
+    public function __construct(moodle_url $url, $from, $count, array $pages) {
+        $this->url = $url;
+        $this->from = $from;
+        $this->count = $count;
+        $this->pages = $pages;
+    }
+}
+
 class newsletter_main_toolbar implements renderable {
     var $cmid;
     var $groupby;
@@ -207,6 +230,23 @@ class newsletter_progressbar implements renderable {
     }
 }
 
+class newsletter_attachment_list implements renderable {
+    var $files;
+
+    public function __construct(array $files) {
+        $this->files = $files;
+    }
+}
+
+class newsletter_publish_countdown implements renderable {
+    var $now;
+    var $until;
+
+    public function __construct($now, $until) {
+        $this->now = $now;
+        $this->until = $until;
+    }
+}
 class newsletter_action_button implements renderable {
     var $cmid;
     var $issueid;
@@ -220,3 +260,24 @@ class newsletter_action_button implements renderable {
         $this->label = $label;
     }
 }
+
+class newsletter_action_link implements renderable {
+    var $url;
+    var $text;
+    var $class;
+
+    public function __construct(moodle $url, $text = '', $class = 'mod_newsletter__action-link') {
+        $this->url = $url;
+        $this->text = $issueid;
+        $this->class = $class;
+    }
+}
+
+
+/*
+class newsletter_manage_subscriptions_toolbar implements renderable {
+    public function __construct() {
+
+    }
+}
+//*/

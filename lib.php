@@ -33,7 +33,10 @@ define('NEWSLETTER_CRON_TEMP_FILENAME', 'newsletter_cron.tmp');
 define('NEWSLETTER_LOCK_DIR', $CFG->dataroot . '/temp/mod/newsletter');
 define('NEWSLETTER_LOCK_SUFFIX', 'lock');
 define('NEWSLETTER_TEMP_DIR', NEWSLETTER_LOCK_DIR);
+define('NEWSLETTER_BASE_STYLESHEET_PATH', 'reset.css');
+
 define('NEWSLETTER_FILE_AREA_STYLESHEETS', 'stylesheets');
+define('NEWSLETTER_FILE_AREA_ATTACHMENTS', 'attachments');
 
 define('NEWSLETTER_FILE_OPTIONS_SUBDIRS', 0);
 
@@ -42,35 +45,66 @@ define('NEWSLETTER_DELIVERY_STATUS_DELIVERED', 1);
 define('NEWSLETTER_DELIVERY_STATUS_FAILED', 2);
 
 define('NEWSLETTER_BLACKLIST_STATUS_OK', 0);
-define('NEWSLETTER_BLACKLIST_STATUS_BLACKLISTED', 1);
+define('NEWSLETTER_BLACKLIST_STATUS_PROBLEMATIC', 1);
+define('NEWSLETTER_BLACKLIST_STATUS_BLACKLISTED', 2);
+define('NEWSLETTER_BLACKLIST_STATUS_INACTIVE', 3);
+define('NEWSLETTER_BLACKLIST_STATUS_UNSUBSCRIBED', 4);
 
-define('NEWSLETTER_ACTION_VIEW_ISSUES_PUBLISHER', 'viewpublisher');
-define('NEWSLETTER_ACTION_VIEW_ISSUES_SUBSCRIBER', 'viewsubscriber');
+define('NEWSLETTER_ACTION_VIEW_NEWSLETTER', 'view');
 define('NEWSLETTER_ACTION_EDIT_ISSUE', 'editissue');
 define('NEWSLETTER_ACTION_READ_ISSUE', 'readissue');
 define('NEWSLETTER_ACTION_DELETE_ISSUE', 'deleteissue');
+define('NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS', 'managesubscriptions');
+define('NEWSLETTER_ACTION_EDIT_SUBSCRIPTION', 'editsubscription');
+define('NEWSLETTER_ACTION_DELETE_SUBSCRIPTION', 'deletesubscription');
+define('NEWSLETTER_ACTION_SUBSCRIBE_COHORTS', 'subscribecohorts');
 
 define('NEWSLETTER_GROUP_ISSUES_BY_YEAR', 'year');
 define('NEWSLETTER_GROUP_ISSUES_BY_MONTH', 'month');
 define('NEWSLETTER_GROUP_ISSUES_BY_WEEK', 'week');
 define('NEWSLETTER_GROUP_ISSUES_BY_DAY', 'day');
 
-define('NEWSLETTER_CONTENT_PLAINTEXT_ONLY', 0);
-define('NEWSLETTER_CONTENT_HTML_ONLY', 1);
-define('NEWSLETTER_CONTENT_ALL', 2);
+define('NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN', 0);
+define('NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT', 1);
+define('NEWSLETTER_SUBSCRIPTION_MODE_FORCED', 2);
+define('NEWSLETTER_SUBSCRIPTION_MODE_NONE', 3);
+
+define('NEWSLETTER_NEW_USER', -1);
 
 define('NEWSLETTER_NO_ISSUE', 0);
+define('NEWSLETTER_NO_USER', 0);
 
 define('NEWSLETTER_DEFAULT_STYLESHEET', 0);
 
+define('NEWSLETTER_GROUP_BY_DEFAULT', NEWSLETTER_GROUP_ISSUES_BY_WEEK);
 define('NEWSLETTER_FROM_DEFAULT', 0);
+define('NEWSLETTER_COUNT_DEFAULT', 30);
 define('NEWSLETTER_TO_DEFAULT', 0);
+define('NEWSLETTER_SUBSCRIPTION_DEFAULT', 0);
 
+define('NEWSLETTER_PREFERENCE_COUNT', 'newsletter_count');
+define('NEWSLETTER_PREFERENCE_GROUP_BY', 'newsletter_group_by');
+
+define('NEWSLETTER_PARAM_ID', 'id');
 define('NEWSLETTER_PARAM_ACTION', 'action');
-define('NEWSLETTER_PARAM_GROUP_BY', 'groupby');
 define('NEWSLETTER_PARAM_ISSUE', 'issue');
+define('NEWSLETTER_PARAM_GROUP_BY', 'groupby');
 define('NEWSLETTER_PARAM_FROM', 'from');
+define('NEWSLETTER_PARAM_COUNT', 'count');
 define('NEWSLETTER_PARAM_TO', 'to');
+define('NEWSLETTER_PARAM_USER', 'user');
+define('NEWSLETTER_PARAM_CONFIRM', 'confirm');
+define('NEWSLETTER_PARAM_HASH', 'hash');
+define('NEWSLETTER_PARAM_SUBSCRIPTION', 'sub');
+
+define('NEWSLETTER_CONFIRM_YES', 1);
+define('NEWSLETTER_CONFIRM_NO', 0);
+define('NEWSLETTER_CONFIRM_UNKNOWN', -1);
+
+define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL', 'col_email');
+define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME', 'col_name');
+define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH', 'col_health');
+define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS', 'col_actions');
 
 ////////////////////////////////////////////////////////////////////////////////
 // Moodle core API                                                            //
@@ -114,14 +148,17 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
                          'maxbytes' => 0,
                          'maxfiles' => -1);
 
-    $cmid = get_coursemodule_from_instance('newsletter', $newsletter->id);
-    $context = context_module::instance($cmid->id);
+    $context = context_module::instance($newsletter->coursemodule);
 
     if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', 'stylesheets', $newsletter->id, $fileoptions);
+        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
     }
 
-    return $DB->insert_record('newsletter', $newsletter->id);
+    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT) {
+        newsletter_subscribe_all_enrolled_users($newsletter->course, $newsletter->id);
+    }
+
+    return $newsletter->id;
 }
 
 /**
@@ -149,7 +186,7 @@ function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_for
     $context = context_module::instance($cmid->id);
 
     if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', 'stylesheets', $newsletter->id, $fileoptions);
+        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
     }
 
     return $DB->update_record('newsletter', $newsletter);
@@ -174,6 +211,8 @@ function newsletter_delete_instance($id) {
 
     $DB->delete_records('newsletter', array('id' => $newsletter->id));
 
+    // TODO: delete files?
+
     return true;
 }
 
@@ -188,7 +227,6 @@ function newsletter_reset_userdata($data) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 
-    $course = $DB->get_record('course', array('id' => $data->courseid), '*', MUST_EXIST);
     $status = array();
 
     $sql = "SELECT n.id FROM {newsletter} n WHERE n.course = :courseid";
@@ -196,8 +234,7 @@ function newsletter_reset_userdata($data) {
     if ($newsletterids = $DB->get_fieldset_sql($sql, $params)) {
         foreach ($newsletterids as $newsletterid) {
             $cm = get_coursemodule_from_instance('newsletter', $newsletterid, $data->courseid, false, MUST_EXIST);
-            $context = context_module::instance($cm->id);
-            $newsletter = new newsletter($context, $cm, $course);
+            $newsletter = new newsletter($cm->id);
             $status = array_merge($status, $newsletter->reset_userdata($data));
         }
     }
@@ -303,6 +340,10 @@ function newsletter_cron() {
     $undeliveredissues = array();
     $issuestatuses = array();
 
+    require_once('locallib.php');
+
+    $unsublinks = array();
+
     if ($continue) {
         if ($debugoutput) {
             echo "Temp file found, continuing cron job...\n";
@@ -312,11 +353,18 @@ function newsletter_cron() {
 
         $newsletters = $DB->get_records('newsletter');
         foreach ($newsletters as $newsletter) {
+            $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
+            $newsletterobject = new newsletter($coursemodule->id);
             $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
             foreach ($issues as $issue) {
                 if ($issue->publishon <= time() && !$issue->delivered) {
+                    $issue->newsletter = $newsletterobject;
                     $undeliveredissues[$issue->id] = $issue;
                 }
+            }
+            if ($newsletter->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+                $url = new moodle_url('/mod/newsletter/subscribe.php', array('id' => $newsletterobject->get_course_module()->id));
+                $unsublinks[$newsletterobject->get_instance()->id] = $url;
             }
         }
     } else {
@@ -326,24 +374,28 @@ function newsletter_cron() {
         }
         $newsletters = $DB->get_records('newsletter');
         foreach ($newsletters as $newsletter) {
+            $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
+            $newsletterobject = new newsletter($coursemodule->id);
             $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
             foreach ($issues as $issue) {
                 if ($issue->publishon <= time() && !$issue->delivered) {
-                    $issue->newsletter = $newsletter;
+                    $issue->newsletter = $newsletterobject;
                     $undeliveredissues[$issue->id] = $issue;
                     if ($issue->status) {
                         $issuestatuses[$issue->id] = json_decode($issue->status, true);
                     } else {
                         $issuestatuses[$issue->id] = array();
-                        $recipients = $DB->get_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
+                        $recipients = newsletter_get_all_valid_recipients($newsletter->id);
                         foreach ($recipients as $recipient) {
-                            if ($recipient->blackliststatus == NEWSLETTER_BLACKLIST_STATUS_OK) {
-                                $issuestatuses[$issue->id][$recipient->userid] = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
-                            }
+                            $issuestatuses[$issue->id][$recipient->userid] = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
                         }
                         $DB->set_field('newsletter_issues', 'status', json_encode($issuestatuses[$issue->id]), array('id' => $issue->id));
                     }
                 }
+            }
+            if ($newsletter->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+                $url = new moodle_url('/mod/newsletter/subscribe.php', array('id' => $newsletterobject->get_course_module()->id));
+                $unsublinks[$newsletterobject->get_instance()->id] = $url;
             }
         }
         file_put_contents($tempfilename, json_encode($issuestatuses));
@@ -352,22 +404,45 @@ function newsletter_cron() {
     if ($debugoutput) {
         echo "Data collection complete. Delivering...\n";
     }
+    require_once('locallib.php');
     foreach ($undeliveredissues as $issueid => $issue) {
         if ($debugoutput) {
-            echo "Processing newsletter \"{$issue->newlsetter->name}\" (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})...";
+            echo "Processing newsletter (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})...";
         }
+        $newsletter = $issue->newsletter;
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter', 'attachments', $issue->id, "", false);
+        $attachments = array();
+        foreach ($files as $file) {
+            $attachments[$file->get_filename()] = $file->copy_content_to_temp();
+        }
+
+        if (isset($unsublinks[$newsletter->get_instance()->id])) {
+            $url = $unsublinks[$newsletter->get_instance()->id];
+            $url->param(NEWSLETTER_PARAM_USER, $subscriberid);
+            $a = array(
+            'link' => $url->__toString(),
+            'text' => get_string('unsubscribe_link_text', 'newsletter'));
+            $issue->htmlcontent .= get_string('unsubscribe_link', 'newsletter', $a);
+        }
+
+        $plaintext = newsletter_convert_html_to_plaintext($issue->htmlcontent);
+        $html = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
+
         foreach ($issuestatuses[$issueid] as $subscriberid => $status) {
             if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
                 $recipient = $DB->get_record('user', array('id' => $subscriberid));
                 if ($debugoutput) {
                     echo "Sending message to {$recipient->email}... ";
                 }
-                $result = email_to_user(
+
+                $result = newsletter_email_to_user(
                         $recipient,
-                        $issue->newsletter->name,
+                        $newsletter->get_instance()->name,
                         $issue->title,
-                        $issue->plaincontent,
-                        $issue->htmlcontent);
+                        $plaintext,
+                        $html,
+                        $attachments);
                 if ($debugoutput) {
                     echo (NEWSLETTER_DELIVERY_STATUS_DELIVERED ? "OK" : "FAILED") . "!\n";
                 }
@@ -399,6 +474,25 @@ function newsletter_cron() {
     cron_helper::unlock();
 
     return true;
+}
+
+function newsletter_get_all_valid_recipients($newsletterid) {
+    global $DB;
+    $validstatuses = array(NEWSLETTER_BLACKLIST_STATUS_OK, NEWSLETTER_BLACKLIST_STATUS_PROBLEMATIC);
+    list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAM_NAMED);
+    $params['newsletterid'] = $newsletterid;
+    $sql = "SELECT *
+              FROM {newsletter_subscriptions} ns
+             WHERE ns.newsletterid = :newsletterid
+               AND ns.health $insql";
+    return $DB->get_records_sql($sql, $params);
+}
+
+function newsletter_convert_html_to_plaintext($content) {
+    global $CFG;
+    require_once($CFG->libdir . '/html2text.php');
+    $html2text = new html2text($content);
+    return $html2text->get_text();
 }
 
 /**
@@ -474,24 +568,33 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
 
     require_login($course, false, $cm);
 
-    if (!$quiz = $DB->get_record('newsletter', array('id' => $cm->instance))) {
+    if (!$newsletter = $DB->get_record('newsletter', array('id' => $cm->instance))) {
         return false;
     }
 
-    $fileareas = array('issue');
+    $fileareas = array(NEWSLETTER_FILE_AREA_STYLESHEETS, NEWSLETTER_FILE_AREA_ATTACHMENTS);
     if (!in_array($filearea, $fileareas)) {
         return false;
     }
 
-    $issueid = (int)array_shift($args);
-    if (!$issue = $DB->get_record('newsletter_issues', array('id' => $issueid))) {
-        return false;
-    }
+    $itemid = (int)array_shift($args);
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_newsletter/$filearea/$issueid/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEETS) {
+        if ($newsletter->id != $itemid) {
+            return false;
+        }
+        $fullpath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
+    } else if ($filearea == NEWSLETTER_FILE_AREA_ATTACHMENTS) {
+        if (!$DB->record_exists('newsletter_issues', array('id' => $itemid, 'newsletterid' => $newsletter->id))) {
+            return false;
+        }
+        $fullpath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
+    } else {
+        return false;
+    }
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
         return false;
     }
 
@@ -525,4 +628,367 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
  * @param navigation_node $newsletternode {@link navigation_node}
  */
 function newsletter_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $newsletternode=null) {
+}
+////////////////////////////////////////////////////////////////////////////////
+// Event handlers                                                             //
+////////////////////////////////////////////////////////////////////////////////
+
+function newsletter_user_created($user) {
+    if ($user->username != $user->email || $user->username != $user->lastname) {
+        $user->courseid = 1;
+        return newsletter_user_enrolled($user);
+    } else {
+        return true;
+    }
+}
+
+function newsletter_user_enrolled($user) {
+    global $DB;
+
+    $sql = "SELECT n.id, cm.id AS cmid
+              FROM {newsletter} n
+              JOIN {course_modules} cm ON cm.instance = n.id
+              JOIN {modules} m ON m.id = cm.module
+         LEFT JOIN {newsletter_subscriptions} ns ON ns.newsletterid = n.id AND ns.userid = :userid
+             WHERE n.course = :courseid
+               AND (n.subscriptionmode = :submode1
+                OR n.subscriptionmode = :submode2)
+               AND m.name = 'newsletter'
+               AND ns.id IS NULL";
+    $params = array('courseid' => $user->courseid,
+                      'userid' => $user->id,
+                     'submode1' => NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT,
+                     'submode2' => NEWSLETTER_SUBSCRIPTION_MODE_FORCED);
+
+    $newsletters = $DB->get_records_sql($sql, $params);
+    foreach ($newsletters as $newsletter) {
+        newsletter_subscribe($user->id, $newsletter->id);
+    }
+
+    return true;
+}
+
+function newsletter_role_assigned($cp) {
+    return true;
+}
+
+function newsletter_user_deleted($user) {
+    global $DB;
+
+    $params = array('userid' => $user->userid);
+    $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid', $params);
+
+    return true;
+}
+
+function newsletter_user_unenrolled($cp) {
+    global $DB;
+
+    if ($cp->lastenrol) {
+        $params = array('userid' => $cp->userid, 'courseid' => $cp->courseid);
+        $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid AND newsletterid IN (SELECT n.id FROM {newsletter} n WHERE n.course = :courseid)', $params);
+    }
+
+    return true;
+}
+
+function newsletter_subscribe_guest($email, $cmid) {
+    global $DB, $CFG;
+    require_once(dirname(dirname(dirname(__FILE__))).'/user/lib.php');
+
+    /*
+    $error = email_is_not_allowed($email);
+    if ($error) {
+        return $error;
+    }
+
+    if ($DB->record_exists('user', array('email' => $email))) {
+        return get_string('email_in_use', 'newsletter');
+    }
+    */
+
+    $cm = get_coursemodule_from_id('newsletter', $cmid);
+
+    $user = new stdClass();
+    $user->username = $email;
+    $user->email = $email;
+    $user->firstname = 'New User';
+    $user->lastname = $email;
+    $password = $user->password = generate_password();
+    $user->confirmed = 1;
+    $user->mnethostid = $CFG->mnet_localhost_id;
+    $user->mailformat = 1;
+    $user->id = user_create_user($user);
+
+    $user = get_complete_user_data('id', $user->id);
+    update_internal_user_password($user, $password);
+
+
+    $hash = sha1($email . $password);
+    set_user_preference('newsletter_confirmation_hash', $hash, $user->id);
+    set_user_preference('newsletter_confirmation_timestamp', time(), $user->id);
+
+    newsletter_subscribe($user->id, $cm->instance, false, NEWSLETTER_BLACKLIST_STATUS_INACTIVE);
+
+    $name = $DB->get_field('newsletter', 'name', array('id' => $cm->instance));
+
+    $activateurl = new moodle_url('/mod/newsletter/subscribe.php',
+            array(NEWSLETTER_PARAM_ID => $cmid,
+                  NEWSLETTER_PARAM_USER => $user->id,
+                  NEWSLETTER_PARAM_HASH => $hash,
+                  NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES));
+    $cancelurl = new moodle_url('/mod/newsletter/subscribe.php',
+            array(NEWSLETTER_PARAM_ID => $cmid,
+                  NEWSLETTER_PARAM_USER => $user->id,
+                  NEWSLETTER_PARAM_HASH => $hash,
+                  NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO));
+
+    $a = array(
+        'name' => $name,
+        'email' => $email,
+        'username' => $user->username,
+        'password' => $password,
+        'activateurl' => $activateurl->__toString(),
+        'cancelurl' => $cancelurl->__toString());
+    $htmlcontent = get_string('new_user_subscribe_message', 'newsletter', $a);
+    $plaincontent = html_to_text($htmlcontent);
+
+    if (!email_to_user($user, "newsletter", "Welcome", '', $htmlcontent)) {
+        return "Cannot send mail!";
+    }
+    $DB->set_field('user', 'suspended', 1, array('id' => $user->id));
+
+    return false;
+}
+
+function newsletter_subscribe($userid, $newsletterid, $bulk = false, $status = NEWSLETTER_BLACKLIST_STATUS_OK) {
+    global $DB;
+
+    if ($DB->record_exists("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $newsletterid))) {
+        return true;
+    }
+
+    $sub = new stdClass();
+    $sub->userid  = $userid;
+    $sub->newsletterid = $newsletterid;
+    $sub->health = $status;
+
+    return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
+}
+
+function newsletter_unsubscribe($userid, $newsletterid) {
+    global $DB;
+    return $DB->delete_records("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $newsletterid));
+}
+
+function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {
+    global $CFG;
+    require_once($CFG->libdir . '/moodlelib.php');
+
+    if (empty($user) || empty($user->email)) {
+        $nulluser = 'User is null or has no email';
+        error_log($nulluser);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$nulluser);
+        }
+        return false;
+    }
+
+    if (!empty($user->deleted)) {
+        // do not mail deleted users
+        $userdeleted = 'User is deleted';
+        error_log($userdeleted);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$userdeleted);
+        }
+        return false;
+    }
+
+    if (!empty($CFG->noemailever)) {
+        // hidden setting for development sites, set in config.php if needed
+        $noemail = 'Not sending email due to noemailever config setting';
+        error_log($noemail);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$noemail);
+        }
+        return true;
+    }
+
+    if (!empty($CFG->divertallemailsto)) {
+        $subject = "[DIVERTED {$user->email}] $subject";
+        $user = clone($user);
+        $user->email = $CFG->divertallemailsto;
+    }
+
+    // skip mail to suspended users
+    if ((isset($user->auth) && $user->auth=='nologin') or (isset($user->suspended) && $user->suspended)) {
+        return true;
+    }
+
+    if (!validate_email($user->email)) {
+        // we can not send emails to invalid addresses - it might create security issue or confuse the mailer
+        $invalidemail = "User $user->id (".fullname($user).") email ($user->email) is invalid! Not sending.";
+        error_log($invalidemail);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$invalidemail);
+        }
+        return false;
+    }
+
+    if (over_bounce_threshold($user)) {
+        $bouncemsg = "User $user->id (".fullname($user).") is over bounce threshold! Not sending.";
+        error_log($bouncemsg);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$bouncemsg);
+        }
+        return false;
+    }
+
+    // If the user is a remote mnet user, parse the email text for URL to the
+    // wwwroot and modify the url to direct the user's browser to login at their
+    // home site (identity provider - idp) before hitting the link itself
+    if (is_mnet_remote_user($user)) {
+        require_once($CFG->dirroot.'/mnet/lib.php');
+
+        $jumpurl = mnet_get_idp_jump_url($user);
+        $callback = partial('mnet_sso_apply_indirection', $jumpurl);
+
+        $messagetext = preg_replace_callback("%($CFG->wwwroot[^[:space:]]*)%",
+                $callback,
+                $messagetext);
+        $messagehtml = preg_replace_callback("%href=[\"'`]($CFG->wwwroot[\w_:\?=#&@/;.~-]*)[\"'`]%",
+                $callback,
+                $messagehtml);
+    }
+    $mail = get_mailer();
+
+    if (!empty($mail->SMTPDebug)) {
+        echo '<pre>' . "\n";
+    }
+
+    $temprecipients = array();
+    $tempreplyto = array();
+
+    $supportuser = generate_email_supportuser();
+
+    // make up an email address for handling bounces
+    if (!empty($CFG->handlebounces)) {
+        $modargs = 'B'.base64_encode(pack('V',$user->id)).substr(md5($user->email),0,16);
+        $mail->Sender = generate_email_processing_address(0,$modargs);
+    } else {
+        $mail->Sender = $supportuser->email;
+    }
+
+    if (is_string($from)) { // So we can pass whatever we want if there is need
+        $mail->From     = $CFG->noreplyaddress;
+        $mail->FromName = $from;
+    } else if ($usetrueaddress and $from->maildisplay) {
+        $mail->From     = $from->email;
+        $mail->FromName = fullname($from);
+    } else {
+        $mail->From     = $CFG->noreplyaddress;
+        $mail->FromName = fullname($from);
+        if (empty($replyto)) {
+            $tempreplyto[] = array($CFG->noreplyaddress, get_string('noreplyname'));
+        }
+    }
+
+    if (!empty($replyto)) {
+        $tempreplyto[] = array($replyto, $replytoname);
+    }
+
+    $mail->Subject = substr($subject, 0, 900);
+
+    $temprecipients[] = array($user->email, fullname($user));
+
+    $mail->WordWrap = $wordwrapwidth;                   // set word wrap
+
+    if (!empty($from->customheaders)) {                 // Add custom headers
+        if (is_array($from->customheaders)) {
+            foreach ($from->customheaders as $customheader) {
+                $mail->AddCustomHeader($customheader);
+            }
+        } else {
+            $mail->AddCustomHeader($from->customheaders);
+        }
+    }
+
+    if (!empty($from->priority)) {
+        $mail->Priority = $from->priority;
+    }
+
+    if ($messagehtml && !empty($user->mailformat) && $user->mailformat == 1) { // Don't ever send HTML to users who don't want it
+        $mail->IsHTML(true);
+        $mail->Encoding = 'quoted-printable';           // Encoding to use
+        $mail->Body    =  $messagehtml;
+        $mail->AltBody =  "\n$messagetext\n";
+    } else {
+        $mail->IsHTML(false);
+        $mail->Body =  "\n$messagetext\n";
+    }
+
+    foreach ($attachment as $attachname => $attachlocation) {
+        if (preg_match( "~\\.\\.~" ,$attachlocation)) {    // Security check for ".." in dir path
+            $temprecipients[] = array($supportuser->email, fullname($supportuser, true));
+            $mail->AddStringAttachment('Error in attachment.  User attempted to attach a filename with a unsafe name.', 'error.txt', '8bit', 'text/plain');
+        } else {
+            require_once($CFG->libdir.'/filelib.php');
+            $mimetype = mimeinfo('type', $attachname);
+            $mail->AddAttachment($attachlocation, $attachname, 'base64', $mimetype);
+        }
+    }
+
+    // Check if the email should be sent in an other charset then the default UTF-8
+    if ((!empty($CFG->sitemailcharset) || !empty($CFG->allowusermailcharset))) {
+
+        // use the defined site mail charset or eventually the one preferred by the recipient
+        $charset = $CFG->sitemailcharset;
+        if (!empty($CFG->allowusermailcharset)) {
+            if ($useremailcharset = get_user_preferences('mailcharset', '0', $user->id)) {
+                $charset = $useremailcharset;
+            }
+        }
+
+        // convert all the necessary strings if the charset is supported
+        $charsets = get_list_of_charsets();
+        unset($charsets['UTF-8']);
+        if (in_array($charset, $charsets)) {
+            $mail->CharSet  = $charset;
+            $mail->FromName = textlib::convert($mail->FromName, 'utf-8', strtolower($charset));
+            $mail->Subject  = textlib::convert($mail->Subject, 'utf-8', strtolower($charset));
+            $mail->Body     = textlib::convert($mail->Body, 'utf-8', strtolower($charset));
+            $mail->AltBody  = textlib::convert($mail->AltBody, 'utf-8', strtolower($charset));
+
+            foreach ($temprecipients as $key => $values) {
+                $temprecipients[$key][1] = textlib::convert($values[1], 'utf-8', strtolower($charset));
+            }
+            foreach ($tempreplyto as $key => $values) {
+                $tempreplyto[$key][1] = textlib::convert($values[1], 'utf-8', strtolower($charset));
+            }
+        }
+    }
+
+    foreach ($temprecipients as $values) {
+        $mail->AddAddress($values[0], $values[1]);
+    }
+    foreach ($tempreplyto as $values) {
+        $mail->AddReplyTo($values[0], $values[1]);
+    }
+
+    if ($mail->Send()) {
+        set_send_count($user);
+        if (!empty($mail->SMTPDebug)) {
+            echo '</pre>';
+        }
+        return true;
+    } else {
+        add_to_log(SITEID, 'library', 'mailer', qualified_me(), 'ERROR: '. $mail->ErrorInfo);
+        if (CLI_SCRIPT) {
+            mtrace('Error: lib/moodlelib.php email_to_user(): '.$mail->ErrorInfo);
+        }
+        if (!empty($mail->SMTPDebug)) {
+            echo '</pre>';
+        }
+        return false;
+    }
 }
