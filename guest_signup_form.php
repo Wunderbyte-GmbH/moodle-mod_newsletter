@@ -42,11 +42,42 @@ class mod_newsletter_guest_signup_form extends moodleform {
 
         $mform->addElement('header', 'subscribe', "Subscribe now!");
 
+        $mform->addElement('text', 'firstname', get_string('firstname'), array('size' => '64'));
+        $mform->setType('firstname', PARAM_TEXT);
+        $mform->addRule('firstname', null, 'required', null, 'client');
+        $mform->addRule('firstname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+
+        $mform->addElement('text', 'lastname', get_string('lastname'), array('size' => '64'));
+        $mform->setType('lastname', PARAM_TEXT);
+        $mform->addRule('lastname', null, 'required', null, 'client');
+        $mform->addRule('lastname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+
         $mform->addElement('text', 'email', get_string('email'), array('size' => '64'));
         $mform->setType('email', PARAM_EMAIL);
         $mform->addRule('email', null, 'required', null, 'client');
         $mform->addRule('email', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
+        /*
+        if (!empty($CFG->recaptchapublickey) && !empty($CFG->recaptchaprivatekey)) {
+            $mform->addElement('recaptcha', 'recaptcha');
+        }
+        //*/
+
         $mform->addElement('submit', 'submitbutton', get_string('subscribe', 'newsletter'));
+    }
+
+    function definition_after_data(){
+        $mform = $this->_form;
+        $mform->applyFilter('firstname', 'trim');
+        $mform->applyFilter('lastname', 'trim');
+        $mform->applyFilter('email', 'trim');
+    }
+
+    function validation($data, $files) {
+        if (!validate_email($data['email'])) {
+            $errors['email'] = get_string('invalidemail');
+        }
+
+        return $errors;
     }
 }

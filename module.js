@@ -1,5 +1,12 @@
 M.mod_newsletter = {};
 
+M.mod_newsletter.collapse_subscribe_form = function (Y) {
+    var fieldset = Y.one('form #id_subscribe');
+    if (fieldset) {
+        fieldset.addClass('collapsed');
+    }
+}
+
 M.mod_newsletter.init_tinymce = function (Y, stylesheets, selected) {
     if (tinyMCE.activeEditor) {
         var win = tinyMCE.activeEditor.getWin();

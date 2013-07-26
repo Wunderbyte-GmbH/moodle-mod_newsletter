@@ -115,6 +115,14 @@ class newsletter_issue implements renderable {
 }
 
 class newsletter_issue_summary extends newsletter_issue {
+    var $editissue;
+    var $deleteissue;
+
+    public function __construct(stdClass $issue, $editissue = false, $deleteissue = false) {
+        parent::__construct($issue);
+        $this->editissue = $editissue;
+        $this->deleteissue = $deleteissue;
+    }
 }
 
 class newsletter_subscription_list implements renderable {
@@ -213,10 +221,14 @@ class newsletter_pager implements renderable {
 class newsletter_main_toolbar implements renderable {
     var $cmid;
     var $groupby;
+    var $createissues;
+    var $managesubs;
 
-    public function __construct($cmid, $groupby) {
+    public function __construct($cmid, $groupby, $createissues = false, $managesubs = false) {
         $this->cmid = $cmid;
         $this->groupby = $groupby;
+        $this->createissues = $createissues;
+        $this->managesubs = $managesubs;
     }
 }
 
@@ -266,9 +278,9 @@ class newsletter_action_link implements renderable {
     var $text;
     var $class;
 
-    public function __construct(moodle $url, $text = '', $class = 'mod_newsletter__action-link') {
+    public function __construct(moodle_url $url, $text = '', $class = 'mod_newsletter__action-link') {
         $this->url = $url;
-        $this->text = $issueid;
+        $this->text = $text;
         $this->class = $class;
     }
 }

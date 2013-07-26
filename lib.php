@@ -44,13 +44,13 @@ define('NEWSLETTER_DELIVERY_STATUS_UNKNOWN', 0);
 define('NEWSLETTER_DELIVERY_STATUS_DELIVERED', 1);
 define('NEWSLETTER_DELIVERY_STATUS_FAILED', 2);
 
-define('NEWSLETTER_BLACKLIST_STATUS_OK', 0);
-define('NEWSLETTER_BLACKLIST_STATUS_PROBLEMATIC', 1);
-define('NEWSLETTER_BLACKLIST_STATUS_BLACKLISTED', 2);
-define('NEWSLETTER_BLACKLIST_STATUS_INACTIVE', 3);
-define('NEWSLETTER_BLACKLIST_STATUS_UNSUBSCRIBED', 4);
+define('NEWSLETTER_SUBSCRIBER_STATUS_OK', 0);
+define('NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC', 1);
+define('NEWSLETTER_SUBSCRIBER_STATUS_BLACKLISTED', 2);
+define('NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED', 4);
 
 define('NEWSLETTER_ACTION_VIEW_NEWSLETTER', 'view');
+define('NEWSLETTER_ACTION_CREATE_ISSUE', 'createissue');
 define('NEWSLETTER_ACTION_EDIT_ISSUE', 'editissue');
 define('NEWSLETTER_ACTION_READ_ISSUE', 'readissue');
 define('NEWSLETTER_ACTION_DELETE_ISSUE', 'deleteissue');
@@ -58,6 +58,8 @@ define('NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS', 'managesubscriptions');
 define('NEWSLETTER_ACTION_EDIT_SUBSCRIPTION', 'editsubscription');
 define('NEWSLETTER_ACTION_DELETE_SUBSCRIPTION', 'deletesubscription');
 define('NEWSLETTER_ACTION_SUBSCRIBE_COHORTS', 'subscribecohorts');
+define('NEWSLETTER_ACTION_SUBSCRIBE', 'subscribe');
+define('NEWSLETTER_ACTION_UNSUBSCRIBE', 'unsubscribe');
 
 define('NEWSLETTER_GROUP_ISSUES_BY_YEAR', 'year');
 define('NEWSLETTER_GROUP_ISSUES_BY_MONTH', 'month');
@@ -96,6 +98,7 @@ define('NEWSLETTER_PARAM_USER', 'user');
 define('NEWSLETTER_PARAM_CONFIRM', 'confirm');
 define('NEWSLETTER_PARAM_HASH', 'hash');
 define('NEWSLETTER_PARAM_SUBSCRIPTION', 'sub');
+define('NEWSLETTER_PARAM_DATA', 'data');
 
 define('NEWSLETTER_CONFIRM_YES', 1);
 define('NEWSLETTER_CONFIRM_NO', 0);
@@ -154,8 +157,19 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
         file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
     }
 
-    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT) {
-        newsletter_subscribe_all_enrolled_users($newsletter->course, $newsletter->id);
+    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+        $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+
+        $users = get_enrolled_users($context);
+        foreach ($users as $user) {
+            if (!$DB->record_exists("newsletter_subscriptions", array("userid" => $user->id, "newsletterid" => $newsletter->id))) {
+                $sub = new stdClass();
+                $sub->userid  = $user->id;
+                $sub->newsletterid = $newsletter->id;
+                $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
+                $DB->insert_record("newsletter_subscriptions", $sub, true, true);
+            }
+        }
     }
 
     return $newsletter->id;
@@ -189,6 +203,21 @@ function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_for
         file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
     }
 
+    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+        $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+
+        $users = get_enrolled_users($context);
+        foreach ($users as $user) {
+            if (!$DB->record_exists("newsletter_subscriptions", array("userid" => $user->id, "newsletterid" => $newsletter->id))) {
+                $sub = new stdClass();
+                $sub->userid  = $user->id;
+                $sub->newsletterid = $newsletter->id;
+                $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
+                $DB->insert_record("newsletter_subscriptions", $sub, true, true);
+            }
+        }
+    }
+
     return $DB->update_record('newsletter', $newsletter);
 }
 
@@ -209,9 +238,26 @@ function newsletter_delete_instance($id) {
         return false;
     }
 
-    $DB->delete_records('newsletter', array('id' => $newsletter->id));
+    $cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
+    $context = context_module::instance($cm->id);
 
-    // TODO: delete files?
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($contextid, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id);
+    foreach ($files as $f) {
+        $file->delete();
+    }
+
+    $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
+    foreach ($issues as $issue) {
+        $files = $fs->get_area_files($contextid, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id);
+        foreach ($files as $f) {
+            $file->delete();
+        }
+    }
+
+    $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
+    $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
+    $DB->delete_records('newsletter', array('id' => $newsletter->id));
 
     return true;
 }
@@ -321,9 +367,32 @@ function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $mo
 function newsletter_cron() {
     global $DB, $CFG;
 
-    $debugoutput = get_config('newsletter')->debug;
+    $config = get_config('newsletter');
+
+    $debugoutput = $config->debug;
     if ($debugoutput) {
         echo "\n";
+    }
+
+    if ($debugoutput) {
+        echo "Deleting expired inactive user accounts...\n";
+    }
+
+    $query = "SELECT u.id
+                FROM {user} u
+               INNER JOIN {newsletter_subscriptions} ns ON u.id = ns.userid
+               WHERE u.confirmed = 0
+                 AND :now - u.timecreated > :limit";
+    $ids = $DB->get_fieldset_sql($query, array('now' => time(), 'limit' => $config->activation_timeout));
+
+    if (!empty($ids)) {
+        list($insql, $params) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+        $DB->delete_records_select('user', "id " . $insql, $params);
+        $DB->delete_records_select('newsletter_subscriptions', "userid " . $insql, $params);
+    }
+
+    if ($debugoutput) {
+        echo "Done.\n";
     }
 
     require_once('cron_helper.php');
@@ -478,12 +547,14 @@ function newsletter_cron() {
 
 function newsletter_get_all_valid_recipients($newsletterid) {
     global $DB;
-    $validstatuses = array(NEWSLETTER_BLACKLIST_STATUS_OK, NEWSLETTER_BLACKLIST_STATUS_PROBLEMATIC);
+    $validstatuses = array(NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC);
     list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAM_NAMED);
     $params['newsletterid'] = $newsletterid;
     $sql = "SELECT *
               FROM {newsletter_subscriptions} ns
+        INNER JOIN {user} u ON ns.userid = u.id
              WHERE ns.newsletterid = :newsletterid
+               AND u.confirmed = 1
                AND ns.health $insql";
     return $DB->get_records_sql($sql, $params);
 }
@@ -633,15 +704,6 @@ function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
 // Event handlers                                                             //
 ////////////////////////////////////////////////////////////////////////////////
 
-function newsletter_user_created($user) {
-    if ($user->username != $user->email || $user->username != $user->lastname) {
-        $user->courseid = 1;
-        return newsletter_user_enrolled($user);
-    } else {
-        return true;
-    }
-}
-
 function newsletter_user_enrolled($user) {
     global $DB;
 
@@ -662,21 +724,10 @@ function newsletter_user_enrolled($user) {
 
     $newsletters = $DB->get_records_sql($sql, $params);
     foreach ($newsletters as $newsletter) {
-        newsletter_subscribe($user->id, $newsletter->id);
+        $cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
+        $newsletter = new newsletter($cm->id);
+        $newsletter->subscribe($user->id);
     }
-
-    return true;
-}
-
-function newsletter_role_assigned($cp) {
-    return true;
-}
-
-function newsletter_user_deleted($user) {
-    global $DB;
-
-    $params = array('userid' => $user->userid);
-    $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid', $params);
 
     return true;
 }
@@ -692,95 +743,51 @@ function newsletter_user_unenrolled($cp) {
     return true;
 }
 
-function newsletter_subscribe_guest($email, $cmid) {
-    global $DB, $CFG;
-    require_once(dirname(dirname(dirname(__FILE__))).'/user/lib.php');
-
-    /*
-    $error = email_is_not_allowed($email);
-    if ($error) {
-        return $error;
-    }
-
-    if ($DB->record_exists('user', array('email' => $email))) {
-        return get_string('email_in_use', 'newsletter');
-    }
-    */
-
-    $cm = get_coursemodule_from_id('newsletter', $cmid);
-
-    $user = new stdClass();
-    $user->username = $email;
-    $user->email = $email;
-    $user->firstname = 'New User';
-    $user->lastname = $email;
-    $password = $user->password = generate_password();
-    $user->confirmed = 1;
-    $user->mnethostid = $CFG->mnet_localhost_id;
-    $user->mailformat = 1;
-    $user->id = user_create_user($user);
-
-    $user = get_complete_user_data('id', $user->id);
-    update_internal_user_password($user, $password);
-
-
-    $hash = sha1($email . $password);
-    set_user_preference('newsletter_confirmation_hash', $hash, $user->id);
-    set_user_preference('newsletter_confirmation_timestamp', time(), $user->id);
-
-    newsletter_subscribe($user->id, $cm->instance, false, NEWSLETTER_BLACKLIST_STATUS_INACTIVE);
-
-    $name = $DB->get_field('newsletter', 'name', array('id' => $cm->instance));
-
-    $activateurl = new moodle_url('/mod/newsletter/subscribe.php',
-            array(NEWSLETTER_PARAM_ID => $cmid,
-                  NEWSLETTER_PARAM_USER => $user->id,
-                  NEWSLETTER_PARAM_HASH => $hash,
-                  NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES));
-    $cancelurl = new moodle_url('/mod/newsletter/subscribe.php',
-            array(NEWSLETTER_PARAM_ID => $cmid,
-                  NEWSLETTER_PARAM_USER => $user->id,
-                  NEWSLETTER_PARAM_HASH => $hash,
-                  NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO));
-
-    $a = array(
-        'name' => $name,
-        'email' => $email,
-        'username' => $user->username,
-        'password' => $password,
-        'activateurl' => $activateurl->__toString(),
-        'cancelurl' => $cancelurl->__toString());
-    $htmlcontent = get_string('new_user_subscribe_message', 'newsletter', $a);
-    $plaincontent = html_to_text($htmlcontent);
-
-    if (!email_to_user($user, "newsletter", "Welcome", '', $htmlcontent)) {
-        return "Cannot send mail!";
-    }
-    $DB->set_field('user', 'suspended', 1, array('id' => $user->id));
-
-    return false;
-}
-
-function newsletter_subscribe($userid, $newsletterid, $bulk = false, $status = NEWSLETTER_BLACKLIST_STATUS_OK) {
-    global $DB;
-
-    if ($DB->record_exists("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $newsletterid))) {
+function newsletter_user_created($user) {
+    if (($user->username != $user->email || $user->username != $user->lastname) && $user->suspended) { //TODO: implement a better check!
+        $user->courseid = 1;
+        return newsletter_user_enrolled($user);
+    } else {
         return true;
     }
-
-    $sub = new stdClass();
-    $sub->userid  = $userid;
-    $sub->newsletterid = $newsletterid;
-    $sub->health = $status;
-
-    return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
 }
 
-function newsletter_unsubscribe($userid, $newsletterid) {
+function newsletter_user_deleted($user) {
     global $DB;
-    return $DB->delete_records("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $newsletterid));
+
+    $params = array('userid' => $user->userid);
+    $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid', $params);
+
+    return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Mail utility functions                                                     //
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Send an email to a specified user
+ * This is a version of the core function of the similar name modified to allow
+ * for multiple attachments. Everything else remains identical.
+ *
+ * @global object
+ * @global string
+ * @global string IdentityProvider(IDP) URL user hits to jump to mnet peer.
+ * @uses SITEID
+ * @param stdClass $user  A {@link $USER} object
+ * @param stdClass $from A {@link $USER} object
+ * @param string $subject plain text subject line of the email
+ * @param string $messagetext plain text version of the message
+ * @param string $messagehtml complete html version of the message (optional)
+ * @param array $attachment an array of files to be attached in the form of
+ * attachmentname => attachmentfilepath
+ * @param bool $usetrueaddress determines whether $from email address should
+ *          be sent out. Will be overruled by user profile setting for maildisplay
+ * @param string $replyto Email address to reply to
+ * @param string $replytoname Name of reply to recipient
+ * @param int $wordwrapwidth custom word wrap width, default 79
+ * @return bool Returns true if mail was sent OK and false if there was an error.
+ */
 function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {
     global $CFG;
     require_once($CFG->libdir . '/moodlelib.php');
@@ -820,7 +827,7 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
         $user->email = $CFG->divertallemailsto;
     }
 
-    // skip mail to suspended users
+    // skip mail to suspended users - all user accounts created by the module are created suspended
     if ((isset($user->auth) && $user->auth=='nologin') or (isset($user->suspended) && $user->suspended)) {
         return true;
     }

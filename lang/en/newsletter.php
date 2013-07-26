@@ -76,16 +76,17 @@ $string['default_stylesheet'] = 'Default stylesheet';
 
 $string['header_email'] = 'E-Mail';
 $string['header_name'] = 'Name';
-$string['header_health'] = 'Health';
+$string['header_health'] = 'Status';
 $string['header_actions'] = 'Actions';
 
 $string['entries_per_page'] = 'Entries per page';
 $string['create_new_issue'] = 'Create new issue';
 $string['manage_subscriptions'] = 'Manage subscriptions';
 
-$string['health_0'] = 'Healthy';
+$string['health_0'] = 'Active';
 $string['health_1'] = 'Problematic';
 $string['health_2'] = 'Blacklisted';
+$string['health_4'] = 'Unsubscribed';
 
 $string['page_first'] = 'First';
 $string['page_previous'] = 'Previous';
@@ -97,7 +98,37 @@ $string['subscribe'] = 'Subscribe';
 $string['subscribe_question'] = 'Would you like to subscribe to newsletter "{$a->name}" using the e-mail address "{$a->email}"?';
 $string['unsubscribe_question'] = 'Would you like to unsubscribe your e-mail address "{$a->email}" from newsletter "{$a->name}"?';
 
-$string['new_user_subscribe_message'] = '<p>Hello!</p><p>You have requested to be subscribed to newsletter "{$a->name}" with the following address: {$a->email}. In order to make it happen a new user account has been created for you:<br/>Username: <strong>{$a->username}</strong><br/>Password: <strong>{$a->password}</strong><br/>In order to activate your account please follow <a href="{$a->activateurl}">this link</a>. If you have made a mistake and would like to cancel the activation process follow this link <a href="{$a->cancelurl}">this link</a>.</p><p>Thank you!</p>';
+$string['new_user_subscribe_message'] = 'Hello {$a->fullname},
+
+You have requested to be subscribed to
+\'{$a->newslettername}\' newsletter at \'{$a->sitename}\'
+using this email address. A new account has been made for you:
+
+Username: {$a->username}
+Password: {$a->password}
+
+You can change the account details after confirmation.
+To confirm your new account, please go to this web address:
+
+{$a->link}
+
+In most mail programs, this should appear as a blue link
+which you can just click on.  If that doesn\'t work,
+then cut and paste the address into the address
+line at the top of your web browser window.
+
+If you need help, please contact the site administrator,
+{$a->admin}';
+
+$string['account_confirmed'] = 'Welcome to {$a->sitename}, {$a->fullname}!
+
+Your account {$a->username} has been enabled.
+To edit your account details, click {$a->editlink}.
+To proceed to the newsletter, click {$a->newsletterlink}.';
+
+$string['account_already_confirmed'] = 'Your account has already been enabled.
+To proceed to the newsletter, click {$a->newsletterlink}.';
+
 $string['unsubscribe_link_text'] = 'Click here to unsubscribe';
 $string['unsubscribe_link'] = '<hr /><p><a href="{$a->link}">{$a->text}</a></p>';
 
@@ -106,3 +137,10 @@ $string['already_published'] = 'This issue has been published.';
 $string['delete_issue_question'] = 'Are you sure you want to delete this issue?';
 $string['delete_subscription_question'] = 'Are you sure you want to delete this subscription?';
 $string['no_issues'] = 'This newsletter has no issues yet.';
+
+$string['edit_subscription_title'] = 'Edit subscription';
+$string['subscribe'] = 'Subscribe';
+$string['unsubscribe'] = 'Unsubscribe';
+
+$string['allow_guest_user_subscriptions_label'] = 'Allow guest user subscription';
+$string['allow_guest_user_subscriptions_desc'] = 'Enable to allow guest users to subscribe to newsletters on this site. This will necessitate their creating user accounts.';

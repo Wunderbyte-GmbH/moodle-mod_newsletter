@@ -30,6 +30,10 @@ $settings->add(new admin_setting_configcheckbox('newsletter/debug',
                                                 get_string('config_debug_label', 'newsletter'),
                                                 get_string('config_debug_desc', 'newsletter'), 0));
 
+$settings->add(new admin_setting_configcheckbox('newsletter/allow_guest_user_subscriptions',
+                                                get_string('allow_guest_user_subscriptions_label', 'newsletter'),
+                                                get_string('allow_guest_user_subscriptions_desc', 'newsletter'), 0));
+
 $settings->add(new admin_setting_configcheckbox('newsletter/send_notifications',
                                                 get_string('config_send_notifications_label', 'newsletter'),
                                                 get_string('config_send_notifications_desc', 'newsletter'), 0));

@@ -22,25 +22,21 @@ require_once(dirname(__FILE__) . '/locallib.php');
 $id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 $user = optional_param(NEWSLETTER_PARAM_USER, 0, PARAM_INT);
 $confirm = optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, PARAM_INT);
-$hash = optional_param(NEWSLETTER_PARAM_HASH, false, PARAM_TEXT);
+$secret = optional_param(NEWSLETTER_PARAM_HASH, false, PARAM_TEXT);
 
 if ($user) {
+    die;
     global $DB;
-    $sub = $DB->get_record('newsletter_subscriptions', array('userid' => $user, 'health' => NEWSLETTER_BLACKLIST_STATUS_INACTIVE));
-    if ($sub && $hash) {
-        $storedhash = get_user_preferences('newsletter_confirmation_hash', '', $user);
-        if ($hash == $storedhash) {
+    $sub = $DB->get_record('newsletter_subscriptions', array('userid' => $user, 'health' => NEWSLETTER_SUBSCRIBER_STATUS_OK));
+    if ($sub && $secret) {
+        $user = $DB->get_record('user', array('id' => $user));
+        if ($secret == $user->secret) {
             if ($confirm == NEWSLETTER_CONFIRM_YES) {
-                unset_user_preference('newsletter_confirmation_hash', $user);
-                unset_user_preference('newsletter_confirmation_timestamp', $user);
-                $DB->set_field('newsletter_subscriptions', 'health', NEWSLETTER_BLACKLIST_STATUS_OK, array('userid' => $user));
-                $DB->set_field('user', 'suspended', 0, array('id' => $user));
+                $DB->set_field('user', 'confirmed', 1, array('id' => $user));
                 redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), "Welcome! You will be redirected to the login page shortly.", 5);
             } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
-                unset_user_preference('newsletter_confirmation_hash', $user);
-                unset_user_preference('newsletter_confirmation_timestamp', $user);
                 $DB->delete_records('newsletter_subscriptions', array('userid' => $user));
-                $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
+                $user = $DB->get_record('user', array('id' => $user));
                 user_delete_user($user);
                 redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), "The creation of your account was cancelled at your request!", 5);
             } else {
@@ -63,7 +59,7 @@ $course = $DB->get_record('course', array('id' => $coursemodule->course), '*', M
 require_login($course, false, $coursemodule);
 $context = context_module::instance($coursemodule->id);
 
-//require_capability('mod/newsletter:view', $context);
+require_capability('mod/newsletter:viewnewsletter', $context);
 
 $newsletter = new newsletter($coursemodule->id);
 
