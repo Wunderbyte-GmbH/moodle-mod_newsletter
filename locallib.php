@@ -410,7 +410,8 @@ class newsletter implements renderable {
 
     private function view_manage_subscriptions(array $params) {
         global $DB;
-        $sql = "SELECT ns.id, ns.health, u.id AS userid, u.email, u.firstname, u.lastname
+        $allnamefields = user_picture::fields('u',null,'userid');
+        $sql = "SELECT ns.id, ns.health, $allnamefields
                   FROM {newsletter_subscriptions} ns
             INNER JOIN {user} u ON ns.userid = u.id
                  WHERE ns.newsletterid = :newsletterid";

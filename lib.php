@@ -488,7 +488,7 @@ function newsletter_cron() {
 
         if (isset($unsublinks[$newsletter->get_instance()->id])) {
             $url = $unsublinks[$newsletter->get_instance()->id];
-            $url->param(NEWSLETTER_PARAM_USER, $subscriberid);
+            $url->param(NEWSLETTER_PARAM_USER, '##replacewithuserid##');
             $a = array(
             'link' => $url->__toString(),
             'text' => get_string('unsubscribe_link_text', 'newsletter'));
@@ -504,6 +504,8 @@ function newsletter_cron() {
                 if ($debugoutput) {
                     echo "Sending message to {$recipient->email}... ";
                 }
+                str_replace('##replacewithuserid##', $subscriberid, $plaintext);
+                str_replace('##replacewithuserid##', $subscriberid, $html);
 
                 $result = newsletter_email_to_user(
                         $recipient,
@@ -545,10 +547,14 @@ function newsletter_cron() {
     return true;
 }
 
+/**
+ * 
+ * @param unknown $newsletterid
+ */
 function newsletter_get_all_valid_recipients($newsletterid) {
     global $DB;
     $validstatuses = array(NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC);
-    list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAM_NAMED);
+    list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAMS_NAMED);
     $params['newsletterid'] = $newsletterid;
     $sql = "SELECT *
               FROM {newsletter_subscriptions} ns
@@ -752,10 +758,15 @@ function newsletter_user_created($user) {
     }
 }
 
+/**
+ * 
+ * @param unknown $user
+ * @return boolean
+ */
 function newsletter_user_deleted($user) {
     global $DB;
 
-    $params = array('userid' => $user->userid);
+    $params = array('userid' => $user->id);
     $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid', $params);
 
     return true;
@@ -876,7 +887,7 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
     $temprecipients = array();
     $tempreplyto = array();
 
-    $supportuser = generate_email_supportuser();
+    $supportuser = core_user::get_support_user() ;
 
     // make up an email address for handling bounces
     if (!empty($CFG->handlebounces)) {

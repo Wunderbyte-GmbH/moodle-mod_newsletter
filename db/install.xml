@@ -30,8 +30,8 @@
         <FIELD NAME="htmlcontent" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="title" NEXT="stylesheetid"/>
         <FIELD NAME="stylesheetid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="htmlcontent" NEXT="publishon"/>
         <FIELD NAME="publishon" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="stylesheetid" NEXT="status"/>
-        <FIELD NAME="status" TYPE="text" LENGTH="big" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="publishon" NEXT="delivered"/>
-        <FIELD NAME="delivered" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="status"/>
+        <FIELD NAME="status" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" PREVIOUS="publishon" NEXT="delivered"/>
+        <FIELD NAME="delivered" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="status"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="newsletterid"/>
