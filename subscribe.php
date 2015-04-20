@@ -25,7 +25,6 @@ $confirm = optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, 
 $secret = optional_param(NEWSLETTER_PARAM_HASH, false, PARAM_TEXT);
 
 if ($user) {
-    die;
     global $DB;
     $sub = $DB->get_record('newsletter_subscriptions', array('userid' => $user, 'health' => NEWSLETTER_SUBSCRIBER_STATUS_OK));
     if ($sub && $secret) {
