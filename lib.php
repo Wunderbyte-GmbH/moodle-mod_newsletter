@@ -495,8 +495,8 @@ function newsletter_cron() {
             $issue->htmlcontent .= get_string('unsubscribe_link', 'newsletter', $a);
         }
 
-        $plaintext = newsletter_convert_html_to_plaintext($issue->htmlcontent);
-        $html = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
+        $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
+        $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
 
         foreach ($issuestatuses[$issueid] as $subscriberid => $status) {
             if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
@@ -504,8 +504,9 @@ function newsletter_cron() {
                 if ($debugoutput) {
                     echo "Sending message to {$recipient->email}... ";
                 }
-                str_replace('replacewithuserid', $subscriberid, array($plaintext, $html));
-
+                $plaintext = str_replace('replacewithuserid', $subscriberid, $plaintexttmp);
+                $plaintext = str_replace('replacewithuserid', $subscriberid, $htmltmp);
+                
                 $result = newsletter_email_to_user(
                         $recipient,
                         $newsletter->get_instance()->name,
