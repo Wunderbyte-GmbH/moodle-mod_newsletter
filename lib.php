@@ -505,7 +505,7 @@ function newsletter_cron() {
                     echo "Sending message to {$recipient->email}... ";
                 }
                 $plaintext = str_replace('replacewithuserid', $subscriberid, $plaintexttmp);
-                $plaintext = str_replace('replacewithuserid', $subscriberid, $htmltmp);
+                $html = str_replace('replacewithuserid', $subscriberid, $htmltmp);
                 
                 $result = newsletter_email_to_user(
                         $recipient,
