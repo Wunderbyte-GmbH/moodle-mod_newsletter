@@ -780,6 +780,12 @@ class newsletter implements renderable {
         return $record;
     }
 
+    /**
+     * TODO write docu
+     * 
+     * @param number $id
+     * @return multitype:stored_file |stored_file|NULL
+     */
     public function get_stylesheets($id = 0) {
         $fs = get_file_storage();
         $context = $this->get_context();
@@ -796,6 +802,14 @@ class newsletter implements renderable {
         return null;
     }
 
+    /**
+     * Convert CSS from stylesheet to inlinecss and return html with inlinecss
+     * 
+     * @param string $htmlcontent
+     * @param integer $stylesheetid
+     * @param boolean $fulldocument
+     * @return Ambigous <string, void, mixed>
+     */
     public function inline_css($htmlcontent, $stylesheetid, $fulldocument = false) {
         global $CFG;
         $cssfile = $this->get_stylesheets($stylesheetid);
@@ -808,17 +822,17 @@ class newsletter implements renderable {
         $html = $converter->convert();
 
         if (!$fulldocument) {
-            if (preg_match('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
-                $html = preg_replace('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', '<div style="$1 $2">$3</div>', $html);
-            } else if (preg_match('/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
-                $html = preg_replace('/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', '<div style="$1">$2</div>', $html);
-            } else if (preg_match('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
-                $html = preg_replace('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', '<div style="$1">$2</div>', $html);
-            } else if (preg_match('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
-                $html = preg_replace('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', '<div>$1</div>', $html);
-            } else {
-                $html = '';
-            }
+        	if (preg_match('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
+        		$html = preg_replace('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', '<div style="$1 $2">$3</div>', $html);
+        	} else if (preg_match('/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
+        		$html = preg_replace('/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', '<div style="$1">$2</div>', $html);
+        	} else if (preg_match('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
+        		$html = preg_replace('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', '<div style="$1">$2</div>', $html);
+        	} else if (preg_match('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
+        		$html = preg_replace('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', '<div>$1</div>', $html);
+        	} else {
+        		$html = '';
+        	}
         }
 
         return $html;
@@ -860,7 +874,12 @@ class newsletter implements renderable {
         $results = $DB->get_records_sql($query, $params);
         return empty($results) ? null : reset($results);
     }
-
+	
+    /**
+     * TODO: Write docu
+     * @param unknown $issue
+     * @return Ambigous <NULL, mixed>
+     */
     private function get_last_issue($issue) {
         global $DB;
         $query = "SELECT *
@@ -874,6 +893,14 @@ class newsletter implements renderable {
         return empty($results) ? null : reset($results);
     }
 
+    /**
+     *  subscribe a user to a newsletter and return the subscription id if successful, false if not
+     * 
+     * @param number $userid
+     * @param boolean $bulk
+     * @param string $status
+     * @return boolean|newid <boolean, number>
+     */
     public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK) {
         global $DB, $USER;
 
@@ -895,6 +922,11 @@ class newsletter implements renderable {
         return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
     }
 
+    /**
+     * updates health status for a subscription 
+     * 
+     * @param stdClass $data (id and health status)
+     */
     private function update_subscription(stdClass $data) {
         global $DB;
 
@@ -905,21 +937,38 @@ class newsletter implements renderable {
         $DB->update_record('newsletter_subscriptions', $subscription);
     }
 
+    /**
+     * given the id of newsletter_subscriptions deletes the subscription completely (including health status)
+     * 
+     * @param unknown $subid
+     * @return boolean
+     */
     public function delete_subscription($subid) {
         global $DB;
         return $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
     }
-
+    
+	/**
+	 * set health status to "unsubscribed" for all newsletters a user is subscribed to
+	 * 
+	 * @param number $userid
+	 * @return boolean
+	 */
     public function unsubscribe($userid = 0) {
         global $DB, $USER;
 
         if ($userid == 0) {
             $userid = $USER->id;
         }
-
         return $DB->set_field('newsletter_subscriptions', 'health', NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED, array('userid' => $userid));
     }
-
+	
+    /**
+     * Return true/false if user is subscribed to a newsletter
+     * 
+     * @param number $userid
+     * @return boolean
+     */
     public function is_subscribed($userid = 0) {
         global $DB, $USER;
         if (!$userid) {
