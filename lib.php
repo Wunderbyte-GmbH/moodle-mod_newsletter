@@ -488,7 +488,7 @@ function newsletter_cron() {
 
         if (isset($unsublinks[$newsletter->get_instance()->id])) {
             $url = $unsublinks[$newsletter->get_instance()->id];
-            $url->param(NEWSLETTER_PARAM_USER, '##replacewithuserid##');
+            $url->param(NEWSLETTER_PARAM_USER, 'replacewithuserid');
             $a = array(
             'link' => $url->__toString(),
             'text' => get_string('unsubscribe_link_text', 'newsletter'));
@@ -504,8 +504,7 @@ function newsletter_cron() {
                 if ($debugoutput) {
                     echo "Sending message to {$recipient->email}... ";
                 }
-                str_replace('##replacewithuserid##', $subscriberid, $plaintext);
-                str_replace('##replacewithuserid##', $subscriberid, $html);
+                str_replace('replacewithuserid', $subscriberid, array($plaintext, $html));
 
                 $result = newsletter_email_to_user(
                         $recipient,
