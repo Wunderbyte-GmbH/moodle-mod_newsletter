@@ -144,3 +144,22 @@ $string['unsubscribe'] = 'Unsubscribe';
 
 $string['allow_guest_user_subscriptions_label'] = 'Allow guest user subscription';
 $string['allow_guest_user_subscriptions_desc'] = 'Enable to allow guest users to subscribe to newsletters on this site. This will necessitate their creating user accounts.';
+
+$string['newsletter:viewnewsletter'] = 'View newsletter';
+$string['newsletter:addinstance'] = 'Add a newsletter';
+$string['newsletter:createissue'] = 'Create a newsletter issue';
+$string['newsletter:deleteissue'] = 'Delete a newsletter issue';
+$string['newsletter:deletesubscription'] = 'Delete newsletter subscriptions';
+$string['newsletter:editissue'] = 'Edit a newsletter issue';
+$string['newsletter:editsubscription'] = 'Edit newsletter subscriptions';
+$string['newsletter:manageownsubscription'] = 'Manage my subsctiption to the newsletter';
+$string['newsletter:managesubscriptions'] = 'Manage subscriptions to the newsletter';
+$string['newsletter:publishissue'] = 'Publish a newsletter issue';
+$string['newsletter:readissue'] = 'Read a newsletter issue';
+$string['newsletter:subscribecohort'] = 'Subscribe a cohort to the newsletter';
+$string['newsletter:subscribeuser'] = 'Subscribe users to the newsletter';
+$string['newsletter:unsubscribecohort'] = 'Unsubscribe a cohort from a newsletter';
+$string['newsletter:viewnewsletter'] = 'View a newsletter instance';
+
+
+
