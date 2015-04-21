@@ -477,8 +477,11 @@ class newsletter implements renderable {
         $mform = new mod_newsletter_subscription_form(null, array(
                 'newsletter' => $this,
                 'subscription' => $subscription));
-
-        if ($data = $mform->get_data()) {
+        
+        if ($mform->is_cancelled()) {
+        	redirect(new moodle_url('view.php',	array('id'=>$this->get_course_module()->id, 'action'=>'managesubscriptions')));
+        	return;
+        } else if ($data = $mform->get_data()) {
             $this->update_subscription($data);
             $url = new moodle_url('/mod/newsletter/view.php',
                     array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
@@ -979,6 +982,14 @@ class newsletter implements renderable {
                                         array("userid" => $userid, "newsletterid" => $this->get_instance()->id, "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED));
     }
 
+    /**
+     * TODO write docu
+     * 
+     * @param unknown $firstname
+     * @param unknown $lastname
+     * @param unknown $email
+     * @return boolean
+     */
     public function subscribe_guest($firstname, $lastname, $email) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/user/profile/lib.php');
