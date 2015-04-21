@@ -855,7 +855,12 @@ class newsletter implements renderable {
         global $CFG;
         $cssfile = $this->get_stylesheets($stylesheetid);
         $basecss = file_get_contents(dirname(__FILE__) . '/' . NEWSLETTER_BASE_STYLESHEET_PATH);
-        $css = $basecss . ($cssfile ? ('\n' . $cssfile->get_content()) : '');
+        $css = $basecss;
+        if(!empty($cssfile)){
+        	foreach ($cssfile as $storedstylefile){
+        		$css .= ($cssfile ? ('\n' . $storedstylefile->get_content()) : '');
+        	}
+        }
 
         $converter = new CssToInlineStyles();
         $converter->setHTML($htmlcontent);
