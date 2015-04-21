@@ -94,6 +94,7 @@ $string['page_next'] = 'Next';
 $string['page_last'] = 'Last';
 
 $string['subscribe'] = 'Subscribe';
+$string['guestsubscribe'] = 'Subscribe now!';
 
 $string['subscribe_question'] = 'Would you like to subscribe to newsletter "{$a->name}" using the e-mail address "{$a->email}"?';
 $string['unsubscribe_question'] = 'Would you like to unsubscribe your e-mail address "{$a->email}" from newsletter "{$a->name}"?';

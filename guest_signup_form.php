@@ -40,7 +40,7 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addElement('hidden', 'id', $data['id']);
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('header', 'subscribe', "Subscribe now!");
+        $mform->addElement('header', 'subscribe', get_string('guestsubscribe', 'newsletter'));
 
         $mform->addElement('text', 'firstname', get_string('firstname'), array('size' => '64'));
         $mform->setType('firstname', PARAM_TEXT);

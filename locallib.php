@@ -230,6 +230,13 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Display all newsletter issues in a view. Display action links
+     * according to capabilities
+     * 
+     * @param array $params
+     * @return unknown
+     */
     private function view_newsletter(array $params) {
         $renderer = $this->get_renderer();
         require_once(dirname(__FILE__).'/guest_signup_form.php');
@@ -263,7 +270,7 @@ class newsletter implements renderable {
         } else {
             $output .= '<h2>' . get_string('no_issues', 'newsletter') . '</h2>';
         }
-        if (has_capability('mod/newsletter:manageownsubscription', $this->context)) {
+        if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             if (!$this->is_subscribed()) {
                 $url = new moodle_url('/mod/newsletter/view.php',
                                 array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
@@ -278,7 +285,7 @@ class newsletter implements renderable {
                 $output .= html_writer::link($url, $text);
             }
         } else {
-            if ($this->get_config()->allow_guest_user_subscriptions) {
+            if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin()) {
                 $output .= $renderer->render(new newsletter_form($mform, null));
             }
         }
@@ -408,6 +415,11 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Display a list of users with statusses and action links in order to manage single subscriptions
+     * @param array $params
+     * @return string rendered html
+     */
     private function view_manage_subscriptions(array $params) {
         global $DB;
         $allnamefields = user_picture::fields('u',null,'userid');
@@ -470,6 +482,12 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Display edit form for editing the status of a single subscription of a single user
+     * 
+     * @param array $params
+     * @return string rendered html with form
+     */
     private function view_edit_subscription(array $params) {
         global $DB;
         $subscription = $DB->get_record('newsletter_subscriptions', array('id' => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
@@ -479,7 +497,7 @@ class newsletter implements renderable {
                 'subscription' => $subscription));
         
         if ($mform->is_cancelled()) {
-        	redirect(new moodle_url('view.php',	array('id'=>$this->get_course_module()->id, 'action'=>'managesubscriptions')));
+        	redirect(new moodle_url('view.php',	array('id'=>$this->get_course_module()->id, NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
         	return;
         } else if ($data = $mform->get_data()) {
             $this->update_subscription($data);
@@ -503,6 +521,13 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Display deletion dialogue for deleting a single subscription of a user
+     * and delete user upon confirmation
+     * 
+     * @param array $params
+     * @return string rendered html
+     */
     private function view_delete_subscription(array $params) {
         global $OUTPUT;
 
@@ -539,6 +564,12 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * TODO write docu
+     * @param unknown $heading
+     * @param unknown $groupby
+     * @return NULL|newsletter_section_list
+     */
     private function prepare_issue_list($heading, $groupby) {
         global $DB;
         // TODO: Add first day of the week check
@@ -627,7 +658,14 @@ class newsletter implements renderable {
 
         return $sectionlist;
     }
-
+	
+    /**
+     * calculate number of pages for displaying subscriptions
+     * @param number $total
+     * @param number $from
+     * @param number $count
+     * @return multitype:number |multitype:unknown number
+     */
     private function calculate_pages($total, $from, $count) {
         $pages = array();
         $pagenum = 1;
