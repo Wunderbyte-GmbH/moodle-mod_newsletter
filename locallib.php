@@ -328,7 +328,15 @@ class newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * delete a single issue of a newsletter
+     * can only be done when not yet sent
+     * 
+     * @param array $params
+     * @return string rendered html
+     */
     private function view_delete_issue_page(array $params) {
+    	global $OUTPUT;
         if (!$params[NEWSLETTER_PARAM_ISSUE] || !$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             print_error('Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
         }

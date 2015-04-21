@@ -497,29 +497,31 @@ function newsletter_cron() {
 
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
-
-        foreach ($issuestatuses[$issueid] as $subscriberid => $status) {
-            if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
-                $recipient = $DB->get_record('user', array('id' => $subscriberid));
-                if ($debugoutput) {
-                    echo "Sending message to {$recipient->email}... ";
-                }
-                $plaintext = str_replace('replacewithuserid', $subscriberid, $plaintexttmp);
-                $html = str_replace('replacewithuserid', $subscriberid, $htmltmp);
-                
-                $result = newsletter_email_to_user(
-                        $recipient,
-                        $newsletter->get_instance()->name,
-                        $issue->title,
-                        $plaintext,
-                        $html,
-                        $attachments);
-                if ($debugoutput) {
-                    echo (NEWSLETTER_DELIVERY_STATUS_DELIVERED ? "OK" : "FAILED") . "!\n";
-                }
-                $issuestatuses[$issueid][$subscriberid] = $result ? NEWSLETTER_DELIVERY_STATUS_DELIVERED : NEWSLETTER_DELIVERY_STATUS_FAILED;
-                file_put_contents($tempfilename, json_encode($issuestatuses));
-            }
+		
+        if(isset($issuestatuses[$issueid])){
+        	foreach ($issuestatuses[$issueid] as $subscriberid => $status) {
+        		if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
+        			$recipient = $DB->get_record('user', array('id' => $subscriberid));
+        			if ($debugoutput) {
+        				echo "Sending message to {$recipient->email}... ";
+        			}
+        			$plaintext = str_replace('replacewithuserid', $subscriberid, $plaintexttmp);
+        			$html = str_replace('replacewithuserid', $subscriberid, $htmltmp);
+        	
+        			$result = newsletter_email_to_user(
+        					$recipient,
+        					$newsletter->get_instance()->name,
+        					$issue->title,
+        					$plaintext,
+        					$html,
+        					$attachments);
+        			if ($debugoutput) {
+        				echo (NEWSLETTER_DELIVERY_STATUS_DELIVERED ? "OK" : "FAILED") . "!\n";
+        			}
+        			$issuestatuses[$issueid][$subscriberid] = $result ? NEWSLETTER_DELIVERY_STATUS_DELIVERED : NEWSLETTER_DELIVERY_STATUS_FAILED;
+        			file_put_contents($tempfilename, json_encode($issuestatuses));
+        		}
+        	}        	
         }
     }
 
