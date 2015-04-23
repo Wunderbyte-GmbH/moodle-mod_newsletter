@@ -34,7 +34,7 @@ $newsletter = new newsletter($id);
 $coursemodule = $newsletter->get_course_module();
 $course = $newsletter->get_course();
 
-require_login($course, true, $coursemodule);
+require_course_login($course, true, $coursemodule);
 
 $url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $id));
 $PAGE->set_url($url);
