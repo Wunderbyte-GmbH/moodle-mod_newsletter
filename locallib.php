@@ -757,16 +757,29 @@ class newsletter implements renderable {
         $DB->delete_records('newsletter_issues', array('id' => $issueid));
     }
 
+    /**
+     * given the cohortid retrieve all userids of the cohort members
+     * and subscribe every single user of the cohort to the newsletter
+     * 
+     * TODO: Check if this is really efficient with a foreach instead of a more sophisticated sql statement
+     * @param number $cohortid
+     */
     function subscribe_cohort($cohortid) {
         global $DB;
+        $instanceid = $this->get_instance()->id;
         $sql = "SELECT cm.userid
                   FROM {cohort_members} cm
                  WHERE cm.cohortid = :cohortid";
-        $params = array('cohortid' => $cohortid);
+        $already_subscribed_sql = "SELECT cm.userid AS cmuserid, ns.health
+        		FROM {cohort_members} cm
+        		JOIN {newsletter_subscriptions} ns ON (cm.userid = ns.userid)
+        		WHERE cm.cohortid = :cohortid
+        		AND ns.newsletterid = :instanceid";
+        $params = array('cohortid' => $cohortid, 'instanceid' => $instanceid);
+        $subscribed_userids = $DB->get_fieldset_sql($already_subscribed_sql, $params);
         $userids = $DB->get_fieldset_sql($sql, $params);
-
         foreach ($userids as $userid) {
-            $this->subscribe($userid, $this->get_instance()->id, true);
+            $this->subscribe($userid, false);
         }
     }
 
@@ -948,12 +961,17 @@ class newsletter implements renderable {
     }
 
     /**
-     *  subscribe a user to a newsletter and return the subscription id if successful, false if not
+     *  subscribe a user to a newsletter and return the subscription id if successful
+     *  ATTENTION: When user status is unsubscribed, user will be subscribed as active (best health) again
+     *  When user is already subscribed and status is other than unsubscribed, the subscription status remains unchanged
      * 
      * @param number $userid
      * @param boolean $bulk
      * @param string $status
-     * @return boolean|newid <boolean, number>
+     * @return boolean|newid <boolean, number> 
+     * subscriptionid for new subscription
+     * false when user is subscribred and status remains unchanged
+     * true when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
      */
     public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK) {
         global $DB, $USER;
@@ -961,19 +979,19 @@ class newsletter implements renderable {
         if ($userid == 0) {
             $userid = $USER->id;
         }
-
         if ($sub = $DB->get_record("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $this->get_instance()->id))) {
             if($sub->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
                 return $DB->set_field('newsletter_subscriptions', 'health', NEWSLETTER_SUBSCRIBER_STATUS_OK, array('userid' => $userid, "newsletterid" => $this->get_instance()->id));
+            } else {
+            	return false;
             }
+        } else {
+        	$sub = new stdClass();
+        	$sub->userid  = $userid;
+        	$sub->newsletterid = $this->get_instance()->id;
+        	$sub->health = $status;
+        	return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);        	
         }
-
-        $sub = new stdClass();
-        $sub->userid  = $userid;
-        $sub->newsletterid = $this->get_instance()->id;
-        $sub->health = $status;
-
-        return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
     }
 
     /**

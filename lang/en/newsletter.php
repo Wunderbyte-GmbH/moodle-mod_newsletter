@@ -98,6 +98,7 @@ $string['guestsubscribe'] = 'Subscribe now!';
 
 $string['subscribe_question'] = 'Would you like to subscribe to newsletter "{$a->name}" using the e-mail address "{$a->email}"?';
 $string['unsubscribe_question'] = 'Would you like to unsubscribe your e-mail address "{$a->email}" from newsletter "{$a->name}"?';
+$string['unsubscription_succesful'] = 'Your email "{$a->email}" was successfully removed from the following newsletter: "{$a->name}".';
 
 $string['new_user_subscribe_message'] = 'Hello {$a->fullname},
 
