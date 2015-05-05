@@ -168,6 +168,7 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
                 $sub->newsletterid = $newsletter->id;
                 $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
                 $DB->insert_record("newsletter_subscriptions", $sub, true, true);
+                //TODO: Log newsletter instance added
             }
         }
     }
@@ -242,14 +243,14 @@ function newsletter_delete_instance($id) {
     $context = context_module::instance($cm->id);
 
     $fs = get_file_storage();
-    $files = $fs->get_area_files($contextid, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id);
+    $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id);
     foreach ($files as $f) {
         $file->delete();
     }
 
     $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     foreach ($issues as $issue) {
-        $files = $fs->get_area_files($contextid, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id);
+        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id);
         foreach ($files as $f) {
             $file->delete();
         }
@@ -258,7 +259,7 @@ function newsletter_delete_instance($id) {
     $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter', array('id' => $newsletter->id));
-
+	//TODO: Log deletion of instance
     return true;
 }
 
@@ -567,6 +568,12 @@ function newsletter_get_all_valid_recipients($newsletterid) {
     return $DB->get_records_sql($sql, $params);
 }
 
+/**
+ * converts html to plaintext message
+ * 
+ * @param string $content html
+ * @return string plain text
+ */
 function newsletter_convert_html_to_plaintext($content) {
     global $CFG;
     require_once($CFG->libdir . '/html2text.php');
@@ -801,214 +808,258 @@ function newsletter_user_deleted($user) {
  * @param int $wordwrapwidth custom word wrap width, default 79
  * @return bool Returns true if mail was sent OK and false if there was an error.
  */
-function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {
-    global $CFG;
-    require_once($CFG->libdir . '/moodlelib.php');
+function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {
+	global $CFG;
+	
+	if (empty ( $user ) or empty ( $user->id )) {
+		debugging ( 'Can not send email to null user', DEBUG_DEVELOPER );
+		return false;
+	}
+	
+	if (empty ( $user->email )) {
+		debugging ( 'Can not send email to user without email: ' . $user->id, DEBUG_DEVELOPER );
+		return false;
+	}
+	
+	if (! empty ( $user->deleted )) {
+		debugging ( 'Can not send email to deleted user: ' . $user->id, DEBUG_DEVELOPER );
+		return false;
+	}
+	
+	if (defined ( 'BEHAT_SITE_RUNNING' )) {
+		// Fake email sending in behat.
+		return true;
+	}
+	
+	if (! empty ( $CFG->noemailever )) {
+		// Hidden setting for development sites, set in config.php if needed.
+		debugging ( 'Not sending email due to $CFG->noemailever config setting', DEBUG_NORMAL );
+		return true;
+	}
+	
+	if (! empty ( $CFG->divertallemailsto )) {
+		$subject = "[DIVERTED {$user->email}] $subject";
+		$user = clone ($user);
+		$user->email = $CFG->divertallemailsto;
+	}
+	
+	// Skip mail to suspended users.
+	if ((isset ( $user->auth ) && $user->auth == 'nologin') or (isset ( $user->suspended ) && $user->suspended)) {
+		return true;
+	}
+	
+	if (! validate_email ( $user->email )) {
+		// We can not send emails to invalid addresses - it might create security issue or confuse the mailer.
+		$invalidemail = "User $user->id (" . fullname ( $user ) . ") email ($user->email) is invalid! Not sending.";
+		error_log ( $invalidemail );
+		if (CLI_SCRIPT) {
+			mtrace ( 'Error: lib/moodlelib.php email_to_user(): ' . $invalidemail );
+		}
+		return false;
+	}
+	
+	if (over_bounce_threshold ( $user )) {
+		$bouncemsg = "User $user->id (" . fullname ( $user ) . ") is over bounce threshold! Not sending.";
+		error_log ( $bouncemsg );
+		if (CLI_SCRIPT) {
+			mtrace ( 'Error: lib/moodlelib.php email_to_user(): ' . $bouncemsg );
+		}
+		return false;
+	}
+	
+	// If the user is a remote mnet user, parse the email text for URL to the
+	// wwwroot and modify the url to direct the user's browser to login at their
+	// home site (identity provider - idp) before hitting the link itself.
+	if (is_mnet_remote_user ( $user )) {
+		require_once ($CFG->dirroot . '/mnet/lib.php');
+		
+		$jumpurl = mnet_get_idp_jump_url ( $user );
+		$callback = partial ( 'mnet_sso_apply_indirection', $jumpurl );
+		
+		$messagetext = preg_replace_callback ( "%($CFG->wwwroot[^[:space:]]*)%", $callback, $messagetext );
+		$messagehtml = preg_replace_callback ( "%href=[\"'`]($CFG->wwwroot[\w_:\?=#&@/;.~-]*)[\"'`]%", $callback, $messagehtml );
+	}
+	$mail = get_mailer ();
+	
+	if (! empty ( $mail->SMTPDebug )) {
+		echo '<pre>' . "\n";
+	}
+	
+	$temprecipients = array ();
+	$tempreplyto = array ();
+	
+	$supportuser = core_user::get_support_user ();
+	
+	// Make up an email address for handling bounces.
+	if (! empty ( $CFG->handlebounces )) {
+		$modargs = 'B' . base64_encode ( pack ( 'V', $user->id ) ) . substr ( md5 ( $user->email ), 0, 16 );
+		$mail->Sender = generate_email_processing_address ( 0, $modargs );
+	} else {
+		$mail->Sender = $supportuser->email;
+	}
+	
+	if (! empty ( $CFG->emailonlyfromnoreplyaddress )) {
+		$usetrueaddress = false;
+		if (empty ( $replyto ) && $from->maildisplay) {
+			$replyto = $from->email;
+			$replytoname = fullname ( $from );
+		}
+	}
+	
+	if (is_string ( $from )) { // So we can pass whatever we want if there is need.
+		$mail->From = $CFG->noreplyaddress;
+		$mail->FromName = $from;
+	} else if ($usetrueaddress and $from->maildisplay) {
+		$mail->From = $from->email;
+		$mail->FromName = fullname ( $from );
+	} else {
+		$mail->From = $CFG->noreplyaddress;
+		$mail->FromName = fullname ( $from );
+		if (empty ( $replyto )) {
+			$tempreplyto [] = array (
+					$CFG->noreplyaddress,
+					get_string ( 'noreplyname' ) 
+			);
+		}
+	}
+	
+	if (! empty ( $replyto )) {
+		$tempreplyto [] = array (
+				$replyto,
+				$replytoname 
+		);
+	}
+	
+	$mail->Subject = substr ( $subject, 0, 900 );
+	
+	$temprecipients [] = array (
+			$user->email,
+			fullname ( $user ) 
+	);
+	
+	// Set word wrap.
+	$mail->WordWrap = $wordwrapwidth;
+	
+	if (! empty ( $from->customheaders )) {
+		// Add custom headers.
+		if (is_array ( $from->customheaders )) {
+			foreach ( $from->customheaders as $customheader ) {
+				$mail->addCustomHeader ( $customheader );
+			}
+		} else {
+			$mail->addCustomHeader ( $from->customheaders );
+		}
+	}
+	
+	if (! empty ( $from->priority )) {
+		$mail->Priority = $from->priority;
+	}
+	
+	if ($messagehtml && ! empty ( $user->mailformat ) && $user->mailformat == 1) {
+		// Don't ever send HTML to users who don't want it.
+		$mail->isHTML ( true );
+		$mail->Encoding = 'quoted-printable';
+		$mail->Body = $messagehtml;
+		$mail->AltBody = "\n$messagetext\n";
+	} else {
+		$mail->IsHTML ( false );
+		$mail->Body = "\n$messagetext\n";
+	}
+	
+	if (!empty($attachment)){
+		foreach ($attachment as $attachfilename => $attachedfile){
+			if (preg_match ( "~\\.\\.~", $attachedfile )) {
+				// Security check for ".." in dir path.
+				$temprecipients [] = array (
+						$supportuser->email,
+						fullname ( $supportuser, true )
+				);
+				$mail->addStringAttachment ( 'Error in attachment.  User attempted to attach a filename with a unsafe name.', 'error.txt', '8bit', 'text/plain' );
+			} else {
+				require_once ($CFG->libdir . '/filelib.php');
+				$mimetype = mimeinfo ( 'type', $attachfilename );
+					
+				$attachmentpath = $attachedfile;
+					
+				// Before doing the comparison, make sure that the paths are correct (Windows uses slashes in the other direction).
+				$attachpath = str_replace ( '\\', '/', $attachmentpath );
+				// Make sure both variables are normalised before comparing.
+				$temppath = str_replace ( '\\', '/', $CFG->tempdir );
+					
+				// If the attachment is a full path to a file in the tempdir, use it as is,
+				// otherwise assume it is a relative path from the dataroot (for backwards compatibility reasons).
+				if (strpos ( $attachpath, $temppath ) !== 0) {
+					$attachmentpath = $CFG->dataroot . '/' . $attachmentpath;
+				}
+					
+				$mail->addAttachment ( $attachmentpath, $attachfilename, 'base64', $mimetype );
+			}
+		}
+	}
 
-    if (empty($user) || empty($user->email)) {
-        $nulluser = 'User is null or has no email';
-        error_log($nulluser);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$nulluser);
-        }
-        return false;
-    }
-
-    if (!empty($user->deleted)) {
-        // do not mail deleted users
-        $userdeleted = 'User is deleted';
-        error_log($userdeleted);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$userdeleted);
-        }
-        return false;
-    }
-
-    if (!empty($CFG->noemailever)) {
-        // hidden setting for development sites, set in config.php if needed
-        $noemail = 'Not sending email due to noemailever config setting';
-        error_log($noemail);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$noemail);
-        }
-        return true;
-    }
-
-    if (!empty($CFG->divertallemailsto)) {
-        $subject = "[DIVERTED {$user->email}] $subject";
-        $user = clone($user);
-        $user->email = $CFG->divertallemailsto;
-    }
-
-    // skip mail to suspended users - all user accounts created by the module are created suspended
-    if ((isset($user->auth) && $user->auth=='nologin') or (isset($user->suspended) && $user->suspended)) {
-        return true;
-    }
-
-    if (!validate_email($user->email)) {
-        // we can not send emails to invalid addresses - it might create security issue or confuse the mailer
-        $invalidemail = "User $user->id (".fullname($user).") email ($user->email) is invalid! Not sending.";
-        error_log($invalidemail);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$invalidemail);
-        }
-        return false;
-    }
-
-    if (over_bounce_threshold($user)) {
-        $bouncemsg = "User $user->id (".fullname($user).") is over bounce threshold! Not sending.";
-        error_log($bouncemsg);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$bouncemsg);
-        }
-        return false;
-    }
-
-    // If the user is a remote mnet user, parse the email text for URL to the
-    // wwwroot and modify the url to direct the user's browser to login at their
-    // home site (identity provider - idp) before hitting the link itself
-    if (is_mnet_remote_user($user)) {
-        require_once($CFG->dirroot.'/mnet/lib.php');
-
-        $jumpurl = mnet_get_idp_jump_url($user);
-        $callback = partial('mnet_sso_apply_indirection', $jumpurl);
-
-        $messagetext = preg_replace_callback("%($CFG->wwwroot[^[:space:]]*)%",
-                $callback,
-                $messagetext);
-        $messagehtml = preg_replace_callback("%href=[\"'`]($CFG->wwwroot[\w_:\?=#&@/;.~-]*)[\"'`]%",
-                $callback,
-                $messagehtml);
-    }
-    $mail = get_mailer();
-
-    if (!empty($mail->SMTPDebug)) {
-        echo '<pre>' . "\n";
-    }
-
-    $temprecipients = array();
-    $tempreplyto = array();
-
-    $supportuser = core_user::get_support_user() ;
-
-    // make up an email address for handling bounces
-    if (!empty($CFG->handlebounces)) {
-        $modargs = 'B'.base64_encode(pack('V',$user->id)).substr(md5($user->email),0,16);
-        $mail->Sender = generate_email_processing_address(0,$modargs);
-    } else {
-        $mail->Sender = $supportuser->email;
-    }
-
-    if (is_string($from)) { // So we can pass whatever we want if there is need
-        $mail->From     = $CFG->noreplyaddress;
-        $mail->FromName = $from;
-    } else if ($usetrueaddress and $from->maildisplay) {
-        $mail->From     = $from->email;
-        $mail->FromName = fullname($from);
-    } else {
-        $mail->From     = $CFG->noreplyaddress;
-        $mail->FromName = fullname($from);
-        if (empty($replyto)) {
-            $tempreplyto[] = array($CFG->noreplyaddress, get_string('noreplyname'));
-        }
-    }
-
-    if (!empty($replyto)) {
-        $tempreplyto[] = array($replyto, $replytoname);
-    }
-
-    $mail->Subject = substr($subject, 0, 900);
-
-    $temprecipients[] = array($user->email, fullname($user));
-
-    $mail->WordWrap = $wordwrapwidth;                   // set word wrap
-
-    if (!empty($from->customheaders)) {                 // Add custom headers
-        if (is_array($from->customheaders)) {
-            foreach ($from->customheaders as $customheader) {
-                $mail->AddCustomHeader($customheader);
-            }
-        } else {
-            $mail->AddCustomHeader($from->customheaders);
-        }
-    }
-
-    if (!empty($from->priority)) {
-        $mail->Priority = $from->priority;
-    }
-
-    if ($messagehtml && !empty($user->mailformat) && $user->mailformat == 1) { // Don't ever send HTML to users who don't want it
-        $mail->IsHTML(true);
-        $mail->Encoding = 'quoted-printable';           // Encoding to use
-        $mail->Body    =  $messagehtml;
-        $mail->AltBody =  "\n$messagetext\n";
-    } else {
-        $mail->IsHTML(false);
-        $mail->Body =  "\n$messagetext\n";
-    }
-
-    foreach ($attachment as $attachname => $attachlocation) {
-        if (preg_match( "~\\.\\.~" ,$attachlocation)) {    // Security check for ".." in dir path
-            $temprecipients[] = array($supportuser->email, fullname($supportuser, true));
-            $mail->AddStringAttachment('Error in attachment.  User attempted to attach a filename with a unsafe name.', 'error.txt', '8bit', 'text/plain');
-        } else {
-            require_once($CFG->libdir.'/filelib.php');
-            $mimetype = mimeinfo('type', $attachname);
-            $mail->AddAttachment($attachlocation, $attachname, 'base64', $mimetype);
-        }
-    }
-
-    // Check if the email should be sent in an other charset then the default UTF-8
-    if ((!empty($CFG->sitemailcharset) || !empty($CFG->allowusermailcharset))) {
-
-        // use the defined site mail charset or eventually the one preferred by the recipient
-        $charset = $CFG->sitemailcharset;
-        if (!empty($CFG->allowusermailcharset)) {
-            if ($useremailcharset = get_user_preferences('mailcharset', '0', $user->id)) {
-                $charset = $useremailcharset;
-            }
-        }
-
-        // convert all the necessary strings if the charset is supported
-        $charsets = get_list_of_charsets();
-        unset($charsets['UTF-8']);
-        if (in_array($charset, $charsets)) {
-            $mail->CharSet  = $charset;
-            $mail->FromName = textlib::convert($mail->FromName, 'utf-8', strtolower($charset));
-            $mail->Subject  = textlib::convert($mail->Subject, 'utf-8', strtolower($charset));
-            $mail->Body     = textlib::convert($mail->Body, 'utf-8', strtolower($charset));
-            $mail->AltBody  = textlib::convert($mail->AltBody, 'utf-8', strtolower($charset));
-
-            foreach ($temprecipients as $key => $values) {
-                $temprecipients[$key][1] = textlib::convert($values[1], 'utf-8', strtolower($charset));
-            }
-            foreach ($tempreplyto as $key => $values) {
-                $tempreplyto[$key][1] = textlib::convert($values[1], 'utf-8', strtolower($charset));
-            }
-        }
-    }
-
-    foreach ($temprecipients as $values) {
-        $mail->AddAddress($values[0], $values[1]);
-    }
-    foreach ($tempreplyto as $values) {
-        $mail->AddReplyTo($values[0], $values[1]);
-    }
-
-    if ($mail->Send()) {
-        set_send_count($user);
-        if (!empty($mail->SMTPDebug)) {
-            echo '</pre>';
-        }
-        return true;
-    } else {
-        add_to_log(SITEID, 'library', 'mailer', qualified_me(), 'ERROR: '. $mail->ErrorInfo);
-        if (CLI_SCRIPT) {
-            mtrace('Error: lib/moodlelib.php email_to_user(): '.$mail->ErrorInfo);
-        }
-        if (!empty($mail->SMTPDebug)) {
-            echo '</pre>';
-        }
-        return false;
-    }
+	
+	// Check if the email should be sent in an other charset then the default UTF-8.
+	if ((! empty ( $CFG->sitemailcharset ) || ! empty ( $CFG->allowusermailcharset ))) {
+		
+		// Use the defined site mail charset or eventually the one preferred by the recipient.
+		$charset = $CFG->sitemailcharset;
+		if (! empty ( $CFG->allowusermailcharset )) {
+			if ($useremailcharset = get_user_preferences ( 'mailcharset', '0', $user->id )) {
+				$charset = $useremailcharset;
+			}
+		}
+		
+		// Convert all the necessary strings if the charset is supported.
+		$charsets = get_list_of_charsets ();
+		unset ( $charsets ['UTF-8'] );
+		if (in_array ( $charset, $charsets )) {
+			$mail->CharSet = $charset;
+			$mail->FromName = core_text::convert ( $mail->FromName, 'utf-8', strtolower ( $charset ) );
+			$mail->Subject = core_text::convert ( $mail->Subject, 'utf-8', strtolower ( $charset ) );
+			$mail->Body = core_text::convert ( $mail->Body, 'utf-8', strtolower ( $charset ) );
+			$mail->AltBody = core_text::convert ( $mail->AltBody, 'utf-8', strtolower ( $charset ) );
+			
+			foreach ( $temprecipients as $key => $values ) {
+				$temprecipients [$key] [1] = core_text::convert ( $values [1], 'utf-8', strtolower ( $charset ) );
+			}
+			foreach ( $tempreplyto as $key => $values ) {
+				$tempreplyto [$key] [1] = core_text::convert ( $values [1], 'utf-8', strtolower ( $charset ) );
+			}
+		}
+	}
+	
+	foreach ( $temprecipients as $values ) {
+		$mail->addAddress ( $values [0], $values [1] );
+	}
+	foreach ( $tempreplyto as $values ) {
+		$mail->addReplyTo ( $values [0], $values [1] );
+	}
+	
+	if ($mail->send ()) {
+		set_send_count ( $user );
+		if (! empty ( $mail->SMTPDebug )) {
+			echo '</pre>';
+		}
+		return true;
+	} else {
+		// Trigger event for failing to send email.
+		$event = \core\event\email_failed::create ( array (
+				'context' => context_system::instance (),
+				'userid' => $from->id,
+				'relateduserid' => $user->id,
+				'other' => array (
+						'subject' => $subject,
+						'message' => $messagetext,
+						'errorinfo' => $mail->ErrorInfo 
+				) 
+		) );
+		$event->trigger ();
+		if (CLI_SCRIPT) {
+			mtrace ( 'Error: lib/moodlelib.php email_to_user(): ' . $mail->ErrorInfo );
+		}
+		if (! empty ( $mail->SMTPDebug )) {
+			echo '</pre>';
+		}
+		return false;
+	}
 }
