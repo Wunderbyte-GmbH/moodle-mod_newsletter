@@ -259,7 +259,6 @@ function newsletter_delete_instance($id) {
     $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter', array('id' => $newsletter->id));
-	//TODO: Log deletion of instance
     return true;
 }
 
@@ -551,8 +550,11 @@ function newsletter_cron() {
 }
 
 /**
+ * given the id of the newsletter, returns all recipients who have an 
+ * acceptable health status
  * 
- * @param unknown $newsletterid
+ * @param integer $newsletterid
+ * @return array of objects indexed by userid
  */
 function newsletter_get_all_valid_recipients($newsletterid) {
     global $DB;
@@ -743,7 +745,6 @@ function newsletter_user_enrolled($user) {
         $newsletter = new newsletter($cm->id);
         $newsletter->subscribe($user->id);
     }
-
     return true;
 }
 
@@ -758,6 +759,11 @@ function newsletter_user_unenrolled($cp) {
     return true;
 }
 
+/**
+ * TODO: remove after new events implemented
+ * @param unknown $user
+ * @return boolean
+ */
 function newsletter_user_created($user) {
     if (($user->username != $user->email || $user->username != $user->lastname) && $user->suspended) { //TODO: implement a better check!
         $user->courseid = 1;

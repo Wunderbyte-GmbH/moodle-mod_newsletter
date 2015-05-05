@@ -1098,7 +1098,8 @@ class newsletter implements renderable {
 
         $user = $DB->get_record('user', array('id'=>$user->id));
         events_trigger('user_created', $user);
-
+		
+        // TODO: subscribe user may be obsolete because event user_created already subscribes the user
         $this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
 
         $cm = $this->get_course_module();
