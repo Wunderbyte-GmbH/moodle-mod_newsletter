@@ -1,4 +1,5 @@
 <?php
+use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -66,8 +67,8 @@ class mod_newsletter_observer {
 	 * @param \core\event\role_assigned $event
 	 */
 	public static function role_assigned(\core\event\role_assigned $event) {
-		global $DB;
-		$user = stdClass;
+		global $CFG;
+		$user = new stdClass();
 		
 		$context = context::instance_by_id($event->contextid, MUST_EXIST);
 
@@ -103,6 +104,9 @@ class mod_newsletter_observer {
 	 */
 	private static function subscribe(stdClass $user){
 		global $DB, $CFG;
+		
+		//needed for constants
+		require_once $CFG->dirroot . '/mod/newsletter/lib.php';
 		
 		$sql = "SELECT n.id, cm.id AS cmid
               FROM {newsletter} n

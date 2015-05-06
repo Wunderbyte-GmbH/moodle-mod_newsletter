@@ -1052,21 +1052,34 @@ class newsletter implements renderable {
     }
 
     /**
-     * TODO write docu
+     * Creates a new user and subscribes the user to the newsletter
      * 
-     * @param unknown $firstname
-     * @param unknown $lastname
-     * @param unknown $email
-     * @return boolean
+     * TODO there are unsufficient checks for creating the user
+     * TODO check if email already exists for another user if yes, then display message to login in order to subscribe
+     * TODO unsufficient checks if user is already subscribed and has status "unsubscribed", in this case 
+     * e-mail confirmation should be required
+     * 
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $email
+     * @return boolean true when confirm mail was successfully sent to user, false when not
      */
     public function subscribe_guest($firstname, $lastname, $email) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/user/profile/lib.php');
-
+		
+        //prevent duplicate email adress
+        $existinguser = get_complete_user_data('email', $email);
+        if(!empty($existinguser)){
+        	
+        	die();
+        }
+        
+        
+        //generate username and if it already exists try to find another username, repeat until new username found
         $cfirstname = preg_replace('/[^a-zA-Z]+/', '', iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname));
         $clastname = preg_replace('/[^a-zA-Z]+/', '', iconv('UTF-8', 'US-ASCII//TRANSLIT', $lastname));
         $username = strtolower(substr($cfirstname, 0, 1) . $clastname);
-
         $i = 0;
         do {
             $newusername = $username . ($i != 0 ? $i : '');
@@ -1097,9 +1110,8 @@ class newsletter implements renderable {
         profile_save_data($user);
 
         $user = $DB->get_record('user', array('id'=>$user->id));
-        events_trigger('user_created', $user);
+        \core\event\user_created::create_from_userid($user->id)->trigger();
 		
-        // TODO: subscribe user may be obsolete because event user_created already subscribes the user
         $this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
 
         $cm = $this->get_course_module();
@@ -1124,7 +1136,6 @@ class newsletter implements renderable {
         if (!email_to_user($user, "newsletter", "Welcome", '', $htmlcontent)) {
             return false;
         }
-
         return true;
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -27,6 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/user/profile/lib.php');;
+
 
 class mod_newsletter_guest_signup_form extends moodleform {
     /**
@@ -73,11 +76,23 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->applyFilter('email', 'trim');
     }
 
-    function validation($data, $files) {
-    	$errors = array();
-        if (!validate_email($data['email'])) {
-            $errors['email'] = get_string('invalidemail');
-        } 
-        return $errors;
+    function validation($usernew, $files) {
+    	global $CFG, $DB;
+    	$err = array();
+    	$usernew = (object)$usernew;
+    	
+    	$user = $DB->get_record('user', array('id' => $usernew->id));
+        if (!$user or $user->email !== $usernew->email) {
+            if (!validate_email($usernew->email)) {
+                $err['email'] = get_string('invalidemail');
+            } else if ($DB->record_exists('user', array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
+                $a = get_string('forgotten');
+            	$err['email'] = get_string('emailexists', 'mod_newsletter', $a);
+            }
+        }
+        
+        // Next the customisable profile fields.
+        $err += profile_validation($usernew, $files);
+        return $err;
     }
 }
