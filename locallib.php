@@ -222,6 +222,10 @@ class newsletter implements renderable {
             $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
             redirect($url);
             break;
+        case NEWSLETTER_ACTION_GUESTSUBSCRIBE:
+        	require_capability('mod/newsletter:viewnewsletter', $this->context);
+        	$output = $this->display_guest_subscribe_form($params);
+        	break;
         default:
             print_error('Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' . $params[NEWSLETTER_PARAM_ACTION]);
             break;
@@ -230,6 +234,43 @@ class newsletter implements renderable {
         return $output;
     }
 
+    
+    private function display_guest_subscribe_form(array $params){
+    	global $PAGE;
+    	 
+    	$output = '';
+    	$renderer = $this->get_renderer();
+    	require_once(dirname(__FILE__).'/guest_signup_form.php');
+    	
+    	$PAGE->requires->js_module($this->get_js_module());
+    	
+    	$output .= $renderer->render(
+    			new newsletter_header(
+    					$this->get_instance(),
+    					$this->get_context(),
+    					false,
+    					$this->get_course_module()->id));
+    	$mform = new mod_newsletter_guest_signup_form(null, array('id' => $this->get_course_module()->id, NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
+    	
+    	if ($mform->is_cancelled()) {
+    		redirect(new moodle_url('view.php',	array('id'=>$this->get_course_module()->id, NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
+    		return;
+    	} else if ($data = $mform->get_data()) {
+    		$this->subscribe_guest($data->firstname, $data->lastname, $data->email);
+    		//TODO Output message if subscription was successful here
+    		$url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
+    		redirect($url);
+    	}
+    	
+    	if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin()) {
+    		$output .= $renderer->render(new newsletter_form($mform, null));
+    	}
+    	
+    	$output .= $renderer->render_footer();
+    	
+    	return $output;
+    	
+    }
     /**
      * Display all newsletter issues in a view. Display action links
      * according to capabilities
@@ -238,17 +279,9 @@ class newsletter implements renderable {
      * @return unknown
      */
     private function view_newsletter(array $params) {
-        $renderer = $this->get_renderer();
-        require_once(dirname(__FILE__).'/guest_signup_form.php');
-        $mform = new mod_newsletter_guest_signup_form(null, array('id' => $this->get_course_module()->id));
+    	global $PAGE, $CFG;
+    	$renderer = $this->get_renderer();
 
-        if ($data = $mform->get_data()) {
-            $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
-            $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
-            redirect($url);
-        }
-
-        global $PAGE, $USER;
         $PAGE->requires->js_module($this->get_js_module());
         $PAGE->requires->js_init_call('M.mod_newsletter.collapse_subscribe_form');
 
@@ -259,36 +292,50 @@ class newsletter implements renderable {
                         $this->get_context(),
                         false,
                         $this->get_course_module()->id));
+        
         $output .= $renderer->render(new newsletter_main_toolbar(
                                 $this->get_course_module()->id,
                                 $params[NEWSLETTER_PARAM_GROUP_BY],
                                 has_capability('mod/newsletter:createissue', $this->context),
                                 has_capability('mod/newsletter:managesubscriptions', $this->context)));
+        
+        if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        	if (!$this->is_subscribed()) {
+        		$url = new moodle_url('/mod/newsletter/view.php',
+        				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+        						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
+        		$text = get_string('subscribe', 'newsletter');
+        		$output .= html_writer::link($url, $text);
+        	} else {
+        		$url = new moodle_url('/mod/newsletter/view.php',
+        				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+        						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
+        		$text = get_string('unsubscribe', 'newsletter');
+        		$output .= html_writer::link($url, $text);
+        	}
+        } else {
+        	$guestsignup_possible = false;
+        	$authplugin = get_auth_plugin('email');
+        	if ($authplugin->can_signup()) {
+        		$guestsignup_possible = true;
+        	}
+        	
+        	if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin() && $guestsignup_possible) {
+        		$url = new moodle_url('/mod/newsletter/view.php',
+        				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+        						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
+        		$text = get_string('subscribe', 'newsletter');
+        		$output .= html_writer::link($url, $text, array( 'class' => 'btn'));
+        	}
+        }
+        
         $issuelist = $this->prepare_issue_list('', $params[NEWSLETTER_PARAM_GROUP_BY]);
         if ($issuelist) {
             $output .= $renderer->render($issuelist);
         } else {
             $output .= '<h2>' . get_string('no_issues', 'newsletter') . '</h2>';
         }
-        if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-            if (!$this->is_subscribed()) {
-                $url = new moodle_url('/mod/newsletter/view.php',
-                                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                                      NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
-                $text = get_string('subscribe', 'newsletter');
-                $output .= html_writer::link($url, $text);
-            } else {
-                $url = new moodle_url('/mod/newsletter/view.php',
-                                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                                      NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
-                $text = get_string('unsubscribe', 'newsletter');
-                $output .= html_writer::link($url, $text);
-            }
-        } else {
-            if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin()) {
-                $output .= $renderer->render(new newsletter_form($mform, null));
-            }
-        }
+
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -1067,14 +1114,15 @@ class newsletter implements renderable {
     public function subscribe_guest($firstname, $lastname, $email) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/user/profile/lib.php');
-		
-        //prevent duplicate email adress
-        $existinguser = get_complete_user_data('email', $email);
-        if(!empty($existinguser)){
-        	
-        	die();
+		    
+        if (empty($CFG->registerauth)) {
+        	print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
         }
+        $authplugin = get_auth_plugin($CFG->registerauth);
         
+        if (!$authplugin->can_signup()) {
+        	print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
+        }
         
         //generate username and if it already exists try to find another username, repeat until new username found
         $cfirstname = preg_replace('/[^a-zA-Z]+/', '', iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname));
@@ -1086,28 +1134,32 @@ class newsletter implements renderable {
             $i++;
             $olduser = get_complete_user_data('username', $newusername);
         } while (!empty($olduser));
-
-        $user = new stdClass();
-        $user->username    = $newusername;
-        $user->email       = $email;
-        $user->firstname   = $firstname;
-        $user->lastname    = $lastname;
-        $user->password    = $password = generate_password();
-        $user->mailformat  = 1;
-        $user->confirmed   = 0;
-        $user->lang        = current_language();
-        $user->firstaccess = time();
-        $user->timecreated = time();
-        $user->mnethostid  = $CFG->mnet_localhost_id;
-        $user->secret      = $secret = random_string(15);
-        $user->auth        = $CFG->registerauth;
-
-        $user->password = hash_internal_user_password($user->password);
-
-        $user->id = $DB->insert_record('user', $user);
-
+		
+        $usercreated = false;
+        
+        $usernew = new stdClass();
+        $usernew->username    = $newusername;
+        $usernew->email       = $email;
+        $usernew->firstname   = $firstname;
+        $usernew->lastname    = $lastname;
+        $usernew->auth = 'email';
+        $usernew->confirmed = 0;
+        $usernew->deleted = 0;
+        $usernew->password    = $password = generate_password();
+        $usernew->mailformat  = 1;
+        $usernew->confirmed   = 0;
+        $usernew->lang        = current_language();
+        $usernew->firstaccess = time();
+        $usernew->timecreated = time();
+        $usernew->timemodified = time();
+        $usernew->secret      = $secret = random_string(15);
+       	$usernew->mnethostid = $CFG->mnet_localhost_id; // Always local user.
+       	$usernew->timecreated = time();
+       	$usernew->password = hash_internal_user_password($user->password);
+       	
+        $usernew->id = user_create_user($usernew, false, false);
         /// Save any custom profile field information
-        profile_save_data($user);
+        // profile_save_data($user);
 
         $user = $DB->get_record('user', array('id'=>$user->id));
         \core\event\user_created::create_from_userid($user->id)->trigger();

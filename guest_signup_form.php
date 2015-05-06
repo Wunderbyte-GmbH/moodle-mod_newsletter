@@ -28,7 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->dirroot . '/user/profile/lib.php');;
+require_once($CFG->dirroot . '/user/profile/lib.php');
+require_once $CFG->dirroot . '/mod/newsletter/lib.php';
+
 
 
 class mod_newsletter_guest_signup_form extends moodleform {
@@ -42,6 +44,9 @@ class mod_newsletter_guest_signup_form extends moodleform {
 
         $mform->addElement('hidden', 'id', $data['id']);
         $mform->setType('id', PARAM_INT);
+        
+        $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
+        $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
         $mform->addElement('header', 'subscribe', get_string('guestsubscribe', 'newsletter'));
 
@@ -66,7 +71,8 @@ class mod_newsletter_guest_signup_form extends moodleform {
         }
         //*/
 
-        $mform->addElement('submit', 'submitbutton', get_string('subscribe', 'newsletter'));
+        //$mform->addElement('submit', 'submitbutton', get_string('subscribe', 'newsletter'));
+        $this->add_action_buttons(true, get_string('subscribe', 'newsletter'));
     }
 
     function definition_after_data(){

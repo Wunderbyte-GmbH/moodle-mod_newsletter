@@ -60,6 +60,7 @@ define('NEWSLETTER_ACTION_DELETE_SUBSCRIPTION', 'deletesubscription');
 define('NEWSLETTER_ACTION_SUBSCRIBE_COHORTS', 'subscribecohorts');
 define('NEWSLETTER_ACTION_SUBSCRIBE', 'subscribe');
 define('NEWSLETTER_ACTION_UNSUBSCRIBE', 'unsubscribe');
+define('NEWSLETTER_ACTION_GUESTSUBSCRIBE', 'guestsubscribe');
 
 define('NEWSLETTER_GROUP_ISSUES_BY_YEAR', 'year');
 define('NEWSLETTER_GROUP_ISSUES_BY_MONTH', 'month');
