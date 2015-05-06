@@ -74,10 +74,10 @@ class mod_newsletter_guest_signup_form extends moodleform {
     }
 
     function validation($data, $files) {
+    	$errors = array();
         if (!validate_email($data['email'])) {
             $errors['email'] = get_string('invalidemail');
-        }
-
+        } 
         return $errors;
     }
 }
