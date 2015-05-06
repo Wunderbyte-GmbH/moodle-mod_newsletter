@@ -233,50 +233,62 @@ class newsletter implements renderable {
 
         return $output;
     }
-
     
-    private function display_guest_subscribe_form(array $params){
-    	global $PAGE;
-    	 
-    	$output = '';
-    	$renderer = $this->get_renderer();
-    	require_once(dirname(__FILE__).'/guest_signup_form.php');
-    	
-    	$PAGE->requires->js_module($this->get_js_module());
-    	
-    	$output .= $renderer->render(
-    			new newsletter_header(
-    					$this->get_instance(),
-    					$this->get_context(),
-    					false,
-    					$this->get_course_module()->id));
-    	$mform = new mod_newsletter_guest_signup_form(null, array('id' => $this->get_course_module()->id, NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
-    	
-    	if ($mform->is_cancelled()) {
-    		redirect(new moodle_url('view.php',	array('id'=>$this->get_course_module()->id, NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
-    		return;
-    	} else if ($data = $mform->get_data()) {
-    		$this->subscribe_guest($data->firstname, $data->lastname, $data->email);
-    		//TODO Output message if subscription was successful here
-    		$url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
-    		redirect($url);
-    	}
-    	
-    	if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin()) {
-    		$output .= $renderer->render(new newsletter_form($mform, null));
-    	}
-    	
-    	$output .= $renderer->render_footer();
-    	
-    	return $output;
-    	
-    }
+    /**
+     * display a subscription form for guest users. requires email auth plugin to be enabled
+     * 
+     * @param array $params url params passed as get variables
+     * @return string html rendered guest subscription
+     */
+	private function display_guest_subscribe_form(array $params) {
+		global $PAGE;
+		$authplugin = get_auth_plugin ( 'email' );
+		if (! $authplugin->can_signup ()) {
+			print_error ( 'notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.' );
+		}
+		
+		$output = '';
+		$renderer = $this->get_renderer ();
+		require_once (dirname ( __FILE__ ) . '/guest_signup_form.php');
+		
+		$PAGE->requires->js_module ( $this->get_js_module () );
+		
+		$output .= $renderer->render ( new newsletter_header ( $this->get_instance (), $this->get_context (), false, $this->get_course_module ()->id ) );
+		$mform = new mod_newsletter_guest_signup_form ( null, array (
+				'id' => $this->get_course_module ()->id,
+				NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE 
+		) );
+		
+		if ($mform->is_cancelled ()) {
+			redirect ( new moodle_url ( 'view.php', array (
+					'id' => $this->get_course_module ()->id,
+					NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
+			) ) );
+			return;
+		} else if ($data = $mform->get_data ()) {
+			$this->subscribe_guest ( $data->firstname, $data->lastname, $data->email );
+			// TODO Output message if subscription was successful here
+			$url = new moodle_url ( '/mod/newsletter/view.php', array (
+					'id' => $this->get_course_module ()->id 
+			) );
+			redirect ( $url );
+		}
+		
+		if ($this->get_config ()->allow_guest_user_subscriptions && ! isloggedin ()) {
+			$output .= $renderer->render ( new newsletter_form ( $mform, null ) );
+		}
+		
+		$output .= $renderer->render_footer ();
+		
+		return $output;
+	}
+	
     /**
      * Display all newsletter issues in a view. Display action links
      * according to capabilities
      * 
      * @param array $params
-     * @return unknown
+     * @return string html
      */
     private function view_newsletter(array $params) {
     	global $PAGE, $CFG;
