@@ -1,5 +1,6 @@
 <?php
 use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
+use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,10 +27,45 @@ use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Event observer for mod_forum.
+ * Event observer for mod_newsletter.
 */
 class mod_newsletter_observer {
 
+	/**
+	 * subscribe user to newsletters
+	 *
+	 * @param integer $userid
+	 * @param integer $courseid
+	 */
+	public static function subscribe($userid,$courseid){
+		global $DB, $CFG;
+	
+		//needed for constants
+		require_once $CFG->dirroot . '/mod/newsletter/lib.php';
+	
+		$sql = "SELECT n.id, cm.id AS cmid
+              FROM {newsletter} n
+              JOIN {course_modules} cm ON cm.instance = n.id
+              JOIN {modules} m ON m.id = cm.module
+         LEFT JOIN {newsletter_subscriptions} ns ON ns.newsletterid = n.id AND ns.userid = :userid
+             WHERE n.course = :courseid
+               AND (n.subscriptionmode = :submode1
+                OR n.subscriptionmode = :submode2)
+               AND m.name = 'newsletter'
+               AND ns.id IS NULL";
+		$params = array('courseid' => $courseid,
+				'userid' => $userid,
+				'submode1' => NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT,
+				'submode2' => NEWSLETTER_SUBSCRIPTION_MODE_FORCED);
+	
+		$newsletters = $DB->get_records_sql($sql, $params);
+		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
+		foreach ($newsletters as $newsletter) {
+			$cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
+			$newsletter = new newsletter($cm->id);
+			$newsletter->subscribe($userid);
+		}
+	}
 	/**
 	 * Triggered via user_created event.
 	 * Subscribes user to newsletter on frontpage
@@ -39,8 +75,7 @@ class mod_newsletter_observer {
 	public static function user_created(\core\event\user_created $event) {
 		global $DB;
 		$user = $event->get_record_snapshot('user', $event->objectid);
-		$user->courseid = 1;
-		self::subscribe($user);
+		self::subscribe($user->id, 1);
 	}
 	
 	/**
@@ -68,7 +103,6 @@ class mod_newsletter_observer {
 	 */
 	public static function role_assigned(\core\event\role_assigned $event) {
 		global $CFG;
-		$user = new stdClass();
 		
 		$context = context::instance_by_id($event->contextid, MUST_EXIST);
 
@@ -77,9 +111,7 @@ class mod_newsletter_observer {
 		if ($context->contextlevel != CONTEXT_COURSE) {
 			return;
 		}
-		$user->id = $event->relateduserid;
-		$user->courseid = $event->courseid;
-	    self::subscribe($user);
+	    self::subscribe($event->relateduserid, $event->courseid);
 	}
 	
 	/**
@@ -97,38 +129,4 @@ class mod_newsletter_observer {
 		$DB->delete_records_select ( 'newsletter_subscriptions', 'userid = :userid', $params );
 	}
 	
-	/**
-	 * subscribe user to newsletters
-	 * 
-	 * @param stdClass $user
-	 */
-	private static function subscribe(stdClass $user){
-		global $DB, $CFG;
-		
-		//needed for constants
-		require_once $CFG->dirroot . '/mod/newsletter/lib.php';
-		
-		$sql = "SELECT n.id, cm.id AS cmid
-              FROM {newsletter} n
-              JOIN {course_modules} cm ON cm.instance = n.id
-              JOIN {modules} m ON m.id = cm.module
-         LEFT JOIN {newsletter_subscriptions} ns ON ns.newsletterid = n.id AND ns.userid = :userid
-             WHERE n.course = :courseid
-               AND (n.subscriptionmode = :submode1
-                OR n.subscriptionmode = :submode2)
-               AND m.name = 'newsletter'
-               AND ns.id IS NULL";
-		$params = array('courseid' => $user->courseid,
-				'userid' => $user->id,
-				'submode1' => NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT,
-				'submode2' => NEWSLETTER_SUBSCRIPTION_MODE_FORCED);
-		
-		$newsletters = $DB->get_records_sql($sql, $params);
-		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
-		foreach ($newsletters as $newsletter) {
-			$cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
-			$newsletter = new newsletter($cm->id);
-			$newsletter->subscribe($user->id);
-		}
-	}
 }

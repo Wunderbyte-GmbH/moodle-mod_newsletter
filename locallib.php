@@ -242,16 +242,15 @@ class newsletter implements renderable {
      */
 	private function display_guest_subscribe_form(array $params) {
 		global $PAGE;
+		$PAGE->requires->js_module($this->get_js_module());
 		$authplugin = get_auth_plugin ( 'email' );
 		if (! $authplugin->can_signup ()) {
 			print_error ( 'notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.' );
 		}
-		
 		$output = '';
 		$renderer = $this->get_renderer ();
+
 		require_once (dirname ( __FILE__ ) . '/guest_signup_form.php');
-		
-		$PAGE->requires->js_module ( $this->get_js_module () );
 		
 		$output .= $renderer->render ( new newsletter_header ( $this->get_instance (), $this->get_context (), false, $this->get_course_module ()->id ) );
 		$mform = new mod_newsletter_guest_signup_form ( null, array (
@@ -267,20 +266,19 @@ class newsletter implements renderable {
 			return;
 		} else if ($data = $mform->get_data ()) {
 			$this->subscribe_guest ( $data->firstname, $data->lastname, $data->email );
-			// TODO Output message if subscription was successful here
+			$a = $data->email;
+			$output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter'), $a);
 			$url = new moodle_url ( '/mod/newsletter/view.php', array (
 					'id' => $this->get_course_module ()->id 
 			) );
-			redirect ( $url );
-		}
-		
-		if ($this->get_config ()->allow_guest_user_subscriptions && ! isloggedin ()) {
+			$output .= html_writer::link($url, get_string('continue'), array ('class' => 'btn mdl-align')) ;
+			return $output;
+		} else if ($this->get_config ()->allow_guest_user_subscriptions && ! isloggedin ()) {
 			$output .= $renderer->render ( new newsletter_form ( $mform, null ) );
+			$output .= $renderer->render_footer ();
+			return $output;
 		}
 		
-		$output .= $renderer->render_footer ();
-		
-		return $output;
 	}
 	
     /**
@@ -293,9 +291,6 @@ class newsletter implements renderable {
     private function view_newsletter(array $params) {
     	global $PAGE, $CFG;
     	$renderer = $this->get_renderer();
-
-        $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_init_call('M.mod_newsletter.collapse_subscribe_form');
 
         $output = '';
         $output .= $renderer->render(
@@ -326,12 +321,12 @@ class newsletter implements renderable {
         		$output .= html_writer::link($url, $text);
         	}
         } else {
-        	$guestsignup_possible = false;
-        	$authplugin = get_auth_plugin('email');
-        	if ($authplugin->can_signup()) {
+
+        	if (!empty($CFG->registerauth) AND is_enabled_auth('email')) {
         		$guestsignup_possible = true;
+        	} else {
+        		$guestsignup_possible = false;
         	}
-        	
         	if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin() && $guestsignup_possible) {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
@@ -1126,6 +1121,7 @@ class newsletter implements renderable {
     public function subscribe_guest($firstname, $lastname, $email) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/user/lib.php');
 		    
         if (empty($CFG->registerauth)) {
         	print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
@@ -1167,13 +1163,13 @@ class newsletter implements renderable {
         $usernew->secret      = $secret = random_string(15);
        	$usernew->mnethostid = $CFG->mnet_localhost_id; // Always local user.
        	$usernew->timecreated = time();
-       	$usernew->password = hash_internal_user_password($user->password);
-       	
+       	$usernew->password = hash_internal_user_password($usernew->password);
+       	$usernew->courseid = $this->get_course()->id;
         $usernew->id = user_create_user($usernew, false, false);
         /// Save any custom profile field information
         // profile_save_data($user);
 
-        $user = $DB->get_record('user', array('id'=>$user->id));
+        $user = $DB->get_record('user', array('id'=>$usernew->id));
         \core\event\user_created::create_from_userid($user->id)->trigger();
 		
         $this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
