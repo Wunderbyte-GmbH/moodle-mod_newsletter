@@ -897,25 +897,26 @@ class newsletter implements renderable {
     }
 
     /**
-     * TODO write docu
+     * Given a stylesheet id return the file as array with id as key
+     * If no id is given, return all stylesheets available in the newsletter instance
      * 
      * @param number $id
-     * @return multitype:stored_file |stored_file|NULL
+     * @return array of stored_file or empty array
      */
     public function get_stylesheets($id = 0) {
         $fs = get_file_storage();
         $context = $this->get_context();
         $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $this->get_instance()->id, 'filename', false);
-        if(!$id) {
+        if($id === 0) {
             return $files;
         } else {
             foreach($files as $file) {
                 if($file->get_id() == $id) {
-                    return $file;
+                    return array ($id => $file);
                 }
             }
         }
-        return null;
+        return array();
     }
 
     /**
