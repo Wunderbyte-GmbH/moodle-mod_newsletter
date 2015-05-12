@@ -385,7 +385,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
 
         $output = '';
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__pager'));
-        $output .= html_writer::start_tag('ul', array('style' => 'list-style-type: none;'));
+        $output .= html_writer::span(get_string('allusers','mod_newsletter') . $pager->totalentries);
+        $output .= html_writer::span(get_string('filteredusers','mod_newsletter') . $pager->totalfiltered);
+        $output .= html_writer::start_tag('ul', array());
         if ($currentfrom != $firstpage) {
             $output .= html_writer::start_tag('li');
             $output .= html_writer::link(new moodle_url($url, array('from' => $firstpage, 'count' => $pager->count)), get_string('page_first', 'newsletter'), array('class' => 'mod_newsletter__pager__link'));
@@ -430,21 +432,6 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('li');
         }
         $output .= html_writer::end_tag('ul');
-        $output .= html_writer::start_tag('form', array('method' => 'GET', 'action' => $url->get_path()));
-        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $url->get_param('id')));
-        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => NEWSLETTER_PARAM_ACTION, 'value' => $url->get_param(NEWSLETTER_PARAM_ACTION)));
-        $output .= html_writer::start_tag('span', array('class' => ''));
-        $output .= get_string('page');
-        $output .= html_writer::select($pager->pages, 'from', $pager->from, false);
-        $output .= html_writer::end_tag('span');
-        $output .= html_writer::start_tag('span', array('class' => ''));
-        $output .= get_string('entries_per_page', 'newsletter');
-        $output .= html_writer::empty_tag('input', array('type' => 'text', 'name' => 'count', 'value' => $pager->count, 'size' => '1'));
-        $output .= html_writer::end_tag('span');
-        $output .= html_writer::start_tag('button', array('type' => 'submit'));
-        $output .= get_string('refresh');
-        $output .= html_writer::end_tag('button');
-        $output .= html_writer::end_tag('form');
         $output .= html_writer::end_tag('div');
         return $output;
     }

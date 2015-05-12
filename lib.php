@@ -100,6 +100,10 @@ define('NEWSLETTER_PARAM_CONFIRM', 'confirm');
 define('NEWSLETTER_PARAM_HASH', 'hash');
 define('NEWSLETTER_PARAM_SUBSCRIPTION', 'sub');
 define('NEWSLETTER_PARAM_DATA', 'data');
+define('NEWSLETTER_PARAM_SEARCH', 'search');
+define('NEWSLETTER_PARAM_STATUS', 'status');
+define('NEWSLETTER_PARAM_RESETBUTTON', 'resetbutton');
+define('NEWSLETTER_PARAM_ORDERBY', 'orderby');
 
 define('NEWSLETTER_CONFIRM_YES', 1);
 define('NEWSLETTER_CONFIRM_NO', 0);
@@ -281,7 +285,7 @@ function newsletter_reset_userdata($data) {
     if ($newsletterids = $DB->get_fieldset_sql($sql, $params)) {
         foreach ($newsletterids as $newsletterid) {
             $cm = get_coursemodule_from_instance('newsletter', $newsletterid, $data->courseid, false, MUST_EXIST);
-            $newsletter = new newsletter($cm->id);
+            $newsletter = new mod_newsletter($cm->id);
             $status = array_merge($status, $newsletter->reset_userdata($data));
         }
     }
@@ -424,7 +428,7 @@ function newsletter_cron() {
         $newsletters = $DB->get_records('newsletter');
         foreach ($newsletters as $newsletter) {
             $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
-            $newsletterobject = new newsletter($coursemodule->id);
+            $newsletterobject = new mod_newsletter($coursemodule->id);
             $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
             foreach ($issues as $issue) {
                 if ($issue->publishon <= time() && !$issue->delivered) {
@@ -445,7 +449,7 @@ function newsletter_cron() {
         $newsletters = $DB->get_records('newsletter');
         foreach ($newsletters as $newsletter) {
             $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
-            $newsletterobject = new newsletter($coursemodule->id);
+            $newsletterobject = new mod_newsletter($coursemodule->id);
             $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
             foreach ($issues as $issue) {
                 if ($issue->publishon <= time() && !$issue->delivered) {

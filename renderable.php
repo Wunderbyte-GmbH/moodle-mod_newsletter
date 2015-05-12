@@ -209,12 +209,16 @@ class newsletter_pager implements renderable {
     var $from;
     var $count;
     var $pages;
-
-    public function __construct(moodle_url $url, $from, $count, array $pages) {
+    var $totalentries;
+    var $totalfiltered;
+    
+    public function __construct(moodle_url $url, $from, $count, array $pages, $totalentries, $totalfiltered) {
         $this->url = $url;
         $this->from = $from;
         $this->count = $count;
         $this->pages = $pages;
+        $this->totalentries = $totalentries;
+        $this->totalfiltered = $totalfiltered;
     }
 }
 

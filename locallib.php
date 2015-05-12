@@ -27,8 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/renderable.php');
 require_once(dirname(__FILE__).'/CssToInlineStyles/CssToInlineStyles.php');
+require_once(dirname(__FILE__).'/classes/subscription_filter_form.php');
 
-class newsletter implements renderable {
+class mod_newsletter implements renderable {
 
     /** @var stdClass the newsletter record that contains the global settings for this newsletter instance */
     private $instance = null;
@@ -51,11 +52,11 @@ class newsletter implements renderable {
 
     public static function get_newsletter_by_instance($instanceid, $eagerload = false) {
         $cm = get_coursemodule_from_instance('newsletter', $instanceid);
-        return new newsletter($cm->id, $eagerload);
+        return new mod_newsletter($cm->id, $eagerload);
     }
 
     public static function get_newsletter_by_course_module($cmid, $eagerload = false) {
-        return new newsletter($cmid, $eagerload);
+        return new mod_newsletter($cmid, $eagerload);
     }
 
     public function __construct($cmid, $eagerload = false) {
@@ -169,6 +170,22 @@ class newsletter implements renderable {
             );
 
         return $jsmodule;
+    }
+    
+    
+    /**
+     * returns an array of localised subscription status names with according
+     * key stored in database column "health"
+     * 
+     * @return array 
+     */
+    public function get_subscription_statuslist(){
+    	return array(
+	    	NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string('health_0','mod_newsletter'),
+	    	NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC => get_string('health_1','mod_newsletter'),
+	    	NEWSLETTER_SUBSCRIBER_STATUS_BLACKLISTED => get_string('health_2','mod_newsletter'),
+	    	NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED => get_string('health_4','mod_newsletter')
+    	);
     }
 
     /**
@@ -484,23 +501,33 @@ class newsletter implements renderable {
      */
     private function view_manage_subscriptions(array $params) {
         global $DB;
-        $allnamefields = user_picture::fields('u',null,'userid');
-        $sql = "SELECT ns.id, ns.health, $allnamefields
-                  FROM {newsletter_subscriptions} ns
-            INNER JOIN {user} u ON ns.userid = u.id
-                 WHERE ns.newsletterid = :newsletterid";
-        $sqlparams = array('newsletterid' => $this->get_instance()->id);
+        
+        $url = new moodle_url('/mod/newsletter/view.php', array(
+        		'id' => $this->get_course_module()->id,
+        		'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+        
+        list($filtersql, $filterparams) = $this->get_filter_sql($params);
+        if ($params['resetbutton'] !== '') {
+        	redirect($url);
+        }
         $from = $params[NEWSLETTER_PARAM_FROM];
         $count = $params[NEWSLETTER_PARAM_COUNT];
-        $subscriptions = $DB->get_records_sql($sql, $sqlparams, $from, $count);
-
+        $subscriptions = $DB->get_records_sql($filtersql, $filterparams, $from, $count);
+        $sqlparams = array('newsletterid' => $this->get_instance()->id);
         $total = $DB->count_records('newsletter_subscriptions', $sqlparams);
-        $pages = $this->calculate_pages($total, $from, $count);
+        list ($countsql, $countparams) = $this->get_filter_sql($params, true);
+        $totalfiltered = $DB->count_records_sql($countsql, $countparams);
+        
+        $pages = $this->calculate_pages($totalfiltered, $from, $count);
 
         $columns = array(NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS);
+        
+        $filterform = new mod_newsletter_subscription_filter_form('view.php', array('newsletter' => $this),
+        'get', '', array('id' => 'filterform'));
+        $filterform->set_data(array('search' => $params['search'], 'status' => $params['status'], 'count' => $params['count'], 'orderby' => $params['orderby']));
 
         $renderer = $this->get_renderer();
         $output = '';
@@ -510,10 +537,10 @@ class newsletter implements renderable {
                                 $this->get_context(),
                                 false,
                                 $this->get_course_module()->id));
-        $url = new moodle_url('/mod/newsletter/view.php',
-                              array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
-        $output .= $renderer->render(new newsletter_pager($url, $from, $count, $pages));
+        $newurl = $url;
+        $newurl->params($params);
+        $output .= $renderer->render(new newsletter_form($filterform));
+        $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
         $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
 
         require_once(dirname(__FILE__).'/subscriptions_admin_form.php');
@@ -533,9 +560,6 @@ class newsletter implements renderable {
             } else {
                 print_error("Wrong submit!");
             }
-            $url = new moodle_url('/mod/newsletter/view.php', array(
-                    'id' => $this->get_course_module()->id,
-                    'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
             redirect($url);
         }
 
@@ -1198,5 +1222,45 @@ class newsletter implements renderable {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * Obtains WHERE clause to filter results by defined search for view managesubscriptions
+     *
+     * @return array Two-element array with SQL and params for WHERE clause
+     */
+    protected function get_filter_sql(array $getparams, $count = false) {
+    	global $DB;
+    	$allnamefields = user_picture::fields('u',null,'userid');
+    	$extrafields = get_extra_user_fields($this->get_context());
+    	if($count) {
+    		$sql = "SELECT COUNT(*)
+    		FROM {newsletter_subscriptions} ns
+    		INNER JOIN {user} u ON ns.userid = u.id
+    		WHERE ns.newsletterid = :newsletterid AND ";
+    	} else {
+    		$sql = "SELECT ns.id, ns.health, $allnamefields
+    		FROM {newsletter_subscriptions} ns
+    		INNER JOIN {user} u ON ns.userid = u.id
+    		WHERE ns.newsletterid = :newsletterid AND ";
+    	}
+
+    	$params = array('newsletterid' => $this->get_instance()->id);
+    	
+    	// Search condition (search for username)
+	    list($usersql, $userparams) = users_search_sql($getparams['search'], 'u', true, $extrafields);
+	    $sql .= $usersql;
+	    $params += $userparams;
+    	
+    	// Status condition.
+    	if($getparams['status'] != 10) {
+    		$sql .= " AND ns.health = :status";
+    		$params += array('status' => $getparams['status']);
+    	} 
+    	if($getparams['orderby'] != ''){
+    		$sql .= " ORDER BY u." . $getparams['orderby']; 
+    	}
+    
+    	return array($sql, $params);
     }
 }

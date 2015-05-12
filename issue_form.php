@@ -46,7 +46,7 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->addElement('hidden', 'issue', $issue ? $issue->id : 0);
         $mform->setType('issue', PARAM_INT);
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_EDIT_ISSUE);
-        $mform->setType('action', PARAM_ACTION);
+        $mform->setType('action', PARAM_ALPHA);
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 

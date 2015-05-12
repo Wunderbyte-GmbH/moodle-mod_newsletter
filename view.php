@@ -29,7 +29,7 @@ require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 
 $id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 
-$newsletter = new newsletter($id);
+$newsletter = new mod_newsletter($id);
 
 $coursemodule = $newsletter->get_course_module();
 $course = $newsletter->get_course();
@@ -49,6 +49,10 @@ $params = array(
     NEWSLETTER_PARAM_SUBSCRIPTION => optional_param(NEWSLETTER_PARAM_SUBSCRIPTION, NEWSLETTER_SUBSCRIPTION_DEFAULT, PARAM_INT),
     NEWSLETTER_PARAM_CONFIRM => optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, PARAM_INT),
     NEWSLETTER_PARAM_USER => optional_param(NEWSLETTER_PARAM_USER, NEWSLETTER_NO_USER, PARAM_INT),
+    NEWSLETTER_PARAM_SEARCH => optional_param(NEWSLETTER_PARAM_SEARCH, '', PARAM_CLEAN),
+    NEWSLETTER_PARAM_STATUS => optional_param(NEWSLETTER_PARAM_STATUS, 10, PARAM_INT),
+	NEWSLETTER_PARAM_RESETBUTTON => optional_param(NEWSLETTER_PARAM_RESETBUTTON, '', PARAM_RAW),
+	NEWSLETTER_PARAM_ORDERBY => optional_param(NEWSLETTER_PARAM_ORDERBY, '', PARAM_ALPHA),
 );
 
 if (get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, false) || $params[NEWSLETTER_PARAM_GROUP_BY] != NEWSLETTER_GROUP_BY_DEFAULT) {

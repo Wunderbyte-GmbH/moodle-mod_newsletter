@@ -29,6 +29,10 @@ global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once(dirname(dirname(dirname(__FILE__))) . '/cohort/lib.php');
 
+/**
+ * Form for subscribing and unsubscribing cohorts to a newsletter
+ * 
+ */
 class mod_newsletter_subscriptions_admin_form extends moodleform {
    /**
      * Defines forms elements
@@ -42,7 +46,7 @@ class mod_newsletter_subscriptions_admin_form extends moodleform {
         $mform->setType('id', PARAM_INT);
 
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
-        $mform->setType('action', PARAM_ACTION);
+        $mform->setType('action', PARAM_ALPHA);
 
         $mform->addElement('header', 'cohort_management', "Cohort management");
 

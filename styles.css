@@ -126,9 +126,44 @@
 /* line 2, sass/partials/components/_pager.scss */
 .mod_newsletter__pager ul {
   list-style-type: none;
+  text-align: center;
 }
 /* line 5, sass/partials/components/_pager.scss */
 .mod_newsletter__pager ul li {
   display: inline;
   padding: 0px 3px 0px 3px;
 }
+#page-mod-newsletter-view #filterform {
+    min-height: 20px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+#page-mod-newsletter-view #filterform div,
+#page-mod-newsletter-view #filterform fieldset {display:inline;float:none;clear:none;width:auto;margin:0;}
+#page-mod-newsletter-view #filterform .fitem {white-space:nowrap;}
+#page-mod-newsletter-view #filterform fieldset > div {display:block;float:left;background:#f2f2f2;padding:8px;}
+#page-mod-newsletter-view #filterform select,
+#page-mod-newsletter-view #filterform .ftext input {width:8em;}
+#page-mod-newsletter-view #filterform #fitem_id_role,
+#page-mod-newsletter-view #filterform #fitem_id_ifilter,
+#page-mod-newsletter-view #filterform #fgroup_id_buttons {margin-left:0.5em;}
+#page-mod-newsletter-view .paging { clear: right; }
+#page-mod-newsletter-view #filterform .fitem {
+    display: inline-block;
+    line-height: 40px;
+    margin-right: 0.3em;
+    white-space: nowrap;
+}
+#page-mod-newsletter-view #filterform .fitem label {
+    display: inline;
+    line-height: 20px;
+    padding-right: 0.3em;
+}
+#page-mod-newsletter-view select, 
+#page-mod-newsletter-view input[type="text"], 
+#page-mod-newsletter-view input, 
+#page-mod-newsletter-view input[type="search"],
+#page-mod-newsletter-view button {
+	margin-bottom: 0px;
+	}

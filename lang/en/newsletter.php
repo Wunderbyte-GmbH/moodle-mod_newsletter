@@ -130,6 +130,10 @@ To proceed to the newsletter, click {$a->newsletterlink}.';
 
 $string['account_already_confirmed'] = 'Your account has already been enabled.
 To proceed to the newsletter, click {$a->newsletterlink}.';
+$string['allusers'] = 'Users (including unsubscribed): ';
+$string['filteredusers'] = 'Filtered users: ';
+
+
 
 $string['unsubscribe_link_text'] = 'Click here to unsubscribe';
 $string['unsubscribe_link'] = '<hr /><p><a href="{$a->link}">{$a->text}</a></p>';

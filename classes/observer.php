@@ -1,6 +1,4 @@
 <?php
-use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
-use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -62,7 +60,7 @@ class mod_newsletter_observer {
 		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
 		foreach ($newsletters as $newsletter) {
 			$cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
-			$newsletter = new newsletter($cm->id);
+			$newsletter = new mod_newsletter($cm->id);
 			$newsletter->subscribe($userid);
 		}
 	}

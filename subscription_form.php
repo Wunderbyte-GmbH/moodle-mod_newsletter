@@ -46,7 +46,7 @@ class mod_newsletter_subscription_form extends moodleform {
         $mform->addElement('hidden', 'subscription', $subscription ? $subscription->id : 0);
         $mform->setType('subscription', PARAM_INT);
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_EDIT_SUBSCRIPTION);
-        $mform->setType('action', PARAM_ACTION);
+        $mform->setType('action', PARAM_ALPHA);
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->addElement('static', 'email', get_string('header_email', 'newsletter'), '');
