@@ -562,7 +562,33 @@ class mod_newsletter implements renderable {
             }
             redirect($url);
         }
-
+        
+        require_once(dirname(__FILE__).'/classes/newsletter_user_subscription.php');
+        $subscriberselector = new mod_newsletter_potential_subscribersU('subsribeusers', array('newsletterid' => $this->get_instance()->id));
+        $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id));
+        
+        if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){
+        	$userstosubscribe = $subscriberselector->get_selected_users();
+        	if (!empty($userstosubscribe)) {
+        		foreach ($userstosubscribe as $user){
+       				$this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
+        		}
+        	}
+        	$subscriberselector->invalidate_selected_users();
+        	$subscribedusers->invalidate_selected_users();
+        }
+        
+        if(optional_param('remove', false, PARAM_BOOL) && confirm_sesskey()){
+        	 $userstoremove = $subscribedusers->get_selected_users();
+        	 if (!empty($userstoremove)) {
+        	 	foreach ($userstoremove as $user){
+        	 		$this->unsubscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
+        	 	}
+        	 }
+        	 $subscriberselector->invalidate_selected_users();
+        	 $subscribedusers->invalidate_selected_users();
+        }
+        
         $output .= $renderer->render(new newsletter_form($mform, null));
         $output .= $renderer->render_footer();
         return $output;
@@ -842,18 +868,26 @@ class mod_newsletter implements renderable {
      * TODO: Check if this is really efficient with a foreach instead of a more sophisticated sql statement
      * @param number $cohortid
      */
-    function subscribe_cohort($cohortid) {
+    function subscribe_cohort($cohortid,boolean $exludesubscribed = true) {
         global $DB;
         $instanceid = $this->get_instance()->id;
-        $sql = "SELECT cm.userid
+        if($exludesubscribed){
+        	$sql = "SELECT cm.userid
                   FROM {cohort_members} cm
-                 WHERE cm.cohortid = :cohortid";
+                 WHERE cm.cohortid = :cohortid";        	
+        } else {
+        	$sql = "SELECT cm.userid
+                FROM {cohort_members} cm
+        		LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = cm.userid AND ns.newsletterid = :newsletterid)
+        		WHERE cm.cohortid = :cohortid";
+        }
+
         $already_subscribed_sql = "SELECT cm.userid AS cmuserid, ns.health
         		FROM {cohort_members} cm
         		JOIN {newsletter_subscriptions} ns ON (cm.userid = ns.userid)
         		WHERE cm.cohortid = :cohortid
-        		AND ns.newsletterid = :instanceid";
-        $params = array('cohortid' => $cohortid, 'instanceid' => $instanceid);
+        		AND ns.newsletterid = :newsletterid";
+        $params = array('cohortid' => $cohortid, 'newsletterid' => $instanceid);
         $subscribed_userids = $DB->get_fieldset_sql($already_subscribed_sql, $params);
         $userids = $DB->get_fieldset_sql($sql, $params);
         foreach ($userids as $userid) {

@@ -104,6 +104,8 @@ define('NEWSLETTER_PARAM_SEARCH', 'search');
 define('NEWSLETTER_PARAM_STATUS', 'status');
 define('NEWSLETTER_PARAM_RESETBUTTON', 'resetbutton');
 define('NEWSLETTER_PARAM_ORDERBY', 'orderby');
+define('NEWSLETTER_PARAM_ADD_SUBSCRIBERS', 'add');
+define('NEWSLETTER_PARAM_REMOVE_SUBSCRIBERS', 'remove');
 
 define('NEWSLETTER_CONFIRM_YES', 1);
 define('NEWSLETTER_CONFIRM_NO', 0);
