@@ -463,6 +463,47 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('span');
         return $output;
     }
+    
+    /**
+     * render subscription form 
+     * @param user_selector_base $existing
+     * @param user_selector_base $potential
+     * @return string
+     */
+    public function render_newsletter_subscriber_selector_form(user_selector_base $existing, user_selector_base $potential) {
+    	$output = '';
+    	$formattributes = array();
+    	$formattributes['id'] = 'subscriberform';
+    	$formattributes['action'] = $this->page->url;
+    	$formattributes['method'] = 'post';
+    	$output .= html_writer::start_tag('form', $formattributes);
+    	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
+    
+    	$existingcell = new html_table_cell();
+    	$existingcell->text = $existing->display(true);
+    	$existingcell->attributes['class'] = 'existing';
+    	$actioncell = new html_table_cell();
+    	$actioncell->text  = html_writer::start_tag('div', array());
+    	$actioncell->text .= html_writer::empty_tag('input', array(
+    			'type' => 'submit',
+    			'name' => 'subscribe',
+    			'value' => $this->output->larrow() . ' ' . get_string('subscribe', 'mod_newsletter'),
+    			'class' => 'actionbutton')
+    	);
+    	$actioncell->text .= html_writer::end_tag('div', array());
+    	$actioncell->attributes['class'] = 'actions';
+    	$potentialcell = new html_table_cell();
+    	$potentialcell->text = $potential->display(true);
+    	$potentialcell->attributes['class'] = 'potential';
+    
+    	$table = new html_table();
+    	$table->attributes['class'] = 'subscribertable boxaligncenter';
+    	$table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
+    	$output .= html_writer::table($table);
+    
+    	$output .= html_writer::end_tag('form');
+    	return $output;
+    }
 }
 
 class mod_newsletter_renderer_ajax extends mod_newsletter_renderer {

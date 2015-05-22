@@ -564,7 +564,7 @@ class mod_newsletter implements renderable {
         }
         
         require_once(dirname(__FILE__).'/classes/newsletter_user_subscription.php');
-        $subscriberselector = new mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
+        $subscriberselector = new mod_newsletter_potential_subscribersU('subsribeusers', array('newsletterid' => $this->get_instance()->id));
         $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id));
         
         if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){
@@ -589,6 +589,7 @@ class mod_newsletter implements renderable {
         	 $subscribedusers->invalidate_selected_users();
         }
         
+        $output .= $renderer->render_newsletter_subscriber_selector_form($subscribedusers,$subscriberselector);
         $output .= $renderer->render(new newsletter_form($mform, null));
         $output .= $renderer->render_footer();
         return $output;
@@ -868,7 +869,7 @@ class mod_newsletter implements renderable {
      * TODO: Check if this is really efficient with a foreach instead of a more sophisticated sql statement
      * @param number $cohortid
      */
-    function subscribe_cohort($cohortid,$exludesubscribed = true) {
+    function subscribe_cohort($cohortid,boolean $exludesubscribed = true) {
         global $DB;
         $instanceid = $this->get_instance()->id;
         if($exludesubscribed){
