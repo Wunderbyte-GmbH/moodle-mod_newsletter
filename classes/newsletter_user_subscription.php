@@ -23,7 +23,6 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 		$options = parent::get_options();
 		$options['file'] = 'mod/newsletter/classes/newsletter_user_subscription.php';
 		$options['newsletterid'] = $this->newsletterid;
-		$options['potentialusers'] = $this->potentialusers;
 		// Add our custom options to the $options array.
 		return $options;
 	}

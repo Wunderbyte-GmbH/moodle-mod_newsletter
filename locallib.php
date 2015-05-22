@@ -869,7 +869,7 @@ class mod_newsletter implements renderable {
      * TODO: Check if this is really efficient with a foreach instead of a more sophisticated sql statement
      * @param number $cohortid
      */
-    function subscribe_cohort($cohortid,boolean $exludesubscribed = true) {
+    function subscribe_cohort($cohortid,$exludesubscribed = true) {
         global $DB;
         $instanceid = $this->get_instance()->id;
         if($exludesubscribed){
