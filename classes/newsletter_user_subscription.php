@@ -5,6 +5,8 @@
  * @copyright 2015 David Bogner
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+require_once($CFG->dirroot . '/user/selector/lib.php');
+
 class mod_newsletter_potential_subscribers extends user_selector_base {
 	protected $newsletterid;
 	
