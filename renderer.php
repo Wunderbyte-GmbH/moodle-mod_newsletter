@@ -477,6 +477,11 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     	$formattributes['action'] = $this->page->url;
     	$formattributes['method'] = 'post';
     	$output .= html_writer::start_tag('form', $formattributes);
+    	$output .= html_writer::start_tag('fieldset', array('class' => 'clearfix collapsible collapsed', 'id' => 'id_mod_newsletter_subscribeusers'));
+    	$output .= html_writer::start_tag('legend', array('class' => 'ftoggler'));
+    	$output .= html_writer::link('#', get_string('newsletter:subscribeuser','mod_newsletter'), array('class' => 'fheader', 'role' => 'button', 'aria-controls' => 'id_mod_newsletter_subscribeusers', 'aria-expanded' => 'false'));
+    	$output .= html_writer::end_tag('legend');
+    	
     	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
     	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => NEWSLETTER_PARAM_ACTION, 'value' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
     	 
@@ -502,6 +507,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     	$table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
     	$output .= html_writer::table($table);
     
+    	$output .= html_writer::end_tag('fieldset');
     	$output .= html_writer::end_tag('form');
     	return $output;
     }
