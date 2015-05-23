@@ -472,6 +472,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
      */
     public function render_newsletter_subscriber_selector_form(user_selector_base $existing, user_selector_base $potential) {
     	$output = '';
+    	$output .= html_writer::start_div('box boxaligncenter');
     	$formattributes = array();
     	$formattributes['id'] = 'subscriberform';
     	$formattributes['action'] = $this->page->url;
@@ -510,6 +511,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     
     	$output .= html_writer::end_tag('fieldset');
     	$output .= html_writer::end_tag('form');
+    	$output .= html_writer::end_div();
     	return $output;
     }
 }
