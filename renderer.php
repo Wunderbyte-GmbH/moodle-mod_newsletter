@@ -476,6 +476,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     	$formattributes['id'] = 'subscriberform';
     	$formattributes['action'] = $this->page->url;
     	$formattributes['method'] = 'post';
+    	$formattributes['class'] = 'mform';
     	$output .= html_writer::start_tag('form', $formattributes);
     	$output .= html_writer::start_tag('fieldset', array('class' => 'clearfix collapsible collapsed', 'id' => 'id_mod_newsletter_subscribeusers'));
     	$output .= html_writer::start_tag('legend', array('class' => 'ftoggler'));
