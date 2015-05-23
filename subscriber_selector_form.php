@@ -61,7 +61,7 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         $actioncell->text .= html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'add',
-        		'value' => $this->output->larrow() . ' ' . get_string('subscribe', 'mod_newsletter'),
+        		'value' => ' ' . get_string('subscribe', 'mod_newsletter'),
         		'class' => 'actionbutton')
         );
         $actioncell->text .= html_writer::end_tag('div', array());
