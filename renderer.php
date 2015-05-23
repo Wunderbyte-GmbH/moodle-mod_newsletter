@@ -478,7 +478,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     	$formattributes['method'] = 'post';
     	$output .= html_writer::start_tag('form', $formattributes);
     	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-    
+    	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => NEWSLETTER_PARAM_ACTION, 'value' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+    	 
     	$existingcell = new html_table_cell();
     	$existingcell->text = $existing->display(true);
     	$existingcell->attributes['class'] = 'existing';
@@ -486,7 +487,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     	$actioncell->text  = html_writer::start_tag('div', array());
     	$actioncell->text .= html_writer::empty_tag('input', array(
     			'type' => 'submit',
-    			'name' => 'subscribe',
+    			'name' => 'add',
     			'value' => $this->output->larrow() . ' ' . get_string('subscribe', 'mod_newsletter'),
     			'class' => 'actionbutton')
     	);
