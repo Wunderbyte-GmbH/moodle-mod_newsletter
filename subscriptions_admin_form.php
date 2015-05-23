@@ -48,7 +48,7 @@ class mod_newsletter_subscriptions_admin_form extends moodleform {
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
         $mform->setType('action', PARAM_ALPHA);
 
-        $mform->addElement('header', 'cohort_management', "Cohort management");
+        $mform->addElement('header', 'cohort_management', get_string('cohortmanagement','mod_newsletter'));
 
         $options = cohort_get_visible_list($data['course']);
 

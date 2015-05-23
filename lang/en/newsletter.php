@@ -174,3 +174,4 @@ $string['subscribercandidatesmatching'] = 'Matching users for ({$a})';
 $string['subscribercandidates'] = 'Potential subscribers';
 $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';
 $string['subscribedusers'] = 'Subscribed users';
+$string['cohortmanagement'] = 'Subscribe/Unsubscribe cohorts';

@@ -567,6 +567,13 @@ class mod_newsletter implements renderable {
         $subscriberselector = new mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
         $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id));
         
+        $subscriber_form = new mod_newsletter_subscriber_selector_form(null, array(
+        		'id' => $this->get_course_module()->id,
+        		'course' => $this->get_course(),
+        		'existing' => $subscribedusers,
+        		'potential' => $subscriberselector
+        ));
+        
         if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){
         	$userstosubscribe = $subscriberselector->get_selected_users();
         	if (!empty($userstosubscribe)) {
@@ -589,7 +596,9 @@ class mod_newsletter implements renderable {
         	 $subscribedusers->invalidate_selected_users();
         }
         
-        $output .= $renderer->render_newsletter_subscriber_selector_form($subscribedusers,$subscriberselector);
+        //$output .= $renderer->render_newsletter_subscriber_selector_form($subscribedusers,$subscriberselector);
+        
+        $output .= $renderer->render(new newsletter_form($subscriber_form, null));
         $output .= $renderer->render(new newsletter_form($mform, null));
         $output .= $renderer->render_footer();
         return $output;
