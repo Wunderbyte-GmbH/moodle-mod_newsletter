@@ -500,7 +500,7 @@ class mod_newsletter implements renderable {
      * @return string rendered html
      */
     private function view_manage_subscriptions(array $params) {
-        global $DB;
+        global $DB, $OUTPUT;
         
         $url = new moodle_url('/mod/newsletter/view.php', array(
         		'id' => $this->get_course_module()->id,
@@ -595,7 +595,7 @@ class mod_newsletter implements renderable {
         		'course' => $this->get_course(),
         		'existing' => $subscribedusers,
         		'potential' => $subscriberselector,
-        		'leftarrow' => $this->output->larrow()
+        		'leftarrow' => $OUTPUT->larrow()
         ));
         
         $output .= $renderer->render(new newsletter_form($subscriber_form, null));
