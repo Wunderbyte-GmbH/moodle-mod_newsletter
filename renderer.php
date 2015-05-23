@@ -463,57 +463,6 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('span');
         return $output;
     }
-    
-    /**
-     * render subscription form 
-     * @param user_selector_base $existing
-     * @param user_selector_base $potential
-     * @return string
-     */
-    public function render_newsletter_subscriber_selector_form(user_selector_base $existing, user_selector_base $potential) {
-    	$output = '';
-    	$output .= html_writer::start_div('box boxaligncenter');
-    	$formattributes = array();
-    	$formattributes['id'] = 'subscriberform';
-    	$formattributes['action'] = $this->page->url;
-    	$formattributes['method'] = 'post';
-    	$formattributes['class'] = 'mform';
-    	$output .= html_writer::start_tag('form', $formattributes);
-    	$output .= html_writer::start_tag('fieldset', array('class' => 'clearfix collapsible collapsed', 'id' => 'id_mod_newsletter_subscribeusers'));
-    	$output .= html_writer::start_tag('legend', array('class' => 'ftoggler'));
-    	$output .= html_writer::link('#', get_string('newsletter:subscribeuser','mod_newsletter'), array('class' => 'fheader', 'role' => 'button', 'aria-controls' => 'id_mod_newsletter_subscribeusers', 'aria-expanded' => 'false'));
-    	$output .= html_writer::end_tag('legend');
-    	
-    	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-    	$output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => NEWSLETTER_PARAM_ACTION, 'value' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
-    	 
-    	$existingcell = new html_table_cell();
-    	$existingcell->text = $existing->display(true);
-    	$existingcell->attributes['class'] = 'existing';
-    	$actioncell = new html_table_cell();
-    	$actioncell->text  = html_writer::start_tag('div', array());
-    	$actioncell->text .= html_writer::empty_tag('input', array(
-    			'type' => 'submit',
-    			'name' => 'add',
-    			'value' => $this->output->larrow() . ' ' . get_string('subscribe', 'mod_newsletter'),
-    			'class' => 'actionbutton')
-    	);
-    	$actioncell->text .= html_writer::end_tag('div', array());
-    	$actioncell->attributes['class'] = 'actions';
-    	$potentialcell = new html_table_cell();
-    	$potentialcell->text = $potential->display(true);
-    	$potentialcell->attributes['class'] = 'potential';
-    
-    	$table = new html_table();
-    	$table->attributes['class'] = 'subscribertable boxaligncenter';
-    	$table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
-    	$output .= html_writer::table($table);
-    
-    	$output .= html_writer::end_tag('fieldset');
-    	$output .= html_writer::end_tag('form');
-    	$output .= html_writer::end_div();
-    	return $output;
-    }
 }
 
 class mod_newsletter_renderer_ajax extends mod_newsletter_renderer {

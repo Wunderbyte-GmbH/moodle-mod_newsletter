@@ -44,15 +44,17 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         
         $existing = $data['existing'];
         $potential = $data['potential'];
+        $leftarrow = $data['leftarrow'];
 
         $mform->addElement('hidden', 'id', $data['id']);
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
-        $mform->setType('action', PARAM_ALPHA);
+        $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
+        $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHA);
 
         $mform->addElement('header', 'subscribe_users', get_string('newsletter:subscribeuser','mod_newsletter'));
-
+		$mform->setExpanded('header', false);
+        
         $existingcell = new html_table_cell();
         $existingcell->text = $existing->display(true);
         $existingcell->attributes['class'] = 'existing';
@@ -61,7 +63,7 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         $actioncell->text .= html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'add',
-        		'value' => ' ' . get_string('subscribe', 'mod_newsletter'),
+        		'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
         		'class' => 'actionbutton')
         );
         $actioncell->text .= html_writer::end_tag('div', array());

@@ -594,9 +594,9 @@ class mod_newsletter implements renderable {
         		'id' => $this->get_course_module()->id,
         		'course' => $this->get_course(),
         		'existing' => $subscribedusers,
-        		'potential' => $subscriberselector
+        		'potential' => $subscriberselector,
+        		'leftarrow' => $this->output->larrow()
         ));
-        //$output .= $renderer->render_newsletter_subscriber_selector_form($subscribedusers,$subscriberselector);
         
         $output .= $renderer->render(new newsletter_form($subscriber_form, null));
         $output .= $renderer->render(new newsletter_form($mform, null));
