@@ -49,7 +49,7 @@ class mod_newsletter_subscriptions_admin_form extends moodleform {
         $mform->setType('action', PARAM_ALPHA);
 
         $mform->addElement('header', 'cohort_management', get_string('cohortmanagement','mod_newsletter'));
-        $mform->setExpanded('header', false);
+        $mform->setExpanded('cohort_management', false);
         
         $options = cohort_get_visible_list($data['course']);
 

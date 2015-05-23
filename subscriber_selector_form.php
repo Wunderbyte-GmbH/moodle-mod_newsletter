@@ -53,7 +53,7 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHA);
 
         $mform->addElement('header', 'subscribe_users', get_string('newsletter:subscribeuser','mod_newsletter'));
-		$mform->setExpanded('header', false);
+		$mform->setExpanded('subscribe_users', false);
         
         $existingcell = new html_table_cell();
         $existingcell->text = $existing->display(true);
