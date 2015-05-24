@@ -541,37 +541,47 @@ class mod_newsletter implements renderable {
         $newurl->params($params);
         $output .= $renderer->render(new newsletter_form($filterform));
         $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
-        $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
-
+        
         require_once(dirname(__FILE__).'/subscriptions_admin_form.php');
         $mform = new mod_newsletter_subscriptions_admin_form(null, array(
-                'id' => $this->get_course_module()->id,
-                'course' => $this->get_course()));
-
+        		'id' => $this->get_course_module()->id,
+        		'course' => $this->get_course()));
+        
         if ($data = $mform->get_data()) {
-            if(isset($data->subscribe)) {
-                foreach ($data->cohorts as $cohortid) {
-                    $this->subscribe_cohort($cohortid);
-                }
-            } else if(isset($data->unsubscribe)) {
-                foreach ($data->cohorts as $cohortid) {
-                    $this->unsubscribe_cohort($cohortid);
-                }
-            } else {
-                print_error("Wrong submit!");
-            }
-            redirect($url);
+        	if(isset($data->subscribe)) {
+        		foreach ($data->cohorts as $cohortid) {
+        			$this->subscribe_cohort($cohortid);
+        		}
+        	} else if(isset($data->unsubscribe)) {
+        		foreach ($data->cohorts as $cohortid) {
+        			$this->unsubscribe_cohort($cohortid);
+        		}
+        	} else {
+        		print_error("Wrong submit!");
+        	}
+        	redirect($url);
         }
         
         require_once(dirname(__FILE__).'/classes/newsletter_user_subscription.php');
         $subscriberselector = new mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
-        $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id));
+        $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this));
         
         if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){
         	$userstosubscribe = $subscriberselector->get_selected_users();
         	if (!empty($userstosubscribe)) {
         		foreach ($userstosubscribe as $user){
-       				$this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
+        			$this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
+        		}
+        	}
+        	$subscriberselector->invalidate_selected_users();
+        	$subscribedusers->invalidate_selected_users();
+        }
+        
+        if(optional_param('unsubscribe', false, PARAM_BOOL) && confirm_sesskey()){
+        	$userstoremove = $subscribedusers->get_selected_users();
+        	if (!empty($userstoremove)) {
+        		foreach ($userstoremove as $user){
+        			$this->unsubscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
         		}
         	}
         	$subscriberselector->invalidate_selected_users();
@@ -579,14 +589,14 @@ class mod_newsletter implements renderable {
         }
         
         if(optional_param('remove', false, PARAM_BOOL) && confirm_sesskey()){
-        	 $userstoremove = $subscribedusers->get_selected_users();
-        	 if (!empty($userstoremove)) {
-        	 	foreach ($userstoremove as $user){
-        	 		$this->unsubscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
-        	 	}
-        	 }
-        	 $subscriberselector->invalidate_selected_users();
-        	 $subscribedusers->invalidate_selected_users();
+        	$userstoremove = $subscribedusers->get_selected_users();
+        	if (!empty($userstoremove)) {
+        		foreach ($userstoremove as $user){
+        			$this->delete_subscription_from_userid($user->id, $this->get_instance()->id);
+        		}
+        	}
+        	$subscriberselector->invalidate_selected_users();
+        	$subscribedusers->invalidate_selected_users();
         }
         
         require_once(dirname(__FILE__).'/subscriber_selector_form.php');
@@ -595,11 +605,14 @@ class mod_newsletter implements renderable {
         		'course' => $this->get_course(),
         		'existing' => $subscribedusers,
         		'potential' => $subscriberselector,
-        		'leftarrow' => $OUTPUT->larrow()
+        		'leftarrow' => $OUTPUT->larrow(),
+        		'rightarrow' => $OUTPUT->rarrow()
         ));
         
         $output .= $renderer->render(new newsletter_form($subscriber_form, null));
         $output .= $renderer->render(new newsletter_form($mform, null));
+        
+        $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -1135,12 +1148,24 @@ class mod_newsletter implements renderable {
     /**
      * given the id of newsletter_subscriptions deletes the subscription completely (including health status)
      * 
-     * @param unknown $subid
+     * @param integer $subid
      * @return boolean
      */
     public function delete_subscription($subid) {
         global $DB;
         return $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
+    }
+    
+    /**
+     * given the id of newsletter and userid deletes the subscription completely (including health status)
+     *
+     * @param integer $userid
+     * @param integer $newsletterid
+     * @return boolean
+     */
+    public function delete_subscription_from_userid($userid, $newsletterid) {
+    	global $DB;
+    	return $DB->delete_records("newsletter_subscriptions", array('newsletterid' => $newsletterid, 'userid' => $userid));
     }
     
 	/**
@@ -1169,7 +1194,6 @@ class mod_newsletter implements renderable {
         if (!$userid) {
             $userid = $USER->id;
         }
-
         return $DB->record_exists_select("newsletter_subscriptions", "userid = :userid AND newsletterid = :newsletterid AND health <> :health",
                                         array("userid" => $userid, "newsletterid" => $this->get_instance()->id, "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED));
     }

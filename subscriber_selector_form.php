@@ -45,7 +45,8 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         $existing = $data['existing'];
         $potential = $data['potential'];
         $leftarrow = $data['leftarrow'];
-
+        $rightarrow = $data['rightarrow'];
+        
         $mform->addElement('hidden', 'id', $data['id']);
         $mform->setType('id', PARAM_INT);
 
@@ -64,6 +65,24 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         		'type' => 'submit',
         		'name' => 'add',
         		'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
+        		'class' => 'actionbutton')
+        );
+        $actioncell->text .= html_writer::end_tag('div', array());
+
+        $actioncell->text .= html_writer::start_tag('div', array());
+        $actioncell->text .= html_writer::empty_tag('input', array(
+        		'type' => 'submit',
+        		'name' => 'unsubscribe',
+        		'value' => ' ' . get_string('unsubscribe', 'mod_newsletter'),
+        		'class' => 'actionbutton')
+        );
+        $actioncell->text .= html_writer::end_tag('div', array()); 
+               
+        $actioncell->text .= html_writer::start_tag('div', array());
+        $actioncell->text .= html_writer::empty_tag('input', array(
+        		'type' => 'submit',
+        		'name' => 'remove',
+        		'value' => get_string('delete') . ' ' . $rightarrow,
         		'class' => 'actionbutton')
         );
         $actioncell->text .= html_writer::end_tag('div', array());

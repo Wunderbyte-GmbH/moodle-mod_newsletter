@@ -81,6 +81,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 
 	public function __construct($name, $options) {
 		$this->newsletterid  = $options['newsletterid'];
+		$this->newsletter 	 = $options['newsletter'];
 		parent::__construct($name, $options);
 	}
 
@@ -134,4 +135,30 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 		$options['file']    = 'mod/newsletter/classes/newsletter_user_subscription.php';
 		return $options;
 	}
+	
+	/**
+	 * Convert a user object to a string suitable for displaying as an option in the list box.
+	 * TODO: optimize performance: instead of checking each user, bulk check all users
+	 * if users are unsubscribed
+	 * 
+	 * @param object $user the user to display.
+	 * @return string a string representation of the user.
+	 */
+	public function output_user($user) {
+		$out = '';
+		//TODO: Bad performance, one sql query per user!!
+		if(!$this->newsletter->is_subscribed($user->id)){
+			$out .= '(!) ';
+		}
+		$out .= fullname($user);
+		if ($this->extrafields) {
+			$displayfields = array();
+			foreach ($this->extrafields as $field) {
+				$displayfields[] = $user->{$field};
+			}
+			$out .= ' (' . implode(', ', $displayfields) . ')';
+		}
+		return $out;
+	}
+	
 }
