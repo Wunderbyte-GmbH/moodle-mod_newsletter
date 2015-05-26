@@ -263,6 +263,7 @@ class newsletter_publish_countdown implements renderable {
         $this->until = $until;
     }
 }
+
 class newsletter_action_button implements renderable {
     var $cmid;
     var $issueid;

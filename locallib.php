@@ -539,8 +539,6 @@ class mod_newsletter implements renderable {
                                 $this->get_course_module()->id));
         $newurl = $url;
         $newurl->params($params);
-        $output .= $renderer->render(new newsletter_form($filterform));
-        $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
         
         require_once(dirname(__FILE__).'/subscriptions_admin_form.php');
         $mform = new mod_newsletter_subscriptions_admin_form(null, array(
@@ -611,7 +609,8 @@ class mod_newsletter implements renderable {
         
         $output .= $renderer->render(new newsletter_form($subscriber_form, null));
         $output .= $renderer->render(new newsletter_form($mform, null));
-        
+        $output .= $renderer->render(new newsletter_form($filterform));
+        $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
         $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
         $output .= $renderer->render_footer();
         return $output;
