@@ -1,5 +1,6 @@
 <?php
 
+use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -49,6 +50,9 @@ class mod_newsletter implements renderable {
 
     /** @var mod_newsletter_renderer the custom renderer for this module */
     private $renderer = null;
+    
+    /** @var integer the subscription id of $USER, if subscribed  */
+    private $subscriptionid = null;
 
     public static function get_newsletter_by_instance($instanceid, $eagerload = false) {
         $cm = get_coursemodule_from_instance('newsletter', $instanceid);
@@ -68,6 +72,7 @@ class mod_newsletter implements renderable {
             $this->instance = $DB->get_record('newsletter', array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
             $this->config = get_config('newsletter');
             $this->renderer = $PAGE->get_renderer('mod_newsletter');
+            $this->subscriptionid = $DB->get_field('newsletter_subscriptions', 'id', array($USER->id,$this->get_instance()->id));
         }
     }
 
@@ -109,6 +114,22 @@ class mod_newsletter implements renderable {
             }
         }
         return $this->instance;
+    }
+    
+    /**
+     * Get subscription id of user if $userid = 0 id of current user is returned
+     *
+     * @param integer userid
+     * @return integer|boolean subscriptionid | false if no subscription is found
+     */
+    public function get_subid($userid = 0) {
+    	global $DB, $USER;
+    	if($userid === 0 && !$this->subscriptionid){
+    		$this->subscriptionid = $DB->get_field('newsletter_subscriptions', 'id', array('userid' => $USER->id, 'newsletterid' => $this->get_instance()->id));
+    		return $this->subscriptionid;
+    	} else {
+    		return $DB->get_field('newsletter_subscriptions', 'id', array('userid' => $userid, 'newsletterid' => $this->get_instance()->id));
+    	}
     }
 
     /**
@@ -233,6 +254,7 @@ class mod_newsletter implements renderable {
             $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
             redirect($url);
             break;
+        // TODO: This might be outdated
         case NEWSLETTER_ACTION_UNSUBSCRIBE:
             require_capability('mod/newsletter:manageownsubscription', $this->context);
             $this->unsubscribe();
@@ -579,7 +601,8 @@ class mod_newsletter implements renderable {
         	$userstoremove = $subscribedusers->get_selected_users();
         	if (!empty($userstoremove)) {
         		foreach ($userstoremove as $user){
-        			$this->unsubscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
+        			$subscriptionid = $DB->get_field('newsletter_subscriptions', 'id', array('userid' => $user-id, $this->get_instance()->id));
+        			$this->unsubscribe($subscriptionid);
         		}
         	}
         	$subscriberselector->invalidate_selected_users();
@@ -916,17 +939,24 @@ class mod_newsletter implements renderable {
             $this->subscribe($userid, false);
         }
     }
-
+    
+    /**
+     * unsubscribes members of a cohort from newsletter
+     * 
+     * @param integer $cohortid
+     */
     function unsubscribe_cohort($cohortid) {
         global $DB;
-        $sql = "SELECT cm.userid
-                  FROM {cohort_members} cm
-                 WHERE cm.cohortid = :cohortid";
-        $params = array('cohortid' => $cohortid);
-        $userids = $DB->get_fieldset_sql($sql, $params);
+        $newsletterid =$this->get_instance()->id;
+        $sql = "SELECT ns.id, ns.userid
+                 FROM {newsletter_subscriptions} ns
+        		 JOIN {cohort_members} cm ON (cm.userid = ns.userid AND ns.newsletterid = :newsletterid)
+                 WHERE cm.cohortid = :cohortid"; 
+        $params = array('cohortid' => $cohortid, 'newsletterid' => $newsletterid);
+        $subids = $DB->get_fieldset_sql($sql, $params);
 
-        foreach ($userids as $userid) {
-            $this->unsubscribe($userid);
+        foreach ($subids as $subid) {
+            $this->unsubscribe($subid);
         }
     }
 
@@ -1110,13 +1140,17 @@ class mod_newsletter implements renderable {
      */
     public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK) {
         global $DB, $USER;
+        $now = time();
 
         if ($userid == 0) {
             $userid = $USER->id;
         }
         if ($sub = $DB->get_record("newsletter_subscriptions", array("userid" => $userid, "newsletterid" => $this->get_instance()->id))) {
             if($sub->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
-                return $DB->set_field('newsletter_subscriptions', 'health', NEWSLETTER_SUBSCRIBER_STATUS_OK, array('userid' => $userid, "newsletterid" => $this->get_instance()->id));
+            	$sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
+            	$sub->timestatuschanged = $now;
+            	$sub->subscriberid = $USER->id;
+            	return $DB->update_record('newsletter_subscriptions', $sub);
             } else {
             	return false;
             }
@@ -1125,6 +1159,9 @@ class mod_newsletter implements renderable {
         	$sub->userid  = $userid;
         	$sub->newsletterid = $this->get_instance()->id;
         	$sub->health = $status;
+        	$sub->timesubscribed = $now;
+        	$sub->timestatuschanged = $now;
+        	$sub->subscriberid = $USER->id;
         	return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);        	
         }
     }
@@ -1136,11 +1173,12 @@ class mod_newsletter implements renderable {
      */
     private function update_subscription(stdClass $data) {
         global $DB;
-
+		
         $subscription = new stdClass();
         $subscription->id = $data->subscription;
         $subscription->health = $data->health;
-
+        $sub->timestatuschanged = time();
+        
         $DB->update_record('newsletter_subscriptions', $subscription);
     }
 
@@ -1168,18 +1206,22 @@ class mod_newsletter implements renderable {
     }
     
 	/**
-	 * set health status to "unsubscribed" for all newsletters a user is subscribed to
+	 * set health status to "unsubscribed" for this instance 
+	 * of the newsletter
 	 * 
-	 * @param number $userid
+	 * @param number $subscriptionid
 	 * @return boolean
 	 */
-    public function unsubscribe($userid = 0) {
+    public function unsubscribe(integer $subid) {
         global $DB, $USER;
 
-        if ($userid == 0) {
-            $userid = $USER->id;
-        }
-        return $DB->set_field('newsletter_subscriptions', 'health', NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED, array('userid' => $userid));
+        $sub = new stdClass();
+        $sub->id = $subid;
+        $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED;
+        $sub->timestatuschanged = time();
+        $sub->unsubscriberid = $USER->id;
+        
+        return $DB->update_record('newsletter_subscriptions', $sub);
     }
 	
     /**

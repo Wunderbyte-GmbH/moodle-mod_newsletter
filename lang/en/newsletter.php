@@ -37,6 +37,13 @@ $string['newsletterintro'] = 'Description';
 $string['stylesheets'] = 'Upload newsletter stylesheets';
 $string['stylesheets_help'] = 'Upload CSS files which will serve as stylesheets for this newsletter\'s issues. You may upload more than one, and you can selected them when creating a new issue. This field is optional, as the module comes with at least one out-of-the-box stylesheet file.';
 
+$string['eventissuecreated'] = 'Newsletter issue created';
+$string['eventsubscriptioncreated'] = 'New newsletter subscription';
+$string['eventsubscriptiondeleted'] = 'Newsletter subscription deleted';
+$string['eventsubscriptionunsubscribed'] = 'Newsletter subscription unsubscribed';
+$string['eventissueviewed'] = 'Newsletter issue viewed';
+$string['eventsubscriptionsviewed'] = 'Newsletter subscriptions viewed';
+
 $string['edit_issue'] = 'Edit this issue';
 $string['delete_issue'] = 'Delete this issue';
 

@@ -70,7 +70,8 @@ if ($newsletter->is_subscribed($user->id)) {
                 new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
         echo $OUTPUT->footer();
     } else if($confirm == NEWSLETTER_CONFIRM_YES) {
-        $newsletter->unsubscribe($user->id);
+    	$subscriptionid = $newsletter->get_subid($user->id);
+        $newsletter->unsubscribe($subscriptionid);
         echo $OUTPUT->header();
         echo $OUTPUT->box(get_string('unsubscription_succesful','newsletter', array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),'mdl-align');
         echo $OUTPUT->continue_button(new moodle_url('/mod/newsletter/view.php', array('id' => $id)));

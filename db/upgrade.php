@@ -97,6 +97,48 @@ function xmldb_newsletter_upgrade($oldversion) {
         // Forum savepoint reached.
         upgrade_mod_savepoint(true, 2015041401, 'newsletter');
     }
+    
+    if ($oldversion < 2015052800) {
+    
+    	// Add field
+    	$table = new xmldb_table('newsletter_subscriptions');
+    	$field = new xmldb_field('timesubscribed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'health');
+    
+    	// Conditionally add field type
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->add_field_type($table, $field);
+    	}
+    	
+    	// Add field
+    	$table = new xmldb_table('newsletter_subscriptions');
+    	$field = new xmldb_field('timestatuschanged', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timesubscribed');
+    	
+    	// Conditionally add field type
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->add_field_type($table, $field);
+    	}
+    	
+    	// Add field
+    	$table = new xmldb_table('newsletter_subscriptions');
+    	$field = new xmldb_field('subscriberid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timestatuschanged');
+    	 
+    	// Conditionally add field type
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->add_field_type($table, $field);
+    	}
+    	
+    	// Add field
+    	$table = new xmldb_table('newsletter_subscriptions');
+    	$field = new xmldb_field('unsubscriberid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'subscriberid');
+    	
+    	// Conditionally add field type
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->add_field_type($table, $field);
+    	}
+    
+    	// Forum savepoint reached.
+    	upgrade_mod_savepoint(true, 2015052800, 'newsletter');
+    }
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
     // related with the module
     // And that's all. Please, examine and understand the 3 example blocks above. Also
