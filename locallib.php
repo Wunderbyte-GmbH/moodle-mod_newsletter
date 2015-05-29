@@ -1210,7 +1210,7 @@ class mod_newsletter implements renderable {
 	 * @param number $subscriptionid
 	 * @return boolean
 	 */
-    public function unsubscribe(integer $subid) {
+    public function unsubscribe($subid) {
         global $DB, $USER;
 
         $sub = new stdClass();
