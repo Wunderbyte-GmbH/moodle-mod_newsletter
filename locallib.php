@@ -599,7 +599,7 @@ class mod_newsletter implements renderable {
         	$userstoremove = $subscribedusers->get_selected_users();
         	if (!empty($userstoremove)) {
         		foreach ($userstoremove as $user){
-        			$subscriptionid = $DB->get_field('newsletter_subscriptions', 'id', array('userid' => $user->id, $this->get_instance()->id));
+        			$subscriptionid = $this->get_subid($user->id);
         			$this->unsubscribe($subscriptionid);
         		}
         	}
