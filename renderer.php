@@ -59,7 +59,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         if ($form->jsinitfunction) {
             $this->page->requires->js_init_call($form->jsinitfunction, array());
         }
-        $output .= $this->output->heading($form->title);
+        //$output .= $this->output->heading($form->title);
         $output .= $this->output->box_start('boxaligncenter ' . $form->classname);
         $output .= $this->moodleform($form->form);
         $output .= $this->output->box_end();

@@ -168,3 +168,7 @@
 	margin-bottom: 0px;
 	}
 .mod_newsletter__pager span { padding-right: 10px;}
+
+#page-mod-newsletter-view #region-main .box .mform fieldset legend {
+	margin: 0;
+}
