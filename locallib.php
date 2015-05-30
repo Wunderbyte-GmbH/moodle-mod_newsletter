@@ -1176,7 +1176,7 @@ class mod_newsletter implements renderable {
         $subscription = new stdClass();
         $subscription->id = $data->subscription;
         $subscription->health = $data->health;
-        $sub->timestatuschanged = time();
+        $subscription->timestatuschanged = time();
         
         $DB->update_record('newsletter_subscriptions', $subscription);
     }
@@ -1347,7 +1347,7 @@ class mod_newsletter implements renderable {
     		INNER JOIN {user} u ON ns.userid = u.id
     		WHERE ns.newsletterid = :newsletterid AND ";
     	} else {
-    		$sql = "SELECT ns.id, ns.health, $allnamefields
+    		$sql = "SELECT ns.id, ns.health, ns.timesubscribed, ns.timestatuschanged, ns.subscriberid, ns.unsubscriberid, $allnamefields
     		FROM {newsletter_subscriptions} ns
     		INNER JOIN {user} u ON ns.userid = u.id
     		WHERE ns.newsletterid = :newsletterid AND ";
