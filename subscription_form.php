@@ -75,9 +75,9 @@ class mod_newsletter_subscription_form extends moodleform {
             $values->email = $user->email;
             $values->name = fullname($user);
             $values->health = $subscription->health;
-            $values->timesubscribed = $subscription->timesubscribed;
-            $values->timestatuschanged = $subscription->timestatuschanged;
-            $values->subscriberid = $subscription->subscriberid;
+            $values->timesubscribed = userdate($subscription->timesubscribed, get_string('strftimedatefullshort'));
+            $values->timestatuschanged = userdate($subscription->timestatuschanged, get_string('strftimedatefullshort'));
+            $values->subscriberid =  fullname($DB->get_record('user', array('id'=>$subscription->subscriberid), '*', MUST_EXIST));
             $values->unsubscriberid = $subscription->unsubscriberid;
             $this->set_data($values);
         }
