@@ -106,25 +106,25 @@ function xmldb_newsletter_upgrade($oldversion) {
     	// Conditionally add field
     	$field = new xmldb_field('timesubscribed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'health');
     	if (!$dbman->field_exists($table, $field)) {
-    		$dbman->add_field_type($table, $field);
+    		$dbman->add_field($table, $field);
     	}
     	
     	// Add field
     	$field = new xmldb_field('timestatuschanged', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timesubscribed');
     	if (!$dbman->field_exists($table, $field)) {
-    		$dbman->add_field_type($table, $field);
+    		$dbman->add_field($table, $field);
     	}
     	
     	// Add field
     	$field = new xmldb_field('subscriberid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timestatuschanged');
     	if (!$dbman->field_exists($table, $field)) {
-    		$dbman->add_field_type($table, $field);
+    		$dbman->add_field($table, $field);
     	}
     	
     	// Add field
     	$field = new xmldb_field('unsubscriberid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'subscriberid');
     	if (!$dbman->field_exists($table, $field)) {
-    		$dbman->add_field_type($table, $field);
+    		$dbman->add_field($table, $field);
     	}
     
     	// Newsletter savepoint reached.
