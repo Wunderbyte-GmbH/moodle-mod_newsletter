@@ -1171,12 +1171,15 @@ class mod_newsletter implements renderable {
      * @param stdClass $data (id and health status)
      */
     private function update_subscription(stdClass $data) {
-        global $DB;
+        global $DB, $USER;
 		
         $subscription = new stdClass();
         $subscription->id = $data->subscription;
         $subscription->health = $data->health;
         $subscription->timestatuschanged = time();
+        if($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED){
+        	$subscription->unsubscriberid = $USER->id;
+        }
         
         $DB->update_record('newsletter_subscriptions', $subscription);
     }

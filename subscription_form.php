@@ -51,8 +51,11 @@ class mod_newsletter_subscription_form extends moodleform {
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->addElement('static', 'email', get_string('header_email', 'newsletter'), '');
         $mform->addElement('static', 'name', get_string('header_name', 'newsletter'), '');
-
-
+        $mform->addElement('static', 'timesubscribed', get_string('header_timesubscribed', 'newsletter'), '');
+        $mform->addElement('static', 'timestatuschanged', get_string('header_timestatuschanged', 'newsletter'), '');
+        $mform->addElement('static', 'subscriberid', get_string('header_subscriberid', 'newsletter'), '');
+        $mform->addElement('static', 'unsubscriberid', get_string('header_unsubscriberid', 'newsletter'), '');
+        
         $options = array(
             NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string("health_0", 'newsletter'),
             NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC => get_string("health_1", 'newsletter'),
@@ -72,6 +75,10 @@ class mod_newsletter_subscription_form extends moodleform {
             $values->email = $user->email;
             $values->name = fullname($user);
             $values->health = $subscription->health;
+            $values->timesubscribed = $subscription->timesubscribed;
+            $values->timestatuschanged = $subscription->timestatuschanged;
+            $values->subscriberid = $subscription->subscriberid;
+            $values->unsubscriberid = $subscription->unsubscriberid;
             $this->set_data($values);
         }
     }

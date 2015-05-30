@@ -86,6 +86,9 @@ $string['header_name'] = 'Name';
 $string['header_health'] = 'Status';
 $string['header_actions'] = 'Actions';
 $string['header_timesubscribed'] = 'Subscription date';
+$string['header_timestatuschanged'] = 'Last status change';
+$string['header_subscriberid'] = 'Subscribed by';
+$string['header_unsubscriberid'] = 'Unsubscribed by';
 
 $string['entries_per_page'] = 'Entries per page';
 $string['create_new_issue'] = 'Create new issue';

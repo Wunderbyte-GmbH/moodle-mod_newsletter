@@ -331,8 +331,6 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                     $content = get_string("health_{$subscription->health}", 'newsletter'); // TODO add health icons
                     break;
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
-                	// Get current day, month and year for current user.
-                	//$date = usergetdate($subscription->timesubscribed);
                 	$content = userdate($subscription->timesubscribed,get_string('strftimedate'));
                    	break;                    
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
