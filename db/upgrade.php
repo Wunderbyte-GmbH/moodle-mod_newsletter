@@ -104,7 +104,7 @@ function xmldb_newsletter_upgrade($oldversion) {
     	$table = new xmldb_table('newsletter_subscriptions');
     
     	// Conditionally add field
-    	$field = new xmldb_field('timesubscribed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'health');
+    	$field = new xmldb_field('timesubscribed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'health');
     	if (!$dbman->field_exists($table, $field)) {
     		$dbman->add_field($table, $field);
     	}
