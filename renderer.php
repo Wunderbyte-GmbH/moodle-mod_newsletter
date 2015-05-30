@@ -331,7 +331,11 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                     $content = get_string("health_{$subscription->health}", 'newsletter'); // TODO add health icons
                     break;
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
-                 	$content = format_time($subscription->timesubscribed);
+                	// Get current day, month and year for current user.
+                	$date = usergetdate($subscription->timesubscribed);
+                	list($d, $m, $y) = array($date['mday'], $date['mon'], $date['year']);
+                	// Print formatted date in user time.
+                	$content = userdate(make_timestamp($y, $m, $d));
                    	break;                    
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
                     $url = new moodle_url('/mod/newsletter/view.php',
