@@ -543,6 +543,7 @@ class mod_newsletter implements renderable {
         $columns = array(NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH,
+                  		 NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS);
         
         $filterform = new mod_newsletter_subscription_filter_form('view.php', array('newsletter' => $this),

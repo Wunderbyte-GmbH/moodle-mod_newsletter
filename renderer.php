@@ -298,6 +298,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
                     $content = get_string('header_health', 'newsletter');
                     break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
+                    $content = get_string('header_timesubscribed', 'newsletter');
+                    break;
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
                     $content = get_string('header_actions', 'newsletter');
                     break;
@@ -327,6 +330,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
                     $content = get_string("health_{$subscription->health}", 'newsletter'); // TODO add health icons
                     break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
+                 	$content = format_time($subscription->timesubscribed);
+                   	break;                    
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS:
                     $url = new moodle_url('/mod/newsletter/view.php',
                             array(NEWSLETTER_PARAM_ID => $list->cmid,

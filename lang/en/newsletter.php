@@ -85,6 +85,7 @@ $string['header_email'] = 'E-Mail';
 $string['header_name'] = 'Name';
 $string['header_health'] = 'Status';
 $string['header_actions'] = 'Actions';
+$string['header_timesubscribed'] = 'Subscription date';
 
 $string['entries_per_page'] = 'Entries per page';
 $string['create_new_issue'] = 'Create new issue';

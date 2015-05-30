@@ -114,6 +114,7 @@ define('NEWSLETTER_CONFIRM_UNKNOWN', -1);
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL', 'col_email');
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME', 'col_name');
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH', 'col_health');
+define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED', 'col_timesubscribed');
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS', 'col_actions');
 
 ////////////////////////////////////////////////////////////////////////////////
