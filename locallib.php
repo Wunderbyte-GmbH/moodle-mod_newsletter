@@ -364,7 +364,7 @@ class mod_newsletter implements renderable {
         	} else {
         		$guestsignup_possible = false;
         	}
-        	if ($this->get_config()->allow_guest_user_subscriptions && !isloggedin() && $guestsignup_possible) {
+        	if ($this->get_config()->allow_guest_user_subscriptions && (!isloggedin() || isguestuser()) && $guestsignup_possible) {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
