@@ -46,7 +46,7 @@ if ($secret && $userid) {
             global $DB;
             $DB->set_field('user', 'confirmed', 1, array('id' => $user->id));
             complete_user_login($user);
-            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)), "Welcome!", 5);
+            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)), get_string('welcometonewsletter','mod_newsletter'), 5);
             // TODO: user/editadvanced.php?id=2
         } else {
             print_error('The link you followed is invalid.');

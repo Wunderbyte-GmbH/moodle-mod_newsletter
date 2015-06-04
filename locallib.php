@@ -252,10 +252,9 @@ class mod_newsletter implements renderable {
             $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
             redirect($url);
             break;
-        // TODO: This might be outdated
         case NEWSLETTER_ACTION_UNSUBSCRIBE:
             require_capability('mod/newsletter:manageownsubscription', $this->context);
-            $this->unsubscribe();
+            $this->unsubscribe($this->get_subid());
             $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
             redirect($url);
             break;
@@ -304,13 +303,13 @@ class mod_newsletter implements renderable {
 		} else if ($data = $mform->get_data ()) {
 			$this->subscribe_guest ( $data->firstname, $data->lastname, $data->email );
 			$a = $data->email;
-			$output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter'), $a);
+			$output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter', $a));
 			$url = new moodle_url ( '/mod/newsletter/view.php', array (
 					'id' => $this->get_course_module ()->id 
 			) );
 			$output .= html_writer::link($url, get_string('continue'), array ('class' => 'btn mdl-align')) ;
 			return $output;
-		} else if ($this->get_config ()->allow_guest_user_subscriptions && ! isloggedin ()) {
+		} else if ($this->get_config ()->allow_guest_user_subscriptions && (!isloggedin () || isguestuser())) {
 			$output .= $renderer->render ( new newsletter_form ( $mform, null ) );
 			$output .= $renderer->render_footer ();
 			return $output;

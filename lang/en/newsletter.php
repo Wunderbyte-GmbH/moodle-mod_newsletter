@@ -187,3 +187,6 @@ $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';
 $string['subscribedusers'] = 'Subscribed users';
 $string['cohortmanagement'] = 'Subscribe/Unsubscribe cohorts';
 $string['cohortsavailable'] = 'Available cohorts';
+$string['welcometonewsletter'] = 'Welcome to the newsletter';
+
+
