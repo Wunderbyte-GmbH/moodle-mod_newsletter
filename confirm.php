@@ -30,14 +30,16 @@ $data = required_param(NEWSLETTER_PARAM_DATA, PARAM_RAW);  // Formatted as:  sec
 $dataelements = explode('-', $data, 2); // Stop after 1st hyphen. Rest is userid.
 $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
+$newsletterid = clean_param($dataelements[2], PARAM_INT);
+
+$cm = get_coursemodule_from_instance('newsletter', $newsletterid);
+$context = context_module::instance($cm->id);
+$PAGE->set_context($context);
 
 if ($secret && $userid) {
     if (!$user = get_complete_user_data('id', $userid)) {
         print_error("Cannot find user!");
     }
-    global $DB;
-    $newsletterid = $DB->get_field('newsletter_subscriptions', 'newsletterid', array('userid' => $userid));
-    $cm = get_coursemodule_from_instance('newsletter', $newsletterid);
     if ($user->confirmed) {
         redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)), "You are already registered and subscribed!", 5);
         // TODO: user/editadvanced.php?id=2

@@ -1312,7 +1312,7 @@ class mod_newsletter implements renderable {
         $cm = $this->get_course_module();
         $newslettername = $DB->get_field('newsletter', 'name', array('id' => $cm->instance));
 
-        $data = "{$secret}-{$user->id}";
+        $data = "{$secret}-{$user->id}-{$cm->instance}";
         $activateurl = new moodle_url('/mod/newsletter/confirm.php', array(NEWSLETTER_PARAM_DATA => $data));
 
         $site = get_site();
