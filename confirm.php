@@ -27,7 +27,7 @@ require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once $CFG->dirroot . '/mod/newsletter/lib.php';
 
 $data = required_param(NEWSLETTER_PARAM_DATA, PARAM_RAW);  // Formatted as:  secret-userid
-$dataelements = explode('-', $data, 2); // Stop after 1st hyphen. Rest is userid.
+$dataelements = explode('-', $data, 3);
 $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
 $newsletterid = clean_param($dataelements[2], PARAM_INT);
