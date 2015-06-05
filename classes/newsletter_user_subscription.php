@@ -78,7 +78,8 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 class mod_newsletter_existing_subscribers extends user_selector_base {
 	protected $courseid;
 	protected $newsletterid;
-
+	protected $newsletter;
+	
 	public function __construct($name, $options) {
 		$this->newsletterid  = $options['newsletterid'];
 		$this->newsletter 	 = $options['newsletter'];
@@ -96,7 +97,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 		list($wherecondition, $params) = $this->search_sql($search, 'u');
 		$params['newsletterid'] = $this->newsletterid;
 
-		$fields      = 'SELECT ' . $this->required_fields_sql('u');
+		$fields      = 'SELECT ' . $this->required_fields_sql('u'). ', ns.health ';
 		$countfields = 'SELECT COUNT(1)';
 
 		$sql = " FROM {user} u
@@ -138,16 +139,14 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 	
 	/**
 	 * Convert a user object to a string suitable for displaying as an option in the list box.
-	 * TODO: optimize performance: instead of checking each user, bulk check all users
-	 * if users are unsubscribed
 	 * 
 	 * @param object $user the user to display.
 	 * @return string a string representation of the user.
 	 */
 	public function output_user($user) {
 		$out = '';
-		//TODO: Bad performance, one sql query per user!!
-		if(!$this->newsletter->is_subscribed($user->id)){
+
+		if($user->health == 4){
 			$out .= '(!) ';
 		}
 		$out .= fullname($user);

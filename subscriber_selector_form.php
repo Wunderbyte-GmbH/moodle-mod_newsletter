@@ -86,6 +86,7 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         		'class' => 'actionbutton')
         );
         $actioncell->text .= html_writer::end_tag('div', array());
+        $actioncell->text .= html_writer::div('<br />' . get_string('unsubscribedinfo','mod_newsletter'));
         $actioncell->attributes['class'] = 'actions';
         $potentialcell = new html_table_cell();
         $potentialcell->text = $potential->display(true);
