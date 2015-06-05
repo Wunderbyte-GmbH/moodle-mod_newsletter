@@ -908,22 +908,15 @@ class mod_newsletter implements renderable {
      * given the cohortid retrieve all userids of the cohort members
      * and subscribe every single user of the cohort to the newsletter
      * 
-     * TODO: Check if this is really efficient with a foreach instead of a more sophisticated sql statement
      * @param number $cohortid
      */
     function subscribe_cohort($cohortid,$exludesubscribed = true) {
         global $DB;
         $instanceid = $this->get_instance()->id;
-        if($exludesubscribed){
-        	$sql = "SELECT cm.userid
+        
+        $sql = "SELECT cm.userid
                   FROM {cohort_members} cm
                  WHERE cm.cohortid = :cohortid";        	
-        } else {
-        	$sql = "SELECT cm.userid
-                FROM {cohort_members} cm
-        		LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = cm.userid AND ns.newsletterid = :newsletterid)
-        		WHERE cm.cohortid = :cohortid";
-        }
 
         $already_subscribed_sql = "SELECT cm.userid AS cmuserid, ns.health
         		FROM {cohort_members} cm
@@ -931,9 +924,14 @@ class mod_newsletter implements renderable {
         		WHERE cm.cohortid = :cohortid
         		AND ns.newsletterid = :newsletterid";
         $params = array('cohortid' => $cohortid, 'newsletterid' => $instanceid);
-        $subscribed_userids = $DB->get_fieldset_sql($already_subscribed_sql, $params);
-        $userids = $DB->get_fieldset_sql($sql, $params);
-        foreach ($userids as $userid) {
+        $cohortusers = $DB->get_fieldset_sql($sql, $params);
+        if($exludesubscribed){
+        	$subscribed_userids = $DB->get_fieldset_sql($already_subscribed_sql, $params);
+        	$users = array_diff($cohortusers, $subscribed_userids);
+        } else {
+        	$users = $cohortusers;
+        }
+        foreach ($users as $userid) {
             $this->subscribe($userid, false);
         }
     }
