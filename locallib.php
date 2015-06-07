@@ -401,15 +401,17 @@ class mod_newsletter implements renderable {
                                 $this->get_next_issue($currentissue),
                                 $this->get_last_issue($currentissue));
         $output .= $renderer->render($navigation_bar);
-
+		
+        //render the html with inline css based on the used stylesheet
+        $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent, 'pluginfile.php', $this->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],  mod_newsletter_issue_form::editor_options($this->get_context(), $params[NEWSLETTER_PARAM_ISSUE]) );
         $currentissue->htmlcontent = $this->inline_css($currentissue->htmlcontent, $currentissue->stylesheetid);
-
+        
         $output .= $renderer->render(new newsletter_issue($currentissue));
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->get_context()->id, 'mod_newsletter', 'attachments', $currentissue->id, "", false);
+        $files = $fs->get_area_files($this->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $currentissue->id, "", false);
         foreach ($files as $file) {
-            $file->link = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->get_context()->id.'/mod_newsletter/attachments/'.$currentissue->id.'/'.$file->get_filename());
+            $file->link = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->get_context()->id.'/mod_newsletter/attachment/'.$currentissue->id.'/'.$file->get_filename());
         }
 
         $output .= $renderer->render(new newsletter_attachment_list($files));
@@ -463,32 +465,63 @@ class mod_newsletter implements renderable {
     }
 
     private function view_edit_issue_page(array $params) {
-        global $CFG;
+        global $CFG, $PAGE;
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             print_error('Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
         }
-
-        $issue = $this->get_issue($params[NEWSLETTER_PARAM_ISSUE]);
-
-        $fs = get_file_storage();
+		
         $context = $this->get_context();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $this->get_instance()->id, 'filename', false);
+        $issue = $this->get_issue($params[NEWSLETTER_PARAM_ISSUE]);
+        $newsletterconfig = $this->get_config();
+        if(is_null($issue)){
+        	$issue = new stdClass();
+        	$issue->htmlcontent = '';
+        	$issue->id = 0;
+        	$issue->title = '';
+        	$issue->publishon = null;
+        	$issue->stylesheetid = NEWSLETTER_DEFAULT_STYLESHEET;
+        }
+        $issue->messageformat = editors_get_preferred_format();
+        $issue->newsletterid = $this->get_instance()->id;
+		
+        
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $this->get_instance()->id, 'filename', false);
         $options = array();
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
         foreach ($files as $file) {
-            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEETS;
+            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
             $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
         }
 
-        global $PAGE;
         $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_init_call('M.mod_newsletter.init_tinymce', array($options, $issue ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
+        $PAGE->requires->js_init_call('M.mod_newsletter.init_tinymce', array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
 
-        require_once(dirname(__FILE__).'/issue_form.php');
+        require_once(dirname(__FILE__).'/classes/issue_form.php');
         $mform = new mod_newsletter_issue_form(null, array(
-                'newsletter' => $this,
-                'issue' => $issue));
-
+        		'newsletter' => $this,
+        		'issue' => $issue,
+        		'context' => $context
+        ));
+        
+        $draftitemid = file_get_submitted_draft_itemid('attachments');
+        file_prepare_draft_area($draftitemid, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, empty($issue->id)?null:$issue->id, mod_newsletter_issue_form::attachment_options($newsletterconfig));
+        
+        $issueid = empty($issue->id) ? null : $issue->id;
+        $draftid_editor = file_get_submitted_draft_itemid('htmlcontent');
+        $currenttext = file_prepare_draft_area($draftid_editor, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issueid, mod_newsletter_issue_form::editor_options($context, $issueid), $issue->htmlcontent);
+		$mform->set_data ( array (
+				'attachments' => $draftitemid,
+				'title' => $issue->title,
+				'htmlcontent' => array (
+						'text' => $currenttext,
+						'format' => empty ( $issue->messageformat ) ? editors_get_preferred_format () : $issue->messageformat,
+						'itemid' => $draftid_editor 
+				),
+				'publishon' => $issue->publishon,
+				'stylesheetid' => $issue->stylesheetid
+		) );
+        		
         if ($data = $mform->get_data()) {
             if (!$data->issue) {
                 $this->add_issue($data);
@@ -852,11 +885,13 @@ class mod_newsletter implements renderable {
 
     private function add_issue(stdClass $data) {
         global $DB;
+        $context = $this->get_context();
+        
         $issue = new stdClass();
         $issue->id = 0;
         $issue->newsletterid = $this->get_instance()->id;
         $issue->title = $data->title;
-        $issue->htmlcontent = $data->htmlcontent['text'];
+        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
         $issue->publishon = $data->publishon;
         $issue->stylesheetid = $data->stylesheetid;
 
@@ -866,10 +901,8 @@ class mod_newsletter implements renderable {
                          'maxbytes' => 0,
                          'maxfiles' => -1);
 
-        $context = $this->get_context();
-
         if ($data && $data->attachments) {
-            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id, $fileoptions);
+            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
         }
 
         return $issue->id;
@@ -877,23 +910,23 @@ class mod_newsletter implements renderable {
 
     private function update_issue(stdClass $data) {
         global $DB;
-
+		
+        $context = $this->get_context();
+        
         $issue = new stdClass();
         $issue->id = $data->issue;
         $issue->title = $data->title;
         $issue->newsletterid = $this->get_instance()->id;
-        $issue->htmlcontent = $data->htmlcontent['text'];
+        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
         $issue->publishon = $data->publishon;
         $issue->stylesheetid = $data->stylesheetid;
-
-        $context = $this->get_context();
 
         $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
                          'maxbytes' => 0,
                          'maxfiles' => -1);
 
         if ($data && $data->attachments) {
-            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id, $fileoptions);
+            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
         }
 
         $DB->update_record('newsletter_issues', $issue);
@@ -1012,7 +1045,7 @@ class mod_newsletter implements renderable {
     public function get_stylesheets($id = 0) {
         $fs = get_file_storage();
         $context = $this->get_context();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $this->get_instance()->id, 'filename', false);
+        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $this->get_instance()->id, 'filename', false);
         if($id === 0) {
             return $files;
         } else {

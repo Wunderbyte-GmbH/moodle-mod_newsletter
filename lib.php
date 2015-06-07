@@ -35,8 +35,9 @@ define('NEWSLETTER_LOCK_SUFFIX', 'lock');
 define('NEWSLETTER_TEMP_DIR', NEWSLETTER_LOCK_DIR);
 define('NEWSLETTER_BASE_STYLESHEET_PATH', 'reset.css');
 
-define('NEWSLETTER_FILE_AREA_STYLESHEETS', 'stylesheets');
-define('NEWSLETTER_FILE_AREA_ATTACHMENTS', 'attachments');
+define('NEWSLETTER_FILE_AREA_STYLESHEET', 'stylesheet');
+define('NEWSLETTER_FILE_AREA_ATTACHMENT', 'attachment');
+define('NEWSLETTER_FILE_AREA_ISSUE', 'issue');
 
 define('NEWSLETTER_FILE_OPTIONS_SUBDIRS', 0);
 
@@ -162,7 +163,7 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
     $context = context_module::instance($newsletter->coursemodule);
 
     if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
+        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
     }
 
     if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
@@ -209,7 +210,7 @@ function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_for
     $context = context_module::instance($cmid->id);
 
     if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id, $fileoptions);
+        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
     }
 
     if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
@@ -251,14 +252,14 @@ function newsletter_delete_instance($id) {
     $context = context_module::instance($cm->id);
 
     $fs = get_file_storage();
-    $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->id);
+    $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id);
     foreach ($files as $f) {
         $file->delete();
     }
 
     $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     foreach ($issues as $issue) {
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id);
+        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id);
         foreach ($files as $f) {
             $file->delete();
         }
@@ -617,7 +618,12 @@ function newsletter_get_extra_capabilities() {
  * @return array of [(string)filearea] => (string)description
  */
 function newsletter_get_file_areas($course, $cm, $context) {
-    return array();
+    return array(
+    		NEWSLETTER_FILE_AREA_ATTACHMENT => 'attachments',
+    		NEWSLETTER_FILE_AREA_STYLESHEET => 'stylesheets',
+    		NEWSLETTER_FILE_AREA_ISSUE => 'htmlcontent of editor',
+    		
+    );
 }
 
 /**
@@ -638,7 +644,73 @@ function newsletter_get_file_areas($course, $cm, $context) {
  * @return file_info instance or null if not found
  */
 function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
-    return null;
+	global $CFG, $DB, $USER;
+	
+	if ($context->contextlevel != CONTEXT_MODULE) {
+		return null;
+	}
+	
+	// filearea must contain a real area
+	if (! isset ( $areas [$filearea] )) {
+		return null;
+	}
+	
+	// Note that newsletter_user_can_see_post() additionally allows access for parent roles
+	// and it explicitly checks qanda newsletter type, too. One day, when we stop requiring
+	// course:managefiles, we will need to extend this.
+	if (! has_capability ( 'mod/newsletter:viewnewsletter', $context )) {
+		return null;
+	}
+	
+	if (is_null ( $itemid )) {
+		require_once ($CFG->dirroot . '/mod/newsletter/locallib.php');
+		return new newsletter_file_info_container ( $browser, $course, $cm, $context, $areas, $filearea );
+	}
+	
+	static $cached = array ();
+	// $cached will store last retrieved post, discussion and newsletter. To make sure that the cache
+	// is cleared between unit tests we check if this is the same session
+	if (! isset ( $cached ['sesskey'] ) || $cached ['sesskey'] != sesskey ()) {
+		$cached = array (
+				'sesskey' => sesskey () 
+		);
+	}
+	
+	if (isset ( $cached ['issue'] ) && $cached ['issue']->id == $itemid) {
+		$issue = $cached ['issue'];
+	} else if ($issue = $DB->get_record ( 'newsletter_issues', array (
+			'id' => $itemid 
+	) )) {
+		$cached ['issue'] = $issue;
+	} else {
+		return null;
+	}
+	
+	if (isset ( $cached ['newsletter'] ) && $cached ['newsletter']->id == $cm->instance) {
+		$newsletter = $cached ['newsletter'];
+	} else if ($newsletter = $DB->get_record ( 'newsletter', array (
+			'id' => $cm->instance 
+	) )) {
+		$cached ['newsletter'] = $newsletter;
+	} else {
+		return null;
+	}
+	
+	$fs = get_file_storage ();
+	$filepath = is_null ( $filepath ) ? '/' : $filepath;
+	$filename = is_null ( $filename ) ? '.' : $filename;
+	if (! ($storedfile = $fs->get_file ( $context->id, 'mod_newsletter', $filearea, $itemid, $filepath, $filename ))) {
+		return null;
+	}
+	
+	// Checks to see if the user can manage files or is the owner.
+	// TODO MDL-33805 - Do not use userid here and move the capability check above.
+	if (! has_capability ( 'moodle/course:managefiles', $context ) && $storedfile->get_userid () != $USER->id) {
+		return null;
+	}
+	
+	$urlbase = $CFG->wwwroot . '/pluginfile.php';
+	return new file_info_stored ( $browser, $context, $storedfile, $urlbase, $itemid, true, true, false, false );
 }
 
 /**
@@ -659,38 +731,36 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
     global $DB, $CFG;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
-        send_file_not_found();
+        return false;
     }
 
-    require_login($course, false, $cm);
+    require_course_login($course, true, $cm);
 
     if (!$newsletter = $DB->get_record('newsletter', array('id' => $cm->instance))) {
         return false;
     }
 
-    $fileareas = array(NEWSLETTER_FILE_AREA_STYLESHEETS, NEWSLETTER_FILE_AREA_ATTACHMENTS);
-    if (!in_array($filearea, $fileareas)) {
+    $fileareas = newsletter_get_file_areas($course, $cm, $context);
+    // filearea must contain a real area
+    if (!isset($fileareas[$filearea])) {
         return false;
     }
 
-    $itemid = (int)array_shift($args);
+    $issueid = (int)array_shift($args);
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEETS) {
-        if ($newsletter->id != $itemid) {
+    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEET) {
+        if ($newsletter->id != $issueid) {
             return false;
         }
-        $fullpath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
-    } else if ($filearea == NEWSLETTER_FILE_AREA_ATTACHMENTS) {
-        if (!$DB->record_exists('newsletter_issues', array('id' => $itemid, 'newsletterid' => $newsletter->id))) {
-            return false;
-        }
-        $fullpath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
+        $fullpath = "/$context->id/mod_newsletter/$filearea/$issueid/$relativepath";
     } else {
-        return false;
-    }
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+        $fullpath = "/$context->id/mod_newsletter/$filearea/$issueid/$relativepath";
+    } 
+    
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory()) {
         return false;
     }
 

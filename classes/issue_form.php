@@ -27,9 +27,47 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->dirroot . '/repository/lib.php');
 
 class mod_newsletter_issue_form extends moodleform {
 
+	/**
+	 * Returns the options array to use in filemanager for newsletter attachments
+	 *
+	 * @param stdClass $newsletter
+	 * @return array
+	 */
+	public static function attachment_options($newsletter) {
+		global $COURSE, $PAGE, $CFG;
+		$maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
+		return array(
+				'subdirs' => 0,
+				'maxbytes' => $maxbytes,
+				'maxfiles' => 10,
+				'accepted_types' => '*',
+				'return_types' => FILE_INTERNAL
+		);
+	}
+	
+	/**
+	 * Returns the options array to use in newsletter text editor
+	 *
+	 * @param context_module $context
+	 * @param int $issued id of newsletter issue, use null when adding new issue
+	 * @return array
+	 */
+	public static function editor_options(context_module $context, $issueid) {
+		global $COURSE, $PAGE, $CFG;
+		$maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
+		return array(
+				'maxfiles' => EDITOR_UNLIMITED_FILES,
+				'maxbytes' => $maxbytes,
+				'trusttext'=> true,
+				'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
+				'subdirs' => file_area_contains_subdirs($context, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issueid)
+		);
+	}
+	
     /**
      * Defines forms elements
      */
@@ -40,6 +78,7 @@ class mod_newsletter_issue_form extends moodleform {
 
         $newsletter = $data['newsletter'];
         $issue = $data['issue'];
+        $context = $data['context'];
 
         $mform->addElement('hidden', 'id', $newsletter->get_course_module()->id);
         $mform->setType('id', PARAM_INT);
@@ -58,12 +97,12 @@ class mod_newsletter_issue_form extends moodleform {
 
         $mform->addElement('header', 'general', get_string('header_content', 'newsletter'));
 
-        $mform->addElement('editor', 'htmlcontent', get_string('issue_htmlcontent', 'newsletter'));
+        $mform->addElement('editor', 'htmlcontent', get_string('issue_htmlcontent', 'newsletter'),null,self::editor_options($context, (empty($issue->id) ? null : $issue->id)));
         $mform->setType('htmlcontent', PARAM_RAW);
-
+        $mform->addRule('htmlcontent', get_string('required'), 'required', null, 'client');
+        
         $fs = get_file_storage();
-        $context = $newsletter->get_context();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $newsletter->get_instance()->id, 'filename', false);
+        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->get_instance()->id, 'filename', false);
         $options = array();
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = get_string('default_stylesheet', 'newsletter');
         foreach ($files as $file) {
@@ -73,8 +112,7 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->addElement('select', 'stylesheetid', get_string('issue_stylesheet', 'newsletter'), $options);
         $mform->setType('stylesheetid', PARAM_INT);
 
-        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'newsletter'),
-                            array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0));
+        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'newsletter'), null, self::attachment_options($newsletter));
         $mform->addHelpButton('attachments', 'attachments', 'newsletter');
 
         $mform->addElement('header', 'general', get_string('header_publish', 'newsletter'));
@@ -83,19 +121,24 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->setType('plaincontent', PARAM_INT);
         $mform->setDefault('publishon', strtotime("+24 hours"));
 
-        $this->add_action_buttons();
-
-        if ($issue) {
-            $values = new stdClass();
-            $values->title = $issue->title;
-            $values->htmlcontent = array('format' => 1, 'text' => $issue->htmlcontent);
-            $values->publishon = $issue->publishon;
-            $values->stylesheetid = $issue->stylesheetid;
-            $draftitemid = file_get_submitted_draft_itemid(NEWSLETTER_FILE_AREA_ATTACHMENTS);
-            file_prepare_draft_area($draftitemid, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENTS, $issue->id,
-                                             array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0, 'maxfiles' => -1));
-            $values->attachments = $draftitemid;
-            $this->set_data($values);
-        }
+        $this->add_action_buttons(false);
+    }
+    
+    /**
+     * Form validation
+     *
+     * @param array $data data from the newsletter.
+     * @param array $files files uploaded.
+     * @return array of errors.
+     */
+    function validation($data, $files) {
+    	$errors = parent::validation($data, $files);
+    	if (empty($data['htmlcontent']['text'])) {
+    		$errors['htmlcontent'] = get_string('erroremptymessage', 'forum');
+    	}
+    	if (empty($data['title'])) {
+    		$errors['title'] = get_string('erroremptysubject', 'forum');
+    	}
+    	return $errors;
     }
 }

@@ -63,8 +63,8 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
 
-        $draftitemid = file_get_submitted_draft_itemid(NEWSLETTER_FILE_AREA_STYLESHEETS);
-        file_prepare_draft_area($draftitemid, $this->context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEETS, $this->current->id,
+        $draftitemid = file_get_submitted_draft_itemid(NEWSLETTER_FILE_AREA_STYLESHEET);
+        file_prepare_draft_area($draftitemid, $this->context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $this->current->id,
                                              array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0, 'maxfiles' => -1));
         $entry = new stdClass();
         $entry->stylesheets = $draftitemid;

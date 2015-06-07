@@ -19,13 +19,13 @@
  * Defines the version of newsletter
  *
  * @package    mod_newsletter
- * @copyright  2013 Ivan Šakić <ivan.sakic3@gmail.com>
+ * @copyright  2015 David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015053000;      // If version == 0 then module will not be installed
+$plugin->version   = 2015060700;      // If version == 0 then module will not be installed
 $plugin->requires  = 2014051200;      // Requires this Moodle version
 $plugin->maturity  = MATURITY_BETA;   // Maturity
 $plugin->release   = '1.0.0';           // Release
