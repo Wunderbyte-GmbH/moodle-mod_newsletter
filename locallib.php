@@ -1107,10 +1107,12 @@ class mod_newsletter implements renderable {
         }
 
         $converter = new CssToInlineStyles();
-        $converter->setHTML($htmlcontent);
+        
+        
+        $converter->setHTML(utf8_decode($htmlcontent));
         $converter->setCSS($css);
         $html = $converter->convert();
-
+        
         if (!$fulldocument) {
         	if (preg_match('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
         		$html = preg_replace('/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', '<div style="$1 $2">$3</div>', $html);
@@ -1124,7 +1126,6 @@ class mod_newsletter implements renderable {
         		$html = '';
         	}
         }
-
         return $html;
     }
 
