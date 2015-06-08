@@ -417,6 +417,17 @@ class mod_newsletter implements renderable {
         $output .= $renderer->render(new newsletter_attachment_list($files));
         $output .= $renderer->render($navigation_bar);
         $output .= $renderer->render_footer();
+        
+        $params = array(
+        		'context' => $this->get_context(),
+        		'objectid' => $params[NEWSLETTER_PARAM_ISSUE],
+        		'other' => array(
+        				'newsletterid' => $this->get_instance()->id,
+        		)
+        );
+        $event = \mod_newsletter\event\issue_viewed::create($params);
+        $event->trigger();
+        
         return $output;
     }
 
@@ -632,8 +643,7 @@ class mod_newsletter implements renderable {
         	$userstoremove = $subscribedusers->get_selected_users();
         	if (!empty($userstoremove)) {
         		foreach ($userstoremove as $user){
-        			$subscriptionid = $this->get_subid($user->id);
-        			$this->unsubscribe($subscriptionid);
+        			$this->unsubscribe($user->subid, $user->id);
         		}
         	}
         	$subscriberselector->invalidate_selected_users();
@@ -644,7 +654,7 @@ class mod_newsletter implements renderable {
         	$userstoremove = $subscribedusers->get_selected_users();
         	if (!empty($userstoremove)) {
         		foreach ($userstoremove as $user){
-        			$this->delete_subscription_from_userid($user->id, $this->get_instance()->id);
+        			$this->delete_subscription($user->subid,$user->id);
         		}
         	}
         	$subscriberselector->invalidate_selected_users();
@@ -667,6 +677,14 @@ class mod_newsletter implements renderable {
         $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
         $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
         $output .= $renderer->render_footer();
+
+        $logparams = array(
+        		'context' => $this->get_context(),
+        		'objectid' => $this->get_instance()->id
+        );
+        $event = \mod_newsletter\event\subscriptions_viewed::create($logparams);
+        $event->trigger();
+        
         return $output;
     }
 
@@ -904,6 +922,16 @@ class mod_newsletter implements renderable {
         if ($data && $data->attachments) {
             file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
         }
+        
+        $params = array(
+        		'context' => $context,
+        		'objectid' => $issue->id,
+        		'other' => array(
+        				'newsletterid' => $issue->newsletterid,
+        		)
+        );
+        $event = \mod_newsletter\event\issue_created::create($params);
+        $event->trigger();
 
         return $issue->id;
     }
@@ -982,10 +1010,10 @@ class mod_newsletter implements renderable {
         		 JOIN {cohort_members} cm ON (cm.userid = ns.userid AND ns.newsletterid = :newsletterid)
                  WHERE cm.cohortid = :cohortid"; 
         $params = array('cohortid' => $cohortid, 'newsletterid' => $newsletterid);
-        $subids = $DB->get_fieldset_sql($sql, $params);
+        $usersubscriptions = $DB->get_records_sql($sql, $params);
 
-        foreach ($subids as $subid) {
-            $this->unsubscribe($subid);
+        foreach ($usersubscriptions as $subscription) {
+            $this->unsubscribe($subscription->id, $subscription->userid);
         }
     }
 
@@ -1191,7 +1219,19 @@ class mod_newsletter implements renderable {
         	$sub->timesubscribed = $now;
         	$sub->timestatuschanged = $now;
         	$sub->subscriberid = $USER->id;
-        	return $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);        	
+        	$result = $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
+        	if ($result){
+        		$params = array(
+        				'context' => $this->get_context(),
+        				'objectid' => $result,
+        				'relateduserid' => $userid,
+        				'other' => array('newsletterid' => $sub->newsletterid),
+        		
+        		);
+        		$event  = \mod_newsletter\event\subscription_created::create($params);
+        		$event->trigger();
+        	}
+        	return $result;
         }
     }
 
@@ -1218,23 +1258,27 @@ class mod_newsletter implements renderable {
      * given the id of newsletter_subscriptions deletes the subscription completely (including health status)
      * 
      * @param integer $subid
+     * @param integer $userid //used only for log data
      * @return boolean
      */
-    public function delete_subscription($subid) {
+    public function delete_subscription($subid, $userid = 0) {
         global $DB;
-        return $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
-    }
-    
-    /**
-     * given the id of newsletter and userid deletes the subscription completely (including health status)
-     *
-     * @param integer $userid
-     * @param integer $newsletterid
-     * @return boolean
-     */
-    public function delete_subscription_from_userid($userid, $newsletterid) {
-    	global $DB;
-    	return $DB->delete_records("newsletter_subscriptions", array('newsletterid' => $newsletterid, 'userid' => $userid));
+        if ($userid == 0) {
+        	$userid = $DB->get_field('newsletter_subscriptions', 'userid', array('id' => $subid));
+        }
+        $result = $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
+        
+        $params = array(
+        		'context' => $this->get_context(),
+        		'objectid' => $subid,
+        		'relateduserid' => $userid,
+        		'other' => array('newsletterid' => $this->get_instance()->id),
+        
+        );
+        $event  = \mod_newsletter\event\subscription_deleted::create($params);
+        $event->trigger();
+        
+        return $result;
     }
     
 	/**
@@ -1242,18 +1286,35 @@ class mod_newsletter implements renderable {
 	 * of the newsletter
 	 * 
 	 * @param number $subscriptionid
+	 * @param number $userid // only used for log data
 	 * @return boolean
 	 */
-    public function unsubscribe($subid) {
+    public function unsubscribe($subid, $userid = 0) {
         global $DB, $USER;
-
+        if ($userid == 0) {
+        	$userid = $DB->get_field('newsletter_subscriptions', 'userid', array('id' => $subid));
+        }
+        
         $sub = new stdClass();
         $sub->id = $subid;
+        $sub->userid = $userid;
         $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED;
         $sub->timestatuschanged = time();
         $sub->unsubscriberid = $USER->id;
         
-        return $DB->update_record('newsletter_subscriptions', $sub);
+        $result = $DB->update_record('newsletter_subscriptions', $sub);
+        
+        $params = array(
+        		'context' => $this->get_context(),
+        		'objectid' => $subid,
+        		'relateduserid' => $userid,
+        		'other' => array('newsletterid' => $this->get_instance()->id),
+        
+        );
+        $event  = \mod_newsletter\event\subscription_unsubscribed::create($params);
+        $event->trigger();
+                
+        return $result;
     }
 	
     /**

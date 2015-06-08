@@ -97,7 +97,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 		list($wherecondition, $params) = $this->search_sql($search, 'u');
 		$params['newsletterid'] = $this->newsletterid;
 
-		$fields      = 'SELECT ' . $this->required_fields_sql('u'). ', ns.health ';
+		$fields      = 'SELECT ' . $this->required_fields_sql('u'). ', ns.health, ns.id as subid ';
 		$countfields = 'SELECT COUNT(1)';
 
 		$sql = " FROM {user} u
