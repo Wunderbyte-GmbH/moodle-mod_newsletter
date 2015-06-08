@@ -910,12 +910,16 @@ class mod_newsletter implements renderable {
         $issue->id = 0;
         $issue->newsletterid = $this->get_instance()->id;
         $issue->title = $data->title;
-        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
+        $issue->htmlcontent = '';
         $issue->publishon = $data->publishon;
         $issue->stylesheetid = $data->stylesheetid;
 
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
-
+        
+        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
+		
+        $DB->set_field('newsletter_issues', 'htmlcontent', $issue->htmlcontent, array ('id' => $issue->id ));
+        
         $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
                          'maxbytes' => 0,
                          'maxfiles' => -1);
