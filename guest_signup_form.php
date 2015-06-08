@@ -21,6 +21,7 @@ use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
  *
  * @package    mod_newsletter
  * @copyright  2013 Ivan Šakić <ivan.sakic3@gmail.com>
+ * @copyright  2015 onwards David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
