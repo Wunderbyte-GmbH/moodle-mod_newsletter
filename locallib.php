@@ -802,8 +802,8 @@ class mod_newsletter implements renderable {
             $dateformat = "%B %Y";
             break;
         case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-            $from = strtotime("Monday this week", $firstissue->publishon);
-            $to = strtotime("Monday next week", $from);
+            $from = strtotime(date('o-\\WW', $firstissue->publishon));
+            $to = strtotime("next monday", $from);
             $dateformat = "Week %W of year %Y";
             $datefromto = "%d. %B %Y";
             break;
@@ -822,7 +822,7 @@ class mod_newsletter implements renderable {
                     $to = strtotime("next month", $from);
                     break;
                 case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-                    $to = strtotime("Monday next week", $from);
+                    $to = strtotime("next monday", $from);
                     break;
                 }
             }
@@ -845,7 +845,7 @@ class mod_newsletter implements renderable {
                         $to = strtotime("next month", $from);
                         break;
                     case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-                        $to = strtotime("Monday next week", $from);
+                        $to = strtotime("next monday", $from);
                         break;
                     }
                 }

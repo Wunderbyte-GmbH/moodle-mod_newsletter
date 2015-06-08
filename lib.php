@@ -490,7 +490,7 @@ function newsletter_cron() {
         }
         $newsletter = $issue->newsletter;
         $fs = get_file_storage();
-        $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter', 'attachments', $issue->id, "", false);
+        $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, "", false);
         $attachments = array();
         foreach ($files as $file) {
             $attachments[$file->get_filename()] = $file->copy_content_to_temp();
@@ -505,6 +505,7 @@ function newsletter_cron() {
             $issue->htmlcontent .= get_string('unsubscribe_link', 'newsletter', $a);
         }
 
+        $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php', $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
 		
