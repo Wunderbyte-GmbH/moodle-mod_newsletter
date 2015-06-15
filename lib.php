@@ -254,18 +254,19 @@ function newsletter_delete_instance($id) {
 
     $fs = get_file_storage();
     $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id);
-    foreach ($files as $f) {
+    foreach ($files as $file) {
         $file->delete();
     }
 
     $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     foreach ($issues as $issue) {
         $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id);
-        foreach ($files as $f) {
+        foreach ($files as $file) {
             $file->delete();
         }
     }
 
+    $DB->delete_records_list('newsletter_bounces','issueid', array_keys($issues));
     $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter', array('id' => $newsletter->id));
@@ -377,7 +378,7 @@ function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $mo
 function newsletter_cron() {
     global $DB, $CFG;
 
-    $config = get_config('newsletter');
+    $config = get_config('mod_newsletter');
 
     $debugoutput = $config->debug;
     if ($debugoutput) {
@@ -452,6 +453,7 @@ function newsletter_cron() {
             echo "Collecting data...\n";
         }
         $newsletters = $DB->get_records('newsletter');
+        $affectednewsletterids = array();
         foreach ($newsletters as $newsletter) {
             $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
             $newsletterobject = new mod_newsletter($coursemodule->id);
@@ -549,9 +551,26 @@ function newsletter_cron() {
             }
         }
         $DB->set_field('newsletter_issues', 'delivered', $completed, array('id' => $issueid));
+        $receiverssql = "SELECT ns.id, ns.sentnewsletters
+        		FROM {newsletter_subscriptions} ns
+        		JOIN {newsletter_issues} ni ON (ns.newsletterid = ni.newsletterid)
+        		WHERE ni.id = :issueid)";
+        $receivers = $DB->get_records_sql($receiverssql, array('issueid' => $issueid));
+        foreach ($receivers as &$receiver){
+        	$receiver->sentnewsletter += 1;
+        	$DB->update_record('newsletter_subscriptions', $receiver,true);
+        }
     }
     if ($debugoutput) {
         echo "Database update complete. Cleaning up...\n";
+    }
+    
+    require_once('classes/bounce/bounceprocessor.php');
+    
+    $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($config);
+    $bounceprocessor->open_mode        = CWSMBH_OPEN_MODE_IMAP;
+    if ($bounceprocessor->openImapRemote()) {
+    	$bounceprocessor->process_bounces();
     }
 
     unlink($tempfilename);
@@ -624,7 +643,6 @@ function newsletter_get_file_areas($course, $cm, $context) {
     		NEWSLETTER_FILE_AREA_ATTACHMENT => 'attachments',
     		NEWSLETTER_FILE_AREA_STYLESHEET => 'stylesheets',
     		NEWSLETTER_FILE_AREA_ISSUE => 'htmlcontent of editor',
-    		
     );
 }
 
