@@ -23,18 +23,19 @@
  * @copyright  2015 onwards David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_newsletter\subscription;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
-require_once(dirname(dirname(dirname(__FILE__))) . '/cohort/lib.php');
+require_once($CFG->dirroot . '/cohort/lib.php');
 
 /**
  * Form for subscribing and unsubscribing cohorts to a newsletter
  * 
  */
-class mod_newsletter_subscriptions_admin_form extends moodleform {
+class mod_newsletter_subscriptions_admin_form extends \moodleform {
    /**
      * Defines forms elements
      */

@@ -80,6 +80,16 @@ $string['config_debug_label'] = 'Cron DEBUG mode';
 $string['config_debug_desc'] = 'Check this box to enable debug output for the newsletter cron job.';
 $string['config_activation_timeout_label'] = 'Expiration time of activation links';
 $string['config_activation_timeout_desc'] = 'Select how many days the activation links sent by e-mail will be valid for.';
+$string['config_bounceprocessing'] = 'Settings for bounce handling: Provide the mailbox login data for the noreply adress specified in the moodle site configuration';
+$string['config_bounceinfo'] = 'Use bounce handling for newsletter only if you can not configure the Moodle VERP bounce settings as described on the following page: https://docs.moodle.org/dev/Email_processing Using the VERP Moodle method can not be used on every system and is quite difficult to setup. This is an easier alternative, but works only for the newsletter module. After saving the settings test them at {$a}';
+$string['config_host'] = 'Mail host server (ex. mail.yourserver.com)';
+$string['config_username'] = 'Mailbox username';
+$string['config_password'] = 'Mailbox password';
+$string['config_service'] = 'The service to use (imap or pop3)';
+$string['config_service_option'] = 'The service options (none, tls, notls, ssl)';
+$string['config_port'] = 'The port to access your mailbox ; default 143, other common choices are 110 (pop3), 995 (gmail)';
+$string['config_bounce_enable'] = 'Enable bounce processing for the newsletter module';
+
 $string['default_stylesheet'] = 'Default stylesheet';
 
 $string['header_email'] = 'E-Mail';

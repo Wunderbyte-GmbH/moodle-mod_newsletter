@@ -5,9 +5,12 @@
  * @copyright 2015 David Bogner
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once($CFG->dirroot . '/user/selector/lib.php');
+namespace mod_newsletter\subscription;
 
-class mod_newsletter_potential_subscribers extends user_selector_base {
+require_once($CFG->dirroot . '/user/selector/lib.php');
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
+
+class mod_newsletter_potential_subscribers extends \user_selector_base {
 	protected $newsletterid;
 	
 	public function __construct($name, $options) {
@@ -21,7 +24,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 	 */
 	protected function get_options() {
 		$options = parent::get_options();
-		$options['file'] = 'mod/newsletter/classes/newsletter_user_subscription.php';
+		$options['file'] = 'mod/newsletter/classes/subscription/newsletter_user_subscription.php';
 		$options['newsletterid'] = $this->newsletterid;
 		// Add our custom options to the $options array.
 		return $options;
@@ -75,7 +78,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 /**
  * Subscribed users.
  */
-class mod_newsletter_existing_subscribers extends user_selector_base {
+class mod_newsletter_existing_subscribers extends \user_selector_base {
 	protected $courseid;
 	protected $newsletterid;
 	protected $newsletter;
@@ -133,7 +136,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 	protected function get_options() {
 		$options = parent::get_options();
 		$options['newsletterid'] = $this->newsletterid;
-		$options['file']    = 'mod/newsletter/classes/newsletter_user_subscription.php';
+		$options['file']    = 'mod/newsletter/classes/subscription/newsletter_user_subscription.php';
 		return $options;
 	}
 	
@@ -146,7 +149,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 	public function output_user($user) {
 		$out = '';
 
-		if($user->health == 4){
+		if($user->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED){
 			$out .= '(!) ';
 		}
 		$out .= fullname($user);

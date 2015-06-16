@@ -22,13 +22,14 @@
  * @copyright  2015 David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_newsletter\subscription;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 
-class mod_newsletter_subscription_filter_form extends moodleform {
+class mod_newsletter_subscription_filter_form extends \moodleform {
 
     /**
      * Defines forms elements

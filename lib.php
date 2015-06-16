@@ -44,7 +44,8 @@ define('NEWSLETTER_FILE_OPTIONS_SUBDIRS', 0);
 
 define('NEWSLETTER_DELIVERY_STATUS_UNKNOWN', 0);
 define('NEWSLETTER_DELIVERY_STATUS_DELIVERED', 1);
-define('NEWSLETTER_DELIVERY_STATUS_FAILED', 2);
+define('NEWSLETTER_DELIVERY_STATUS_INPROGRESS', 2);
+define('NEWSLETTER_DELIVERY_STATUS_FAILED', 3);
 
 define('NEWSLETTER_SUBSCRIBER_STATUS_OK', 0);
 define('NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC', 1);
@@ -382,11 +383,11 @@ function newsletter_cron() {
 
     $debugoutput = $config->debug;
     if ($debugoutput) {
-        echo "\n";
+        mtrace("\n");
     }
-
+   
     if ($debugoutput) {
-        echo "Deleting expired inactive user accounts...\n";
+        mtrace("Deleting expired inactive user accounts...\n");
     }
 
     $query = "SELECT u.id
@@ -403,94 +404,57 @@ function newsletter_cron() {
     }
 
     if ($debugoutput) {
-        echo "Done.\n";
+        mtrace("Done.\n");
     }
 
     require_once('cron_helper.php');
     cron_helper::lock();
 
-    if (!is_dir(NEWSLETTER_TEMP_DIR)) {
-        mkdir(NEWSLETTER_TEMP_DIR, 0777, true);
-    }
-
-    $tempfilename = NEWSLETTER_TEMP_DIR . '/' . NEWSLETTER_CRON_TEMP_FILENAME;
-
-    $continue = file_exists($tempfilename);
-
-    $undeliveredissues = array();
-    $issuestatuses = array();
-
     require_once('locallib.php');
 
     $unsublinks = array();
+	if ($debugoutput) {
+		mtrace("Starting cron job...\n");
+		mtrace("Collecting data...\n");
+	}
 
-    if ($continue) {
-        if ($debugoutput) {
-            echo "Temp file found, continuing cron job...\n";
-            echo "Reading data from temp file...\n";
-        }
-        $issuestatuses = json_decode(file_get_contents($tempfilename), true);
+	$issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) );
+	foreach ( $issues as $issue ) {
+		if ($issue->publishon <= time () && ! $DB->record_exists ( 'newsletter_deliveries', array (
+				'issueid' => $issue->id 
+		) )) {		
+			//populate the deliveries table
+			$recipients = newsletter_get_all_valid_recipients ( $issue->newsletterid );
+			$subscriptionobjects = array();
+			foreach ($recipients as $userid => $recipient) {
+				$sub = new stdClass();
+				$sub->userid = $userid;
+				$sub->issueid = $issue->id;
+				$subscriptionobjects[] = $sub;
+			}
+			$DB->insert_records('newsletter_deliveries', $subscriptionobjects);
+			$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_INPROGRESS, array('id' => $issue->id));
+		} 
+	}
 
-        $newsletters = $DB->get_records('newsletter');
-        foreach ($newsletters as $newsletter) {
-            $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
-            $newsletterobject = new mod_newsletter($coursemodule->id);
-            $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
-            foreach ($issues as $issue) {
-                if ($issue->publishon <= time() && !$issue->delivered) {
-                    $issue->newsletter = $newsletterobject;
-                    $undeliveredissues[$issue->id] = $issue;
-                }
-            }
-            if ($newsletter->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-                $url = new moodle_url('/mod/newsletter/subscribe.php', array('id' => $newsletterobject->get_course_module()->id));
-                $unsublinks[$newsletterobject->get_instance()->id] = $url;
-            }
-        }
-    } else {
-        if ($debugoutput) {
-            echo "Starting cron job...\n";
-            echo "Collecting data...\n";
-        }
-        $newsletters = $DB->get_records('newsletter');
-        $affectednewsletterids = array();
-        foreach ($newsletters as $newsletter) {
-            $coursemodule = get_coursemodule_from_instance('newsletter', $newsletter->id, 0, false, MUST_EXIST);
-            $newsletterobject = new mod_newsletter($coursemodule->id);
-            $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
-            foreach ($issues as $issue) {
-                if ($issue->publishon <= time() && !$issue->delivered) {
-                    $issue->newsletter = $newsletterobject;
-                    $undeliveredissues[$issue->id] = $issue;
-                    if ($issue->status) {
-                        $issuestatuses[$issue->id] = json_decode($issue->status, true);
-                    } else {
-                        $issuestatuses[$issue->id] = array();
-                        $recipients = newsletter_get_all_valid_recipients($newsletter->id);
-                        foreach ($recipients as $recipient) {
-                            $issuestatuses[$issue->id][$recipient->userid] = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
-                        }
-                        $DB->set_field('newsletter_issues', 'status', json_encode($issuestatuses[$issue->id]), array('id' => $issue->id));
-                    }
-                }
-            }
-            if ($newsletter->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-                $url = new moodle_url('/mod/newsletter/subscribe.php', array('id' => $newsletterobject->get_course_module()->id));
-                $unsublinks[$newsletterobject->get_instance()->id] = $url;
-            }
-        }
-        file_put_contents($tempfilename, json_encode($issuestatuses));
-    }
 
     if ($debugoutput) {
-        echo "Data collection complete. Delivering...\n";
+        mtrace("Data collection complete. Delivering...\n");
     }
     require_once('locallib.php');
-    foreach ($undeliveredissues as $issueid => $issue) {
+    $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS) );
+    foreach ($issuestodeliver as $issueid => $issue) {
+    	$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
+    	$newsletter = new mod_newsletter ( $coursemodule->id );
+    	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+    		$url = new moodle_url ( '/mod/newsletter/subscribe.php', array (
+    				'id' => $newsletter->get_course_module ()->id
+    		) );
+    		$unsublinks [$newsletter->get_instance ()->id] = $url;
+    	}
         if ($debugoutput) {
-            echo "Processing newsletter (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})...";
+            mtrace("Processing newsletter (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})...");
         }
-        $newsletter = $issue->newsletter;
         $fs = get_file_storage();
         $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, "", false);
         $attachments = array();
@@ -510,59 +474,43 @@ function newsletter_cron() {
         $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php', $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
-		
-        if(isset($issuestatuses[$issueid])){
-        	foreach ($issuestatuses[$issueid] as $subscriberid => $status) {
-        		if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
-        			$recipient = $DB->get_record('user', array('id' => $subscriberid));
-        			if ($debugoutput) {
-        				echo "Sending message to {$recipient->email}... ";
-        			}
-        			$plaintext = str_replace('replacewithuserid', $subscriberid, $plaintexttmp);
-        			$html = str_replace('replacewithuserid', $subscriberid, $htmltmp);
-        	
-        			$result = newsletter_email_to_user(
-        					$recipient,
-        					$newsletter->get_instance()->name,
-        					$issue->title,
-        					$plaintext,
-        					$html,
-        					$attachments);
-        			if ($debugoutput) {
-        				echo (NEWSLETTER_DELIVERY_STATUS_DELIVERED ? "OK" : "FAILED") . "!\n";
-        			}
-        			$issuestatuses[$issueid][$subscriberid] = $result ? NEWSLETTER_DELIVERY_STATUS_DELIVERED : NEWSLETTER_DELIVERY_STATUS_FAILED;
-        			file_put_contents($tempfilename, json_encode($issuestatuses));
-        		}
-        	}        	
-        }
-    }
+		$deliveries = $DB->get_records ( 'newsletter_deliveries', array (
+				'issueid' => $issueid 
+		) );
+		if(empty($deliveries)){
+			$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+			break;
+		}
+		foreach ( $deliveries as $deliveryid => $delivery ) {
+			$recipient = $DB->get_record ( 'user', array (
+					'id' => $delivery->userid 
+			) );
+			if ($debugoutput) {
+				mtrace("Sending message to {$recipient->email}... ");
+			}
+			$plaintext = str_replace ( 'replacewithuserid', $delivery->userid, $plaintexttmp );
+			$html = str_replace ( 'replacewithuserid', $delivery->userid, $htmltmp );
+			
+			$result = newsletter_email_to_user ( $recipient, $newsletter->get_instance ()->name, $issue->title, $plaintext, $html, $attachments );
+			if ($debugoutput) {
+				echo ($result ? "OK" : "FAILED") . "!\n";
+			}
+			$DB->delete_records('newsletter_deliveries', array('id' => $deliveryid));
+			$sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1 
+					WHERE newsletterid = :newsletterid AND userid = :userid ";
+			$params = array ('newsletterid' => $issue->newsletterid, 'userid' => $delivery->userid );
+			$DB->execute($sql, $params);
+			if(!$DB->record_exists ('newsletter_deliveries', array ('issueid' => $issue->id))){
+				$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+			}
+		}
+	}
 
     if ($debugoutput) {
-        echo "Delivery complete. Updating database...\n";
-    }
-    foreach ($issuestatuses as $issueid => $statuses) {
-        $DB->set_field('newsletter_issues', 'status', json_encode($statuses), array('id' => $issueid));
-        $completed = true;
-        foreach ($statuses as $status) {
-            if ($status != NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
-                $completed = false;
-                break;
-            }
-        }
-        $DB->set_field('newsletter_issues', 'delivered', $completed, array('id' => $issueid));
-        $receiverssql = "SELECT ns.id, ns.sentnewsletters
-        		FROM {newsletter_subscriptions} ns
-        		JOIN {newsletter_issues} ni ON (ns.newsletterid = ni.newsletterid)
-        		WHERE ni.id = :issueid)";
-        $receivers = $DB->get_records_sql($receiverssql, array('issueid' => $issueid));
-        foreach ($receivers as &$receiver){
-        	$receiver->sentnewsletter += 1;
-        	$DB->update_record('newsletter_subscriptions', $receiver,true);
-        }
+        mtrace("Delivery complete. Updating database...\n");
     }
     if ($debugoutput) {
-        echo "Database update complete. Cleaning up...\n";
+        mtrace("Database update complete. Cleaning up...\n");
     }
     
     require_once('classes/bounce/bounceprocessor.php');
@@ -571,9 +519,9 @@ function newsletter_cron() {
     $bounceprocessor->open_mode        = CWSMBH_OPEN_MODE_IMAP;
     if ($bounceprocessor->openImapRemote()) {
     	$bounceprocessor->process_bounces();
+    	$bounceprocessor->update_health();
     }
 
-    unlink($tempfilename);
     cron_helper::unlock();
 
     return true;
@@ -814,6 +762,23 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
  * @param navigation_node $newsletternode {@link navigation_node}
  */
 function newsletter_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $newsletternode=null) {
+	global $PAGE;
+	require_once 'locallib.php';
+	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
+	
+	$currentgroup = groups_get_activity_group($PAGE->cm);
+	$groupmode = groups_get_activity_groupmode($PAGE->cm);
+	
+	if (has_capability('mod/newsletter:managesubscriptions', $newsletter->get_context())) { // took out participation list here!
+		$newsletternode->add(get_string('manage_subscriptions', 'mod_newsletter'), new moodle_url('/mod/newsletter/view.php', array(
+        		'id' => $newsletter->get_course_module()->id,
+        		'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
+	}
+	if (has_capability('mod/newsletter:createissue', $newsletter->get_context())) { // took out participation list here!
+		$newsletternode->add(get_string('newsletter:createissue', 'mod_newsletter'), new moodle_url('/mod/newsletter/view.php', array(
+				'id' => $newsletter->get_course_module()->id,
+				'action' => NEWSLETTER_ACTION_CREATE_ISSUE)));
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1098,3 +1063,5 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
 		return false;
 	}
 }
+
+

@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/renderable.php');
 require_once(dirname(__FILE__).'/CssToInlineStyles/CssToInlineStyles.php');
-require_once(dirname(__FILE__).'/classes/subscription_filter_form.php');
+require_once(dirname(__FILE__).'/classes/subscription/subscription_filter_form.php');
 
 class mod_newsletter implements renderable {
 
@@ -69,7 +69,7 @@ class mod_newsletter implements renderable {
             $this->coursemodule = get_coursemodule_from_id('newsletter', $cmid, 0, false, MUST_EXIST);
             $this->course = $DB->get_record('course', array('id' => $this->coursemodule->course), '*', MUST_EXIST);
             $this->instance = $DB->get_record('newsletter', array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
-            $this->config = get_config('newsletter');
+            $this->config = get_config('mod_newsletter');
             $this->renderer = $PAGE->get_renderer('mod_newsletter');
             $this->subscriptionid = $DB->get_field('newsletter_subscriptions', 'id', array($USER->id,$this->get_instance()->id));
         }
@@ -158,11 +158,24 @@ class mod_newsletter implements renderable {
         return $this->renderer;
     }
 
+    /**
+     * get global newsletter settings (admin settings)
+     * @return stdClass configuration object
+     */
     public function get_config() {
         if (!$this->config) {
-            $this->config = get_config('newsletter');
+            $this->config = get_config('mod_newsletter');
         }
         return $this->config;
+    }
+    
+    /**
+     * get all subscribed users for a newsletter instance
+     * @return array of objects with subscription id as key
+     */
+    public function get_subscriptions(){
+    	global $DB;
+    	return $DB->get_records('newsletter_subscriptions', array('id' => $this->get_instance()->id));
     }
 
     public function reset_userdata($data) {
@@ -580,6 +593,7 @@ class mod_newsletter implements renderable {
         $from = $params[NEWSLETTER_PARAM_FROM];
         $count = $params[NEWSLETTER_PARAM_COUNT];
         $subscriptions = $DB->get_records_sql($filtersql, $filterparams, $from, $count);
+        
         $sqlparams = array('newsletterid' => $this->get_instance()->id);
         $total = $DB->count_records('newsletter_subscriptions', $sqlparams);
         list ($countsql, $countparams) = $this->get_filter_sql($params, true);
@@ -593,7 +607,7 @@ class mod_newsletter implements renderable {
                   		 NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED,
                          NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS);
         
-        $filterform = new mod_newsletter_subscription_filter_form('view.php', array('newsletter' => $this),
+        $filterform = new \mod_newsletter\subscription\mod_newsletter_subscription_filter_form('view.php', array('newsletter' => $this),
         'get', '', array('id' => 'filterform'));
         $filterform->set_data(array('search' => $params['search'], 'status' => $params['status'], 'count' => $params['count'], 'orderby' => $params['orderby']));
 
@@ -608,8 +622,8 @@ class mod_newsletter implements renderable {
         $newurl = $url;
         $newurl->params($params);
         
-        require_once(dirname(__FILE__).'/subscriptions_admin_form.php');
-        $mform = new mod_newsletter_subscriptions_admin_form(null, array(
+        require_once(dirname(__FILE__).'/classes/subscription/subscriptions_admin_form.php');
+        $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(null, array(
         		'id' => $this->get_course_module()->id,
         		'course' => $this->get_course()));
         
@@ -628,9 +642,9 @@ class mod_newsletter implements renderable {
         	redirect($url);
         }
         
-        require_once(dirname(__FILE__).'/classes/newsletter_user_subscription.php');
-        $subscriberselector = new mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
-        $subscribedusers = new mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this));
+        require_once(dirname(__FILE__).'/classes/subscription/newsletter_user_subscription.php');
+        $subscriberselector = new \mod_newsletter\subscription\mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
+        $subscribedusers = new \mod_newsletter\subscription\mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this));
         
         if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){
         	$userstosubscribe = $subscriberselector->get_selected_users();
@@ -665,8 +679,8 @@ class mod_newsletter implements renderable {
         	$subscribedusers->invalidate_selected_users();
         }
         
-        require_once(dirname(__FILE__).'/subscriber_selector_form.php');
-        $subscriber_form = new mod_newsletter_subscriber_selector_form(null, array(
+        require_once(dirname(__FILE__).'/classes/subscription/subscriber_selector_form.php');
+        $subscriber_form = new \mod_newsletter\subscription\mod_newsletter_subscriber_selector_form(null, array(
         		'id' => $this->get_course_module()->id,
         		'course' => $this->get_course(),
         		'existing' => $subscribedusers,
@@ -701,8 +715,8 @@ class mod_newsletter implements renderable {
     private function view_edit_subscription(array $params) {
         global $DB;
         $subscription = $DB->get_record('newsletter_subscriptions', array('id' => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
-        require_once(dirname(__FILE__).'/subscription_form.php');
-        $mform = new mod_newsletter_subscription_form(null, array(
+        require_once(dirname(__FILE__).'/classes/subscription/subscription_form.php');
+        $mform = new \mod_newsletter\subscription\mod_newsletter_subscription_form(null, array(
                 'newsletter' => $this,
                 'subscription' => $subscription));
         
@@ -1041,18 +1055,15 @@ class mod_newsletter implements renderable {
         $records = $DB->get_records_sql($query, $params);
         foreach ($records as $record) {
             $record->cmid = $this->get_course_module()->id;
-            if (isset($record->status)) {
-                $data = json_decode($record->status, true);
-                $record->numsubscriptions = count($data);
-                $record->numdelivered = 0;
-                foreach($data as $status) {
-                    if($status === 1) {
-                        $record->numdelivered++;
-                    }
-                }
-            } else {
+            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
                 $record->numsubscriptions = $total;
-                $record->numdelivered = 0;
+                $record->numdelivered = $total;
+            } else if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS){
+                $record->numsubscriptions = $total;
+                $record->numdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id ) );
+            } else {
+            	$record->numsubscriptions = $total;
+            	$record->numdelivered = 0;
             }
         }
         return $records;
@@ -1450,7 +1461,7 @@ class mod_newsletter implements renderable {
     		INNER JOIN {user} u ON ns.userid = u.id
     		WHERE ns.newsletterid = :newsletterid AND ";
     	} else {
-    		$sql = "SELECT ns.id, ns.health, ns.timesubscribed, ns.timestatuschanged, ns.subscriberid, ns.unsubscriberid, $allnamefields
+    		$sql = "SELECT ns.*, $allnamefields
     		FROM {newsletter_subscriptions} ns
     		INNER JOIN {user} u ON ns.userid = u.id
     		WHERE ns.newsletterid = :newsletterid AND ";

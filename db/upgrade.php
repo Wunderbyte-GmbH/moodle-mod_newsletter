@@ -131,6 +131,70 @@ function xmldb_newsletter_upgrade($oldversion) {
     	// Newsletter savepoint reached.
     	upgrade_mod_savepoint(true, 2015053000, 'newsletter');
     }
+    if ($oldversion < 2015061201) {
+    
+    	// Add table
+    	$table = new xmldb_table('newsletter_bounces');   
+    	// Conditionally add field
+    	$table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+		$table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+		$table->add_field('issueid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid');
+		$table->add_field('statuscode', XMLDB_TYPE_CHAR, '8', null, null, null, null, 'issueid');
+		$table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'statuscode');
+		$table->add_field('type', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timecreated');
+		$table->add_field('timereceived', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'type');
+		$table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+		$table->add_key('issueid', XMLDB_KEY_FOREIGN, array('issueid'), 'newsletter_issues', array('id'));
+		$table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+
+    	if (!$dbman->table_exists($table)) {
+    		$dbman->create_table($table);
+    	}   
+    	// Newsletter savepoint reached.
+    	upgrade_mod_savepoint(true, 2015061201, 'newsletter');
+    }
+    if ($oldversion < 2015061500) {
+    
+    	// Add field
+    	$table = new xmldb_table('newsletter_subscriptions');
+    
+    	// Conditionally add field
+    	$field = new xmldb_field('sentnewsletters', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'unsubscriberid');
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Newsletter savepoint reached.
+    	upgrade_mod_savepoint(true, 2015061500, 'newsletter');
+    }
+    if ($oldversion < 2015061601) {
+    
+    	// Add field
+    	$table = new xmldb_table('newsletter_issues');
+    
+    	// Conditionally add field
+    	$field = new xmldb_field('status', XMLDB_TYPE_INTEGER, 'big', null, null, null, null, 'publishon');
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->drop_field($table, $field);
+    	}
+    	
+    	// Add table
+    	$table = new xmldb_table('newsletter_deliveries');
+    	// Conditionally add field
+    	$table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+    	$table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+    	$table->add_field('issueid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid');
+    	$table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+    	$table->add_key('issueid', XMLDB_KEY_FOREIGN, array('issueid'), 'newsletter_issues', array('id'));
+    	$table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+    	
+    	if (!$dbman->table_exists($table)) {
+    		$dbman->create_table($table);
+    	}
+    
+    	// Newsletter savepoint reached.
+    	upgrade_mod_savepoint(true, 2015061601, 'newsletter');
+    }
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
     // related with the module
     // And that's all. Please, examine and understand the 3 example blocks above. Also

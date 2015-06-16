@@ -22,18 +22,18 @@
  * @copyright  2015 David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+namespace mod_newsletter\subscription;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
-require_once(dirname(dirname(dirname(__FILE__))) . '/cohort/lib.php');
+require_once($CFG->dirroot . '/cohort/lib.php');
 
 /**
  * Form for subscribing and unsubscribing users to a newsletter
  * 
  */
-class mod_newsletter_subscriber_selector_form extends moodleform {
+class mod_newsletter_subscriber_selector_form extends \moodleform {
    /**
      * Defines forms elements
      */
@@ -56,45 +56,45 @@ class mod_newsletter_subscriber_selector_form extends moodleform {
         $mform->addElement('header', 'subscribe_users', get_string('newsletter:subscribeuser','mod_newsletter'));
 		$mform->setExpanded('subscribe_users', false);
         
-        $existingcell = new html_table_cell();
+        $existingcell = new \html_table_cell();
         $existingcell->text = $existing->display(true);
         $existingcell->attributes['class'] = 'existing';
-        $actioncell = new html_table_cell();
-        $actioncell->text  = html_writer::start_tag('div', array());
-        $actioncell->text .= html_writer::empty_tag('input', array(
+        $actioncell = new \html_table_cell();
+        $actioncell->text  = \html_writer::start_tag('div', array());
+        $actioncell->text .= \html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'add',
         		'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
         		'class' => 'actionbutton')
         );
-        $actioncell->text .= html_writer::end_tag('div', array());
+        $actioncell->text .= \html_writer::end_tag('div', array());
 
-        $actioncell->text .= html_writer::start_tag('div', array());
-        $actioncell->text .= html_writer::empty_tag('input', array(
+        $actioncell->text .= \html_writer::start_tag('div', array());
+        $actioncell->text .= \html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'unsubscribe',
         		'value' => ' ' . get_string('unsubscribe', 'mod_newsletter'),
         		'class' => 'actionbutton')
         );
-        $actioncell->text .= html_writer::end_tag('div', array()); 
+        $actioncell->text .= \html_writer::end_tag('div', array()); 
                
-        $actioncell->text .= html_writer::start_tag('div', array());
-        $actioncell->text .= html_writer::empty_tag('input', array(
+        $actioncell->text .= \html_writer::start_tag('div', array());
+        $actioncell->text .= \html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'remove',
         		'value' => get_string('delete') . ' ' . $rightarrow,
         		'class' => 'actionbutton')
         );
-        $actioncell->text .= html_writer::end_tag('div', array());
-        $actioncell->text .= html_writer::div('<br />' . get_string('unsubscribedinfo','mod_newsletter'));
+        $actioncell->text .= \html_writer::end_tag('div', array());
+        $actioncell->text .= \html_writer::div('<br />' . get_string('unsubscribedinfo','mod_newsletter'));
         $actioncell->attributes['class'] = 'actions';
-        $potentialcell = new html_table_cell();
+        $potentialcell = new \html_table_cell();
         $potentialcell->text = $potential->display(true);
         $potentialcell->attributes['class'] = 'potential';
         
-        $table = new html_table();
+        $table = new \html_table();
         $table->attributes['class'] = 'subscribertable boxaligncenter';
-        $table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
-        $mform->addElement('html', html_writer::table($table));
+        $table->data = array(new \html_table_row(array($existingcell, $actioncell, $potentialcell)));
+        $mform->addElement('html', \html_writer::table($table));
     }
 }

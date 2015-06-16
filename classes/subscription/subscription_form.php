@@ -23,13 +23,14 @@
  * @copyright  2015 onwards David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_newsletter\subscription;
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 
-class mod_newsletter_subscription_form extends moodleform {
+class mod_newsletter_subscription_form extends \moodleform {
 
     /**
      * Defines forms elements
@@ -72,7 +73,7 @@ class mod_newsletter_subscription_form extends moodleform {
         if ($subscription) {
             global $DB;
             $user = $DB->get_record('user', array('id' => $subscription->userid));
-            $values = new stdClass();
+            $values = new \stdClass();
             $values->email = $user->email;
             $values->name = fullname($user);
             $values->health = $subscription->health;
