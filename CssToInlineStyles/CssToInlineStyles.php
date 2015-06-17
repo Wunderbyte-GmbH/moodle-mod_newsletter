@@ -4,7 +4,7 @@
  * CSS to Inline Styles class
  *
  * @author		Tijs Verkoyen <php-css-to-inline-styles@verkoyen.eu>
- * @version		1.2.1
+ * @version		1.3.0
  * @copyright	Copyright (c), Tijs Verkoyen. All rights reserved.
  * @license		BSD License
  */
@@ -188,10 +188,10 @@ class CssToInlineStyles
     private function cleanupHTML($html)
     {
         // remove classes
-        $html = preg_replace('/(\s)+class="(.*)"(\s)+/U', ' ', $html);
+        $html = preg_replace('/(\s)+class="(.*)"(\s)*/U', ' ', $html);
 
         // remove IDs
-        $html = preg_replace('/(\s)+id="(.*)"(\s)+/U', ' ', $html);
+        $html = preg_replace('/(\s)+id="(.*)"(\s)*/U', ' ', $html);
 
         // return
         return $html;
@@ -706,16 +706,9 @@ class CssToInlineStyles
      */
     private static function sortOnSpecifity($e1, $e2)
     {
-        // validate
-        if(!isset($e1['specifity']) || !isset($e2['specifity'])) return 0;
-
-        // lower
-        if($e1['specifity'] < $e2['specifity']) return -1;
-
-        // higher
-        if($e1['specifity'] > $e2['specifity']) return 1;
-
-        // fallback
-        return 0;
+        if ($e1['specifity'] == $e2['specifity']) {
+            return 0;
+        }
+        return ($e1['specifity'] < $e2['specifity']) ? -1 : 1;
     }
 }

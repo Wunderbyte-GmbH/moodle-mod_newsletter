@@ -1125,9 +1125,8 @@ class mod_newsletter implements renderable {
         }
 
         $converter = new CssToInlineStyles();
-        
-        
-        $converter->setHTML(utf8_decode($htmlcontent));
+        $converter->setHTML(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8' )); 
+        //$converter->setHTML('<?xml encoding="UTF-8">'.$htmlcontent);
         $converter->setCSS($css);
         $html = $converter->convert();
         
