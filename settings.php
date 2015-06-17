@@ -58,4 +58,4 @@ $settings->add(new admin_setting_configtext('mod_newsletter/username', get_strin
 $settings->add(new admin_setting_configpasswordunmask('mod_newsletter/password', get_string('config_password', 'mod_newsletter'), '', '', PARAM_TEXT));
 $settings->add(new admin_setting_configselect('mod_newsletter/service', get_string('config_service', 'mod_newsletter'), '', '', array('pop3' => 'pop3','imap' =>'imap')));
 $settings->add(new admin_setting_configselect('mod_newsletter/service_option', get_string('config_service_option', 'mod_newsletter'), '', '', array('none' => 'none', 'tls' => 'tls', 'ssl' => 'ssl','notls' => 'notls')));
-$settings->add(new admin_setting_configinteger('mod_newsletter/port', get_string('config_port', 'mod_newsletter'), '', 110, 0, 10000));
+$settings->add(new admin_setting_configtext('mod_newsletter/port', get_string('config_port', 'mod_newsletter'), '', null, 110));
