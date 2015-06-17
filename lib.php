@@ -513,13 +513,15 @@ function newsletter_cron() {
         mtrace("Database update complete. Cleaning up...\n");
     }
     
-    require_once('classes/bounce/bounceprocessor.php');
     
-    $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($config);
-    $bounceprocessor->open_mode        = CWSMBH_OPEN_MODE_IMAP;
-    if ($bounceprocessor->openImapRemote()) {
-    	$bounceprocessor->process_bounces();
-    	$bounceprocessor->update_health();
+    if($config->enablebounce == 1) {
+    	require_once('classes/bounce/bounceprocessor.php');
+    	$bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($config);
+	    $bounceprocessor->open_mode        = CWSMBH_OPEN_MODE_IMAP;
+	    if ($bounceprocessor->openImapRemote()) {
+	    	$bounceprocessor->process_bounces();
+	    	$bounceprocessor->update_health();
+	    }
     }
 
     cron_helper::unlock();
