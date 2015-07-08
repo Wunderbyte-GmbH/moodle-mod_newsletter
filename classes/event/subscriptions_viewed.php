@@ -71,7 +71,7 @@ class subscriptions_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,'id' => $this->objectid));
+        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,NEWSLETTER_PARAM_ID => $this->contextinstanceid));
     }
 
     /**

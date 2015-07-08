@@ -72,7 +72,7 @@ class issue_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE,'id' => $this->other['newsletterid'], NEWSLETTER_PARAM_ISSUE => $this->objectid));
+        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE, NEWSLETTER_PARAM_ID => $this->contextinstanceid, NEWSLETTER_PARAM_ISSUE => $this->objectid));
     }
 
     /**
