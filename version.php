@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015061702;        // If version == 0 then module will not be installed
+$plugin->version   = 2015070800;        // If version == 0 then module will not be installed
 $plugin->requires  = 2014051200;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.1.3 Die Zeit';  // Release: named after famous newspapers around the world
+$plugin->release   = '1.1.4 Die Zeit';  // Release: named after famous newspapers around the world
 $plugin->cron      = 30;                // Period for cron to check this module (secs)
 $plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place
