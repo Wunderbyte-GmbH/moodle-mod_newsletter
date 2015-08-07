@@ -479,6 +479,11 @@ function newsletter_cron() {
 		$deliveries = $DB->get_records ( 'newsletter_deliveries', array (
 				'issueid' => $issueid 
 		) );
+		
+		// Configure the $userfrom. All mails are sent from the support user (but as return path for
+		// bounce processing, the noreply adress is used
+		$userfrom = core_user::get_support_user ();
+		
 		if(empty($deliveries)){
 			$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
 			break;
@@ -493,17 +498,13 @@ function newsletter_cron() {
 			$plaintext = str_replace ( 'replacewithuserid', $delivery->userid, $plaintexttmp );
 			$html = str_replace ( 'replacewithuserid', $delivery->userid, $htmltmp );
 			
-			// Configure the $userfrom. All mails are sent from the support user (but as return path for 
-			// bounce processing, the noreply adress is used
-			$userfrom = core_user::get_support_user ();
-				
 			$userfrom->customheaders = array (  // Headers to make emails easier to track
 					'Precedence: Bulk',
 					'List-Id: "'.$newsletter->get_instance ()->name.'" <newsletter'.$newsletter->get_course_module()->instance.'@'.$hostname.'>',
 					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$coursemodule->id,
 					'Message-ID: '.newsletter_get_email_message_id($issue->id, $recipient->id, $hostname),
-					'X-Course-Id: '.$newsletter->coursemodule->course,
-					'X-Course-Name: '.format_string($newsletter->course->fullname, true)
+					'X-Course-Id: '.$newsletter->get_instance()->course,
+					'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
 			);
 			
 			$result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintext, $html, $attachments );
