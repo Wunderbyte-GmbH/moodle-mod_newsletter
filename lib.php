@@ -444,6 +444,8 @@ function newsletter_cron() {
     require_once('locallib.php');
     $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS) );
     foreach ($issuestodeliver as $issueid => $issue) {
+    	$urlinfo = parse_url($CFG->wwwroot);
+    	$hostname = $urlinfo['host'];
     	$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
     	$newsletter = new mod_newsletter ( $coursemodule->id );
     	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
@@ -491,7 +493,20 @@ function newsletter_cron() {
 			$plaintext = str_replace ( 'replacewithuserid', $delivery->userid, $plaintexttmp );
 			$html = str_replace ( 'replacewithuserid', $delivery->userid, $htmltmp );
 			
-			$result = newsletter_email_to_user ( $recipient, $newsletter->get_instance ()->name, $issue->title, $plaintext, $html, $attachments );
+			// Configure the $userfrom. All mails are sent from the support user (but as return path for 
+			// bounce processing, the noreply adress is used
+			$userfrom = core_user::get_support_user ();
+				
+			$userfrom->customheaders = array (  // Headers to make emails easier to track
+					'Precedence: Bulk',
+					'List-Id: "'.$newsletter->get_instance ()->name.'" <newsletter'.$newsletter->get_course_module()->instance.'@'.$hostname.'>',
+					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$coursemodule->id,
+					'Message-ID: '.newsletter_get_email_message_id($issue->id, $recipient->id, $hostname),
+					'X-Course-Id: '.$newsletter->coursemodule->course,
+					'X-Course-Name: '.format_string($newsletter->course->fullname, true)
+			);
+			
+			$result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintext, $html, $attachments );
 			if ($debugoutput) {
 				echo ($result ? "OK" : "FAILED") . "!\n";
 			}
@@ -783,6 +798,20 @@ function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
 	}
 }
 
+/**
+ * Create a message-id string to use in the custom headers of forum notification emails
+ *
+ * message-id is used by email clients to identify emails and to nest conversations
+ *
+ * @param int $postid The ID of the forum post we are notifying the user about
+ * @param int $usertoid The ID of the user being notified
+ * @param string $hostname The server's hostname
+ * @return string A unique message-id
+ */
+function newsletter_get_email_message_id($postid, $usertoid, $hostname) {
+	return '<'.hash('sha256',$postid.'to'.$usertoid).'@'.$hostname.'>';
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Mail utility functions                                                     //
 ////////////////////////////////////////////////////////////////////////////////
@@ -897,7 +926,7 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
 		$modargs = 'B' . base64_encode ( pack ( 'V', $user->id ) ) . substr ( md5 ( $user->email ), 0, 16 );
 		$mail->Sender = generate_email_processing_address ( 0, $modargs );
 	} else {
-		$mail->Sender = $supportuser->email;
+		$mail->Sender = $CFG->noreplyaddress;
 	}
 	
 	if (! empty ( $CFG->emailonlyfromnoreplyaddress )) {
