@@ -54,6 +54,7 @@ $settings->add(new admin_setting_heading('mod_newsletter/bounce', get_string('co
 
 $settings->add(new admin_setting_configcheckbox('mod_newsletter/enablebounce', get_string('config_bounce_enable','mod_newsletter'), '', 0));
 $settings->add(new admin_setting_configtext('mod_newsletter/host', get_string('config_host', 'mod_newsletter'), '', '', PARAM_HOST));
+$settings->add(new admin_setting_configtext('mod_newsletter/bounceemail', get_string('config_bounce_email', 'mod_newsletter'), '', '', PARAM_EMAIL));
 $settings->add(new admin_setting_configtext('mod_newsletter/username', get_string('config_username', 'mod_newsletter'), '', '', PARAM_TEXT));
 $settings->add(new admin_setting_configpasswordunmask('mod_newsletter/password', get_string('config_password', 'mod_newsletter'), '', '', PARAM_TEXT));
 $settings->add(new admin_setting_configselect('mod_newsletter/service', get_string('config_service', 'mod_newsletter'), '', '', array('pop3' => 'pop3','imap' =>'imap')));

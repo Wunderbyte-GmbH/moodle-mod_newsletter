@@ -31,7 +31,7 @@ require_once(dirname(__FILE__).'/classes/subscription/subscription_filter_form.p
 
 class mod_newsletter implements renderable {
 
-    /** @var stdClass the newsletter record that contains the global settings for this newsletter instance */
+    /** @var stdClass the newsletter record that contains the settings for this newsletter instance */
     private $instance = null;
 
     /** @var context the context of the course module for this newsletter instance (or just the course if we are
@@ -1349,6 +1349,26 @@ class mod_newsletter implements renderable {
         }
         return $DB->record_exists_select("newsletter_subscriptions", "userid = :userid AND newsletterid = :newsletterid AND health <> :health",
                                         array("userid" => $userid, "newsletterid" => $this->get_instance()->id, "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED));
+    }
+    
+    /**
+     * return the e-mail address that receives bounce mails
+     * 
+     * The bounce e-mail address is used to collect all bounces
+     * that will be fetched and processed by the bounce processor
+     */
+    public function get_bounceemail_address() {
+    	if (!$this->config) {
+    		$settings = $this->get_config();
+    	} else {
+    		$config = $this->config;
+    	}
+    	
+    	if ($this->config->enablebounce == '1' && filter_var($this->config->bounceemail, FILTER_VALIDATE_EMAIL)){
+    		return $this->config->bounceemail;
+    	} else {
+    		return $CFG->noreplyaddress;
+    	}
     }
 
     /**

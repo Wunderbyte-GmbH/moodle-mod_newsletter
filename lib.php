@@ -481,8 +481,9 @@ function newsletter_cron() {
 		) );
 		
 		// Configure the $userfrom. All mails are sent from the support user (but as return path for
-		// bounce processing, the noreply adress is used
+		// bounce processing, the address in the newsletter admin settings is used
 		$userfrom = core_user::get_support_user ();
+		$bounceemail = $newsletter->get_bounceemail_address();
 		
 		if(empty($deliveries)){
 			$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
@@ -507,7 +508,7 @@ function newsletter_cron() {
 					'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
 			);
 			
-			$result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintext, $html, $attachments );
+			$result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintext, $html, $attachments, $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79, $bounceemail = '' );
 			if ($debugoutput) {
 				echo ($result ? "OK" : "FAILED") . "!\n";
 			}
@@ -840,7 +841,7 @@ function newsletter_get_email_message_id($postid, $usertoid, $hostname) {
  * @param int $wordwrapwidth custom word wrap width, default 79
  * @return bool Returns true if mail was sent OK and false if there was an error.
  */
-function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {
+function newsletter_email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = array(), $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79, $bounceemail = '') {
 	global $CFG;
 	
 	if (empty ( $user ) or empty ( $user->id )) {
@@ -927,7 +928,11 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
 		$modargs = 'B' . base64_encode ( pack ( 'V', $user->id ) ) . substr ( md5 ( $user->email ), 0, 16 );
 		$mail->Sender = generate_email_processing_address ( 0, $modargs );
 	} else {
-		$mail->Sender = $CFG->noreplyaddress;
+		if($bounceemail != ''){
+			$mail->Sender = $bounceemail;
+		} else {
+			$mail->Sender = $CFG->noreplyaddress;
+		}
 	}
 	
 	if (! empty ( $CFG->emailonlyfromnoreplyaddress )) {
