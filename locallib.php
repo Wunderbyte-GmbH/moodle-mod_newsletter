@@ -52,6 +52,9 @@ class mod_newsletter implements renderable {
     
     /** @var integer the subscription id of $USER, if subscribed  */
     private $subscriptionid = null;
+    
+    /** @var array of objects containing data records of newsletter issues sorted be issueid */
+    private $issues = array();
 
     public static function get_newsletter_by_instance($instanceid, $eagerload = false) {
         $cm = get_coursemodule_from_instance('newsletter', $instanceid);
@@ -397,8 +400,18 @@ class mod_newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Prepare newsletter issue for reading
+     * 
+     * @param array $params
+     * @return string html of newsletter issue
+     */
     private function view_read_issue_page(array $params) {
         global $CFG;
+        if(!(has_capability('mod/newsletter:editissue', $this->get_context())) && $this->get_issue($params[NEWSLETTER_PARAM_ISSUE])->publishon > time()){
+        	require_capability('mod/newsletter:editissue', $this->get_context());
+        }
+        
         $renderer = $this->get_renderer();
 
         $output = $renderer->render(
@@ -489,6 +502,12 @@ class mod_newsletter implements renderable {
         return $output;
     }
 
+    /**
+     * Display newsletter issue in editing mode
+     * 
+     * @param array $params
+     * @return string rendered HTML
+     */
     private function view_edit_issue_page(array $params) {
         global $CFG, $PAGE;
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
@@ -789,7 +808,8 @@ class mod_newsletter implements renderable {
     }
 
     /**
-     * TODO write docu
+     * Display  the overview of all newsletter issues as a list
+     * 
      * @param unknown $heading
      * @param unknown $groupby
      * @return NULL|newsletter_section_list
@@ -802,8 +822,15 @@ class mod_newsletter implements renderable {
         $deleteissue = has_capability('mod/newsletter:deleteissue', $this->get_context());
 
         $issues = $this->get_issues();
+
         if (empty($issues)) {
             return null;
+        }
+            
+        // check if issue is already published or still in draft mode
+        // display only published issues if user does not have the right to edit an issue
+        foreach($issues as $issue){
+
         }
         $firstissue = reset($issues);
         $firstdayofweek = (int) get_string('firstdayofweek', 'langconfig');
@@ -843,9 +870,11 @@ class mod_newsletter implements renderable {
                     break;
                 }
             }
-
             if ($issue->publishon < $to) {
-                $currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
+            	// do not display issues that are not yet published
+            	if (!($issue->publishon > time() && !$editissue)){
+            		$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
+            	}
             } else {
                 if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
                     $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(strtotime('yesterday', $to), $datefromto) . ')';
@@ -868,7 +897,10 @@ class mod_newsletter implements renderable {
                 }
                 $sectionlist->add_issue_section(new newsletter_section($heading, $currentissuelist));
                 $currentissuelist = new newsletter_issue_summary_list();
-                $currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
+                // do not display issues that are not yet published
+                if (!($issue->publishon > time() && !$editissue)){
+                	$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
+                }
             }
         }
         if (!empty($currentissuelist->issues)) {
@@ -1039,6 +1071,14 @@ class mod_newsletter implements renderable {
         }
     }
 
+    /**
+     * Get the database records of newsletterissues from a range of publishing dates.
+     * The range is specified as $from timestamp and $to timestamp
+     * 
+     * @param number $from UTC timestamp
+     * @param number $to UTC timestamp
+     * @return multitype: db records of newsletter issues
+     */
     private function get_issues($from = 0, $to = 0) {
         global $DB;
         $total = $DB->count_records('newsletter_subscriptions', array('newsletterid' => $this->get_instance()->id));
@@ -1068,18 +1108,31 @@ class mod_newsletter implements renderable {
         }
         return $records;
     }
-
-    private function get_issue($issueid) {
-        global $DB;
-        if ($issueid == 0) {
-            return null;
-        }
-        $record = $DB->get_record('newsletter_issues', array('id' => $issueid, 'newsletterid' => $this->get_instance()->id));
-        if ($record) {
-            $record->cmid = $this->get_course_module()->id;
-            $record->context = $this->get_context()->id;
-        }
-        return $record;
+	
+	/**
+	 * returns the database record of a newsletter issue as an object
+	 *
+	 * @param number $issueid        	
+	 * @return NULL|mixed returns null if no issueid given otherwise the object of $DB->get_reccord
+	 */
+	private function get_issue($issueid) {
+		global $DB;
+		if ($issueid == 0) {
+			return null;
+		}
+		if (isset ( $this->issues [$issueid] )) {
+			return $this->issues [$issueid];
+		} else {
+			$record = $DB->get_record ( 'newsletter_issues', array (
+					'id' => $issueid,
+					'newsletterid' => $this->get_instance ()->id 
+			) );
+			if ($record) {
+				$record->cmid = $this->get_course_module ()->id;
+				$record->context = $this->get_context ()->id;
+			}
+			return $record;
+		}
     }
 
     /**
@@ -1146,6 +1199,12 @@ class mod_newsletter implements renderable {
         return $html;
     }
 
+    /**
+     * returns the previous issue of a newsletter instance
+     * 
+     * @param stdClass $issue
+     * @return Ambigous <NULL, mixed>
+     */
     private function get_previous_issue($issue) {
         global $DB;
         $query = "SELECT *
@@ -1158,6 +1217,12 @@ class mod_newsletter implements renderable {
         return empty($results) ? null : reset($results);
     }
 
+    /**
+     * returns the next issue of a newsletter
+     * 
+     * @param stdClass $issue
+     * @return Ambigous <NULL, mixed>
+     */
     private function get_next_issue($issue) {
         global $DB;
         $query = "SELECT *
@@ -1170,6 +1235,12 @@ class mod_newsletter implements renderable {
         return empty($results) ? null : reset($results);
     }
 
+    /**
+     * returns the first issue of a newsletter instance
+     * 
+     * @param stdClass $issue
+     * @return Ambigous <NULL, mixed>
+     */
     private function get_first_issue($issue) {
         global $DB;
         $query = "SELECT *
