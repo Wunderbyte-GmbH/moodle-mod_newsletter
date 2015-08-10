@@ -524,7 +524,14 @@ class mod_newsletter implements renderable {
         	$issue->title = '';
         	$issue->publishon = null;
         	$issue->stylesheetid = NEWSLETTER_DEFAULT_STYLESHEET;
+        	$issue->delivered = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
         }
+        // publishon can not be altered, if delivery has already started or been completed
+        $deliverystartedorcompleted = 'yes';
+        if ($issue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN || $issue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED){
+        	$deliverystartedorcompleted = 'no';
+        }
+        
         $issue->messageformat = editors_get_preferred_format();
         $issue->newsletterid = $this->get_instance()->id;
 		
@@ -562,6 +569,7 @@ class mod_newsletter implements renderable {
 						'format' => empty ( $issue->messageformat ) ? editors_get_preferred_format () : $issue->messageformat,
 						'itemid' => $draftid_editor 
 				),
+				'deliverystarted' => $deliverystartedorcompleted,
 				'publishon' => $issue->publishon,
 				'stylesheetid' => $issue->stylesheetid
 		) );
@@ -990,17 +998,32 @@ class mod_newsletter implements renderable {
         return $issue->id;
     }
 
+    /**
+     * Update an existing newsletter issue.
+     * 
+     * @param stdClass $data
+     */
     private function update_issue(stdClass $data) {
         global $DB;
 		
         $context = $this->get_context();
+        $oldissue = $this->get_issue($data->issue);
+        $deliverystartedorcompleted = true;
+        if ($oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN || $oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED){
+        	$deliverystartedorcompleted = false;
+        }
         
         $issue = new stdClass();
         $issue->id = $data->issue;
         $issue->title = $data->title;
         $issue->newsletterid = $this->get_instance()->id;
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
-        $issue->publishon = $data->publishon;
+        
+        // the publishon on date must not be altered after newsletter was sent
+        if(!$deliverystartedorcompleted){
+        	$issue->publishon = $data->publishon;
+        }
+        
         $issue->stylesheetid = $data->stylesheetid;
 
         $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,

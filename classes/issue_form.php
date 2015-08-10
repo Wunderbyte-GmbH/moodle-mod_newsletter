@@ -117,10 +117,15 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->addHelpButton('attachments', 'attachments', 'newsletter');
 
         $mform->addElement('header', 'general', get_string('header_publish', 'newsletter'));
+        $mform->addElement('static', 'publishinfo', '', get_string('header_publishinfo', 'newsletter'));
+        
+        $mform->addElement('hidden', 'deliverystarted', 'no');
+        $mform->setType('deliverystarted', PARAM_ALPHANUM);
 
         $mform->addElement('date_time_selector', 'publishon', get_string('publishon', 'newsletter'));
         $mform->setType('plaincontent', PARAM_INT);
         $mform->setDefault('publishon', strtotime("+24 hours"));
+        $mform->disabledIf('publishon', 'deliverystarted', 'eq', 'yes');
 
         $this->add_action_buttons(false);
     }

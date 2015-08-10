@@ -73,6 +73,7 @@ $string['sub_mode_forced'] = 'Forced';
 $string['publishon'] = 'Publish on';
 $string['header_content'] = 'Issue content';
 $string['header_publish'] = 'Publishing options';
+$string['header_publishinfo'] = 'After the delivery of the newsletter issue is started, it will not be possible to change the publishing date anymore';
 
 $string['config_send_notifications_label'] = 'Send notifications';
 $string['config_send_notifications_desc'] = 'Check this box to enable sending subscription-related notifications to subscribers.';
