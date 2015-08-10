@@ -47,8 +47,11 @@ class mod_newsletter_subscription_form extends \moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'subscription', $subscription ? $subscription->id : 0);
         $mform->setType('subscription', PARAM_INT);
+        $mform->addElement('hidden', 'userid', $subscription ? $subscription->userid : 0);
+        $mform->setType('userid', PARAM_INT);
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_EDIT_SUBSCRIPTION);
         $mform->setType('action', PARAM_ALPHA);
+
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
         $mform->addElement('static', 'email', get_string('header_email', 'newsletter'), '');
@@ -84,6 +87,7 @@ class mod_newsletter_subscription_form extends \moodleform {
             } else {
             	$values->subscriberid = "No data present";
             }
+            $values->userid = $subscription->userid;
             $values->unsubscriberid = $subscription->unsubscriberid;
             $this->set_data($values);
         }

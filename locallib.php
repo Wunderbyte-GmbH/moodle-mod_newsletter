@@ -1332,16 +1332,26 @@ class mod_newsletter implements renderable {
      */
     private function update_subscription(stdClass $data) {
         global $DB, $USER;
-		
-        $subscription = new stdClass();
-        $subscription->id = $data->subscription;
-        $subscription->health = $data->health;
-        $subscription->timestatuschanged = time();
-        if($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED){
-        	$subscription->unsubscriberid = $USER->id;
+
+        if($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED && $this->get_subscription_status($data->subscription) != NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED){
+        	$this->unsubscribe($data->subscription);
+        } else {
+        	$subscription = new stdClass();
+        	$subscription->id = $data->subscription;
+        	$subscription->health = $data->health;
+        	$subscription->timestatuschanged = time();
+        	$DB->update_record('newsletter_subscriptions', $subscription);
+        	
+        	$params = array(
+        			'context' => $this->get_context(),
+        			'objectid' => $data->subscription,
+        			'relateduserid' => $data->userid,
+        			'other' => array('newsletterid' => $this->get_instance()->id, 'status' => $data->health),
+        	
+        	);
+        	$event  = \mod_newsletter\event\subscription_statuschanged::create($params);
+        	$event->trigger();
         }
-        
-        $DB->update_record('newsletter_subscriptions', $subscription);
     }
 
     /**
@@ -1421,6 +1431,17 @@ class mod_newsletter implements renderable {
         return $DB->record_exists_select("newsletter_subscriptions", "userid = :userid AND newsletterid = :newsletterid AND health <> :health",
                                         array("userid" => $userid, "newsletterid" => $this->get_instance()->id, "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED));
     }
+
+    /**
+     * Return the subscription status (health) of a given subscription id
+     *
+     * @param number $subid
+     * @return boolean
+     */
+    public function get_subscription_status($subid) {
+    	global $DB;
+    	return $DB->get_field("newsletter_subscriptions", 'health',	array("id" => $subid));
+    }    
     
     /**
      * return the e-mail address that receives bounce mails
