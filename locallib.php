@@ -190,7 +190,7 @@ class mod_newsletter implements renderable {
         $params = array("course" => $data->courseid);
 
         $DB->delete_records_select('newsletter_submissions', "newsletter IN ($newsletterssql)", $params);
-        $status[] = array('component' => get_string('modulenameplural', 'newsletter'),
+        $status[] = array('component' => get_string('modulenameplural', 'mod_newsletter'),
                           'item' => get_string('delete_all_subscriptions','newsletter'),
                           'error' => false);
 
@@ -364,13 +364,13 @@ class mod_newsletter implements renderable {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
-        		$text = get_string('subscribe', 'newsletter');
+        		$text = get_string('subscribe', 'mod_newsletter');
         		$output .= html_writer::link($url, $text);
         	} else {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
-        		$text = get_string('unsubscribe', 'newsletter');
+        		$text = get_string('unsubscribe', 'mod_newsletter');
         		$output .= html_writer::link($url, $text);
         	}
         } else {
@@ -384,7 +384,7 @@ class mod_newsletter implements renderable {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
-        		$text = get_string('subscribe', 'newsletter');
+        		$text = get_string('subscribe', 'mod_newsletter');
         		$output .= html_writer::link($url, $text, array( 'class' => 'btn'));
         	}
         }
@@ -393,7 +393,7 @@ class mod_newsletter implements renderable {
         if ($issuelist) {
             $output .= $renderer->render($issuelist);
         } else {
-            $output .= '<h2>' . get_string('no_issues', 'newsletter') . '</h2>';
+            $output .= '<h2>' . get_string('no_issues', 'mod_newsletter') . '</h2>';
         }
 
         $output .= $renderer->render_footer();
@@ -428,11 +428,18 @@ class mod_newsletter implements renderable {
                                 $this->get_next_issue($currentissue),
                                 $this->get_last_issue($currentissue));
         $output .= $renderer->render($navigation_bar);
-		
+        
+        
+        // generate table of content
+        require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
+        $toc = new \mod_newsletter\mod_newsletter_issue_parser($currentissue);
+        $currentissue->htmlcontent = $toc->get_toc_and_doc();
+        		
         //render the html with inline css based on the used stylesheet
         $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent, 'pluginfile.php', $this->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],  mod_newsletter_issue_form::editor_options($this->get_context(), $params[NEWSLETTER_PARAM_ISSUE]) );
         $currentissue->htmlcontent = $this->inline_css($currentissue->htmlcontent, $currentissue->stylesheetid);
         
+
         $output .= $renderer->render(new newsletter_issue($currentissue));
 
         $fs = get_file_storage();
@@ -452,6 +459,7 @@ class mod_newsletter implements renderable {
         				'newsletterid' => $this->get_instance()->id,
         		)
         );
+
         $event = \mod_newsletter\event\issue_viewed::create($params);
         $event->trigger();
         
@@ -495,7 +503,7 @@ class mod_newsletter implements renderable {
                               array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                                     NEWSLETTER_PARAM_ISSUE => $params[NEWSLETTER_PARAM_ISSUE],
                                     NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_ISSUE));
-        $output .=  $OUTPUT->confirm(get_string('delete_issue_question', 'newsletter'),
+        $output .=  $OUTPUT->confirm(get_string('delete_issue_question', 'mod_newsletter'),
                 new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
                 new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
         $output .= $renderer->render_footer();
@@ -523,6 +531,7 @@ class mod_newsletter implements renderable {
         	$issue->id = 0;
         	$issue->title = '';
         	$issue->publishon = null;
+        	$issue->toc = 0;
         	$issue->stylesheetid = NEWSLETTER_DEFAULT_STYLESHEET;
         	$issue->delivered = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
         }
@@ -570,6 +579,7 @@ class mod_newsletter implements renderable {
 						'itemid' => $draftid_editor 
 				),
 				'deliverystarted' => $deliverystartedorcompleted,
+				'toc' => $issue->toc,
 				'publishon' => $issue->publishon,
 				'stylesheetid' => $issue->stylesheetid
 		) );
@@ -595,7 +605,7 @@ class mod_newsletter implements renderable {
                                 $this->get_course_module()->id));
         $texteditors = $CFG->texteditors;
         $CFG->texteditors = 'tinymce,textarea';
-        $output .= $renderer->render(new newsletter_form($mform, get_string('edit_issue_title', 'newsletter')));
+        $output .= $renderer->render(new newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter')));
         $CFG->texteditors = $texteditors;
         $output .= $renderer->render_footer();
         return $output;
@@ -767,7 +777,7 @@ class mod_newsletter implements renderable {
                                 $this->get_context(),
                                 false,
                                 $this->get_course_module()->id));
-        $output .= $renderer->render(new newsletter_form($mform, get_string('edit_subscription_title', 'newsletter')));
+        $output .= $renderer->render(new newsletter_form($mform, get_string('edit_subscription_title', 'mod_newsletter')));
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -808,7 +818,7 @@ class mod_newsletter implements renderable {
                               array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                                     NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
                                     NEWSLETTER_PARAM_SUBSCRIPTION => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
-        $output .=  $OUTPUT->confirm(get_string('delete_subscription_question', 'newsletter'),
+        $output .=  $OUTPUT->confirm(get_string('delete_subscription_question', 'mod_newsletter'),
                 new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
                 new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
         $output .= $renderer->render_footer();
@@ -970,7 +980,7 @@ class mod_newsletter implements renderable {
         $issue->htmlcontent = '';
         $issue->publishon = $data->publishon;
         $issue->stylesheetid = $data->stylesheetid;
-
+		$issue->toc = $data->toc;
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
         
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id, mod_newsletter_issue_form::editor_options($context, $issue->id), $data->htmlcontent['text']);
@@ -1025,7 +1035,7 @@ class mod_newsletter implements renderable {
         }
         
         $issue->stylesheetid = $data->stylesheetid;
-
+		$issue->toc = $data->toc;
         $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
                          'maxbytes' => 0,
                          'maxfiles' => -1);
@@ -1193,7 +1203,8 @@ class mod_newsletter implements renderable {
         global $CFG;
         $cssfile = $this->get_stylesheets($stylesheetid);
         $basecss = file_get_contents(dirname(__FILE__) . '/' . NEWSLETTER_BASE_STYLESHEET_PATH);
-        $css = $basecss;
+        $toccss = file_get_contents(dirname(__FILE__) . '/' . 'toc.css');
+        $css = $basecss.$toccss;
         if(!empty($cssfile)){
         	foreach ($cssfile as $storedstylefile){
         		$css .= ($cssfile ? ('\n' . $storedstylefile->get_content()) : '');
@@ -1202,7 +1213,6 @@ class mod_newsletter implements renderable {
 
         $converter = new CssToInlineStyles();
         $converter->setHTML(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8' )); 
-        //$converter->setHTML('<?xml encoding="UTF-8">'.$htmlcontent);
         $converter->setCSS($css);
         $html = $converter->convert();
         

@@ -48,7 +48,7 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
-        $mform->addElement('header', 'subscribe', get_string('guestsubscribe', 'newsletter'));
+        $mform->addElement('header', 'subscribe', get_string('guestsubscribe', 'mod_newsletter'));
 
         $mform->addElement('text', 'firstname', get_string('firstname'), array('size' => '64'));
         $mform->setType('firstname', PARAM_TEXT);
@@ -71,8 +71,8 @@ class mod_newsletter_guest_signup_form extends moodleform {
         }
         //*/
 
-        //$mform->addElement('submit', 'submitbutton', get_string('subscribe', 'newsletter'));
-        $this->add_action_buttons(true, get_string('subscribe', 'newsletter'));
+        //$mform->addElement('submit', 'submitbutton', get_string('subscribe', 'mod_newsletter'));
+        $this->add_action_buttons(true, get_string('subscribe', 'mod_newsletter'));
     }
 
     function definition_after_data(){

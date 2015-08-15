@@ -54,12 +54,12 @@ class mod_newsletter_subscription_form extends \moodleform {
 
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
-        $mform->addElement('static', 'email', get_string('header_email', 'newsletter'), '');
-        $mform->addElement('static', 'name', get_string('header_name', 'newsletter'), '');
-        $mform->addElement('static', 'timesubscribed', get_string('header_timesubscribed', 'newsletter'), '');
-        $mform->addElement('static', 'timestatuschanged', get_string('header_timestatuschanged', 'newsletter'), '');
-        $mform->addElement('static', 'subscriberid', get_string('header_subscriberid', 'newsletter'), '');
-        $mform->addElement('static', 'unsubscriberid', get_string('header_unsubscriberid', 'newsletter'), '');
+        $mform->addElement('static', 'email', get_string('header_email', 'mod_newsletter'), '');
+        $mform->addElement('static', 'name', get_string('header_name', 'mod_newsletter'), '');
+        $mform->addElement('static', 'timesubscribed', get_string('header_timesubscribed', 'mod_newsletter'), '');
+        $mform->addElement('static', 'timestatuschanged', get_string('header_timestatuschanged', 'mod_newsletter'), '');
+        $mform->addElement('static', 'subscriberid', get_string('header_subscriberid', 'mod_newsletter'), '');
+        $mform->addElement('static', 'unsubscriberid', get_string('header_unsubscriberid', 'mod_newsletter'), '');
         
         $options = array(
             NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string("health_0", 'newsletter'),
@@ -68,7 +68,7 @@ class mod_newsletter_subscription_form extends \moodleform {
             NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED => get_string("health_4", 'newsletter'),
         );
 
-        $mform->addElement('select', 'health', get_string('header_health', 'newsletter'), $options);
+        $mform->addElement('select', 'health', get_string('header_health', 'mod_newsletter'), $options);
         $mform->setType('health', PARAM_INT);
 
         $this->add_action_buttons();

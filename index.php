@@ -34,6 +34,6 @@ require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 $PAGE->set_url('/mod/newsletter/index.php');
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('modulenameplural', 'newsletter'), 2);
+echo $OUTPUT->heading(get_string('modulenameplural', 'mod_newsletter'), 2);
 echo "Content goes here";
 echo $OUTPUT->footer();

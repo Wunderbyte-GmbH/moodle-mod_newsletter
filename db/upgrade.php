@@ -195,6 +195,19 @@ function xmldb_newsletter_upgrade($oldversion) {
     	// Newsletter savepoint reached.
     	upgrade_mod_savepoint(true, 2015061601, 'newsletter');
     }
+    
+    if ($oldversion < 2015081400) {
+    
+    	// Conditionally add field
+    	$table = new xmldb_table('newsletter_issues');
+    	$field = new xmldb_field('toc', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'delivered');
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    
+    	// Newsletter savepoint reached.
+    	upgrade_mod_savepoint(true, 2015081400, 'newsletter');
+    }
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
     // related with the module
     // And that's all. Please, examine and understand the 3 example blocks above. Also

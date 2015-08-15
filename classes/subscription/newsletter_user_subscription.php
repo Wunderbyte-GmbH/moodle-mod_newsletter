@@ -69,7 +69,7 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
         if ($search) {
             $groupname = get_string('subscribercandidatesmatching', 'newsletter', $search);
         } else {
-            $groupname = get_string('subscribercandidates', 'newsletter');
+            $groupname = get_string('subscribercandidates', 'mod_newsletter');
         }
         return array($groupname => $availableusers);
     }
@@ -127,7 +127,7 @@ class mod_newsletter_existing_subscribers extends \user_selector_base {
 		if ($search) {
 			$groupname = get_string('subscribedusersmatching', 'newsletter', $search);
 		} else {
-			$groupname = get_string('subscribedusers', 'newsletter');
+			$groupname = get_string('subscribedusers', 'mod_newsletter');
 		}
 
 		return array($groupname => $availableusers);

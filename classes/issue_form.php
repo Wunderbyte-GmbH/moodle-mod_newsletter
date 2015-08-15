@@ -23,7 +23,6 @@
  * @copyright  2015 onwards David Bogner <info@edulabs.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -87,42 +86,51 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->setType('issue', PARAM_INT);
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_EDIT_ISSUE);
         $mform->setType('action', PARAM_ALPHA);
+        
+        $mform->addElement('header', 'header_content', get_string('header_content', 'mod_newsletter'));
 
-        $mform->addElement('header', 'general', get_string('general', 'form'));
-
-        $mform->addElement('text', 'title', get_string('issue_title', 'newsletter'), array('size' => '64'));
+        $mform->addElement('text', 'title', get_string('issue_title', 'mod_newsletter'), array('size' => '64'));
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('title', 'issue_title', 'newsletter');
+        $mform->addHelpButton('title', 'issue_title', 'mod_newsletter');
 
-        $mform->addElement('header', 'general', get_string('header_content', 'newsletter'));
-
-        $mform->addElement('editor', 'htmlcontent', get_string('issue_htmlcontent', 'newsletter'),null,self::editor_options($context, (empty($issue->id) ? null : $issue->id)));
+        $mform->addElement('editor', 'htmlcontent', get_string('issue_htmlcontent', 'mod_newsletter'),null,self::editor_options($context, (empty($issue->id) ? null : $issue->id)));
         $mform->setType('htmlcontent', PARAM_RAW);
         $mform->addRule('htmlcontent', get_string('required'), 'required', null, 'client');
         
         $fs = get_file_storage();
         $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->get_instance()->id, 'filename', false);
         $options = array();
-        $options[NEWSLETTER_DEFAULT_STYLESHEET] = get_string('default_stylesheet', 'newsletter');
+        $options[NEWSLETTER_DEFAULT_STYLESHEET] = get_string('default_stylesheet', 'mod_newsletter');
         foreach ($files as $file) {
             $options[$file->get_id()] = $file->get_filename();
         }
 
-        $mform->addElement('select', 'stylesheetid', get_string('issue_stylesheet', 'newsletter'), $options);
+        $mform->addElement('select', 'stylesheetid', get_string('issue_stylesheet', 'mod_newsletter'), $options);
         $mform->setType('stylesheetid', PARAM_INT);
 
-        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'newsletter'), null, self::attachment_options($newsletter));
-        $mform->addHelpButton('attachments', 'attachments', 'newsletter');
+        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'mod_newsletter'), null, self::attachment_options($newsletter));
+        $mform->addHelpButton('attachments', 'attachments', 'mod_newsletter');
+        
+        $mform->addElement('header', 'toc_header', get_string('toc_header', 'mod_newsletter'));
+        $toc_types = array (
+        		0 => get_string('toc_no','mod_newsletter'),
+        		1 => get_string('toc_yes','mod_newsletter', 1),
+        		2 => get_string('toc_yes','mod_newsletter', 2),
+        		3 => get_string('toc_yes','mod_newsletter', 3),
+        		4 => get_string('toc_yes','mod_newsletter', 4)
+        );
+        $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toc_types);
+        $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
 
-        $mform->addElement('header', 'general', get_string('header_publish', 'newsletter'));
-        $mform->addElement('static', 'publishinfo', '', get_string('header_publishinfo', 'newsletter'));
+        $mform->addElement('header', 'header_publish', get_string('header_publish', 'mod_newsletter'));
+        $mform->addElement('static', 'publishinfo', '', get_string('header_publishinfo', 'mod_newsletter'));
         
         $mform->addElement('hidden', 'deliverystarted', 'no');
         $mform->setType('deliverystarted', PARAM_ALPHANUM);
 
-        $mform->addElement('date_time_selector', 'publishon', get_string('publishon', 'newsletter'));
+        $mform->addElement('date_time_selector', 'publishon', get_string('publishon', 'mod_newsletter'));
         $mform->setType('plaincontent', PARAM_INT);
         $mform->setDefault('publishon', strtotime("+24 hours"));
         $mform->disabledIf('publishon', 'deliverystarted', 'eq', 'yes');

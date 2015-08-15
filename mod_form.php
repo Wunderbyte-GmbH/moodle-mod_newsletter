@@ -42,7 +42,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('newslettername', 'newsletter'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('newslettername', 'mod_newsletter'), array('size'=>'64'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -50,16 +50,16 @@ class mod_newsletter_mod_form extends moodleform_mod {
         }
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
-        $mform->addHelpButton('name', 'newslettername', 'newsletter');
+        $mform->addHelpButton('name', 'newslettername', 'mod_newsletter');
 
         $this->add_intro_editor();
 
-        $mform->addElement('select', 'subscriptionmode', get_string('subscription_mode', 'newsletter'), $this->make_subscription_option_list());
-        $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'newsletter');
+        $mform->addElement('select', 'subscriptionmode', get_string('subscription_mode', 'mod_newsletter'), $this->make_subscription_option_list());
+        $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'mod_newsletter');
 
-        $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'newsletter'),
+        $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'mod_newsletter'),
                             array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => array('css')));
-        $mform->addHelpButton('stylesheets', 'stylesheets', 'newsletter');
+        $mform->addHelpButton('stylesheets', 'stylesheets', 'mod_newsletter');
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -75,9 +75,9 @@ class mod_newsletter_mod_form extends moodleform_mod {
 
     function make_subscription_option_list() {
         $options = array();
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in', 'newsletter');
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT] = get_string('sub_mode_opt_out', 'newsletter');
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_FORCED] = get_string('sub_mode_forced', 'newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in', 'mod_newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT] = get_string('sub_mode_opt_out', 'mod_newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_FORCED] = get_string('sub_mode_forced', 'mod_newsletter');
         return $options;
     }
 
@@ -90,7 +90,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
         return $options;
 
 
-        // $select = $mform->addElement('select', 'cohorts', get_string('cohorts', 'newsletter'), make_cohort_option_list());
+        // $select = $mform->addElement('select', 'cohorts', get_string('cohorts', 'mod_newsletter'), make_cohort_option_list());
         // $select->setMultiple(true);
     }
 }

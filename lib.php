@@ -469,7 +469,7 @@ function newsletter_cron() {
             $url->param(NEWSLETTER_PARAM_USER, 'replacewithuserid');
             $a = array(
             'link' => $url->__toString(),
-            'text' => get_string('unsubscribe_link_text', 'newsletter'));
+            'text' => get_string('unsubscribe_link_text', 'mod_newsletter'));
             $issue->htmlcontent .= get_string('unsubscribe_link', 'newsletter', $a);
         }
 
