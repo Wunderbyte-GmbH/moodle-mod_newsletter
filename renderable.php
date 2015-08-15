@@ -99,6 +99,7 @@ class newsletter_issue implements renderable {
     var $publishon;
     var $numsubscriptions;
     var $numdelivered;
+    var $numnotyetdelivered;
 
     /**
      * Constructor
@@ -112,6 +113,7 @@ class newsletter_issue implements renderable {
         $this->htmlcontent = $issue->htmlcontent;
         $this->numsubscriptions = isset($issue->numsubscriptions) ? $issue->numsubscriptions: 0;
         $this->numdelivered = isset($issue->numdelivered) ? $issue->numdelivered: 0;
+        $this->numnotyetdelivered = isset($issue->numnotyetdelivered) ? $issue->numnotyetdelivered: $this->numsubscriptions;
     }
 }
 
@@ -238,11 +240,11 @@ class newsletter_main_toolbar implements renderable {
 }
 
 class newsletter_progressbar implements renderable {
-    var $total;
+    var $tocomplete;
     var $completed;
 
-    public function __construct($total, $completed) {
-        $this->total = $total;
+    public function __construct($tocomplete, $completed) {
+        $this->tocomplete = $tocomplete;
         $this->completed = $completed;
     }
 }

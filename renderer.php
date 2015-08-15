@@ -150,7 +150,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('div');
         }
         if ($now > $issue->publishon) {
-            $output .= $this->render(new newsletter_progressbar($issue->numsubscriptions, $issue->numdelivered));
+            $output .= $this->render(new newsletter_progressbar($issue->numnotyetdelivered, $issue->numdelivered));
         } else {
             $output .= $this->render(new newsletter_publish_countdown($now, $issue->publishon));
         }
@@ -272,12 +272,15 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     public function render_newsletter_progressbar(newsletter_progressbar $progressbar) {
         $output = '';
 
-        if ($progressbar->total == 0) {
+        if ( ($progressbar->completed + $progressbar->tocomplete)  == 0) {
             return $output;
         }
-        $value = $progressbar->completed / $progressbar->total * 100;
+        $value = $progressbar->completed / ($progressbar->completed + $progressbar->tocomplete) * 100;
+        $invertedvalue = 100 - $value;
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter'));
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter__foreground', 'style' => "width: $value%;"));
+        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter__background', 'style' => "width: $invertedvalue%;"));
+        $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
         return $output;

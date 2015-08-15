@@ -430,6 +430,7 @@ function newsletter_cron() {
 				$sub = new stdClass();
 				$sub->userid = $userid;
 				$sub->issueid = $issue->id;
+				$sub->delivered = 0;
 				$subscriptionobjects[] = $sub;
 			}
 			$DB->insert_records('newsletter_deliveries', $subscriptionobjects);
@@ -477,7 +478,8 @@ function newsletter_cron() {
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
 		$deliveries = $DB->get_records ( 'newsletter_deliveries', array (
-				'issueid' => $issueid 
+				'issueid' => $issueid,
+				'delivered' => 0
 		) );
 		
 		// Configure the $userfrom. All mails are sent from the support user (but as return path for
@@ -512,12 +514,12 @@ function newsletter_cron() {
 			if ($debugoutput) {
 				echo ($result ? "OK" : "FAILED") . "!\n";
 			}
-			$DB->delete_records('newsletter_deliveries', array('id' => $deliveryid));
+			$DB->set_field('newsletter_deliveries', 'delivered', 1,  array('id' => $deliveryid));
 			$sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1 
 					WHERE newsletterid = :newsletterid AND userid = :userid ";
 			$params = array ('newsletterid' => $issue->newsletterid, 'userid' => $delivery->userid );
 			$DB->execute($sql, $params);
-			if(!$DB->record_exists ('newsletter_deliveries', array ('issueid' => $issue->id))){
+			if(!$DB->record_exists ('newsletter_deliveries', array ('issueid' => $issue->id, 'delivered' => 0))){
 				$DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
 			}
 		}

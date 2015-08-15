@@ -827,6 +827,7 @@ class mod_newsletter implements renderable {
 
     /**
      * Display  the overview of all newsletter issues as a list
+     * //TODO: implement issue navigation from a point of time to a point of time
      * 
      * @param unknown $heading
      * @param unknown $groupby
@@ -845,11 +846,6 @@ class mod_newsletter implements renderable {
             return null;
         }
             
-        // check if issue is already published or still in draft mode
-        // display only published issues if user does not have the right to edit an issue
-        foreach($issues as $issue){
-
-        }
         $firstissue = reset($issues);
         $firstdayofweek = (int) get_string('firstdayofweek', 'langconfig');
         switch ($groupby) {
@@ -929,7 +925,6 @@ class mod_newsletter implements renderable {
             }
             $sectionlist->add_issue_section(new newsletter_section($heading, $currentissuelist));
         }
-
         return $sectionlist;
     }
 	
@@ -1128,14 +1123,11 @@ class mod_newsletter implements renderable {
         $records = $DB->get_records_sql($query, $params);
         foreach ($records as $record) {
             $record->cmid = $this->get_course_module()->id;
-            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
-                $record->numsubscriptions = $total;
-                $record->numdelivered = $total;
-            } else if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS){
-                $record->numsubscriptions = $total;
-                $record->numdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id ) );
+            $record->numsubscriptions = $total;
+            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED || $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
+                $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id, 'delivered' => 0) );
+            	$record->numdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id, 'delivered' => 1) );
             } else {
-            	$record->numsubscriptions = $total;
             	$record->numdelivered = 0;
             }
         }
