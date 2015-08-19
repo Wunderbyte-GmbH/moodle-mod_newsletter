@@ -61,6 +61,12 @@
   display: inline-block;
   height: 1.5em;
   width: 16em;
+  padding: 0;
+}
+
+.mod_newsletter_remaining {
+	float: right;
+	padding-right: 3px;
 }
 /* line 9, sass/partials/components/_meter.scss */
 .mod_newsletter__meter .mod_newsletter__meter__foreground {
@@ -71,6 +77,8 @@
   background-image: linear-gradient(#90ee90, #ffffff 20%, #008000 40%, #90ee90);
   height: 100%;
   width: 0;
+  padding: 0;
+  text-indent: 3px;
 }
 
 /* line 2, sass/partials/components/_issue-list.scss */

@@ -277,8 +277,20 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         }
         $value = $progressbar->completed / ($progressbar->completed + $progressbar->tocomplete) * 100;
         $invertedvalue = 100 - $value;
+        if($progressbar->tocomplete > 0){
+        	$remaining = $progressbar->tocomplete;
+        } else {
+        	$remaining = '';
+        }
+        if($progressbar->completed > 0){
+        	$completed = $progressbar->completed;
+        } else {
+        	$completed = '';
+        }
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter'));
+        $output .= html_writer::div($remaining,'', array('class' => 'mod_newsletter_remaining'));
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter__foreground', 'style' => "width: $value%;"));
+        $output .= html_writer::span($completed);
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter__background', 'style' => "width: $invertedvalue%;"));
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');

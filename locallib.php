@@ -1109,7 +1109,8 @@ class mod_newsletter implements renderable {
      */
     private function get_issues($from = 0, $to = 0) {
         global $DB;
-        $total = $DB->count_records('newsletter_subscriptions', array('newsletterid' => $this->get_instance()->id));
+        //$total = $DB->count_records('newsletter_subscriptions', array('newsletterid' => $this->get_instance()->id));
+        $total = $DB->count_records_select('newsletter_subscriptions', 'newsletterid = '.$this->get_instance()->id . ' AND health < 2');
 
         $query = "SELECT i.*
                     FROM {newsletter_issues} i
