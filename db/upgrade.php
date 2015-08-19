@@ -221,6 +221,26 @@ function xmldb_newsletter_upgrade($oldversion) {
     	// Newsletter savepoint reached.
     	upgrade_mod_savepoint(true, 2015081500, 'newsletter');
     }
+    
+    if ($oldversion < 2015081900) {
+    
+    	// Conditionally add field
+    	$table = new xmldb_table('newsletter_deliveries');
+    	$field = new xmldb_field('newsletterid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'issueid');
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+    	$table->add_key('newsletterid', XMLDB_KEY_FOREIGN, array('newsletterid'), 'newsletter', array('id'));
+    	 
+    	$sql = 'UPDATE {newsletter_deliveries} nd
+	    	    INNER JOIN {newsletter_issues} ni
+    			ON nd.issueid = ni.id
+	            SET nd.newsletterid = ni.newsletterid';
+    	$DB->execute($sql);    
+    	// Newsletter savepoint reached.
+    	upgrade_mod_savepoint(true, 2015081900, 'newsletter');
+    }
+    
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
     // related with the module
     // And that's all. Please, examine and understand the 3 example blocks above. Also
