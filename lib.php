@@ -430,6 +430,7 @@ function newsletter_cron() {
 				$sub = new stdClass();
 				$sub->userid = $userid;
 				$sub->issueid = $issue->id;
+				$sub->newsletterid = $issue->newsletterid;
 				$sub->delivered = 0;
 				$subscriptionobjects[] = $sub;
 			}
