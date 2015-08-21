@@ -1308,7 +1308,7 @@ class mod_newsletter implements renderable {
      * @param string $status
      * @return boolean|newid <boolean, number> 
      * subscriptionid for new subscription
-     * false when user is subscribred and status remains unchanged
+     * false when user is subscribed and status remains unchanged
      * true when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
      */
     public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK) {
@@ -1354,7 +1354,7 @@ class mod_newsletter implements renderable {
     /**
      * updates health status for a subscription 
      * 
-     * @param stdClass $data (id and health status)
+     * @param stdClass $data (id, health status and userid)
      */
     private function update_subscription(stdClass $data) {
         global $DB, $USER;

@@ -152,9 +152,9 @@ function newsletter_supports($feature) {
  */
 function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $mform = null) {
     global $DB;
-
-    $newsletter->timecreated = time();
-    $newsletter->timemodified = time();
+	$now = time();
+    $newsletter->timecreated = $now;
+    $newsletter->timemodified = $now;
 
     $newsletter->id = $DB->insert_record('newsletter', $newsletter);
 
@@ -178,6 +178,9 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
                 $sub->userid  = $user->id;
                 $sub->newsletterid = $newsletter->id;
                 $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
+                $sub->timesubscribed = $now;
+                $sub->timestatuschanged = $now;
+                $sub->subscriberid = $USER->id;
                 $DB->insert_record("newsletter_subscriptions", $sub, true, true);
                 //TODO: Log newsletter instance added
             }
@@ -200,8 +203,10 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
  */
 function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_form $mform = null) {
     global $DB;
-
-    $newsletter->timemodified = time();
+    
+    
+	$now = time();
+    $newsletter->timemodified = $now;
     $newsletter->id = $newsletter->instance;
 
     $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
@@ -225,6 +230,9 @@ function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_for
                 $sub->userid  = $user->id;
                 $sub->newsletterid = $newsletter->id;
                 $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
+                $sub->timesubscribed = $now;
+                $sub->timestatuschanged = $now;
+                $sub->subscriberid = $USER->id;
                 $DB->insert_record("newsletter_subscriptions", $sub, true, true);
             }
         }
@@ -270,6 +278,7 @@ function newsletter_delete_instance($id) {
     $DB->delete_records_list('newsletter_bounces','issueid', array_keys($issues));
     $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
+    $DB->delete_records('newsletter_deliveries', array('newsletterid' => $newsletter->id));
     $DB->delete_records('newsletter', array('id' => $newsletter->id));
     return true;
 }
