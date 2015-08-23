@@ -30,7 +30,7 @@ require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 
 $id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 
-$newsletter = new mod_newsletter($id);
+$newsletter = mod_newsletter::get_newsletter_by_course_module($id,true);
 
 $coursemodule = $newsletter->get_course_module();
 $course = $newsletter->get_course();

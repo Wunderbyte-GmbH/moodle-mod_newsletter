@@ -139,6 +139,26 @@ function newsletter_supports($feature) {
 }
 
 /**
+ * Implementation of the function for printing the form elements that control
+ * whether the course reset functionality affects the newsletter.
+ * @param moodleform $mform form passed by reference
+ */
+function newsletter_reset_course_form_definition(&$mform) {
+	$mform->addElement('header', 'newsletterheader', get_string('modulenameplural', 'mod_newsletter'));
+	$name = get_string('delete_all_subscriptions', 'mod_newsletter');
+	$mform->addElement('advcheckbox', 'reset_newsletter_subscriptions', $name);
+}
+
+/**
+ * Course reset form defaults.
+ * @param  object $course
+ * @return array
+ */
+function newsletter_reset_course_form_defaults($course) {
+	return array('reset_newsletter_subscriptions'=>1);
+}
+
+/**
  * Saves a new instance of the newsletter into the database
  *
  * Given an object containing all the necessary data,
@@ -150,44 +170,12 @@ function newsletter_supports($feature) {
  * @param mod_newsletter_mod_form $mform
  * @return int The id of the newly inserted newsletter record
  */
-function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $mform = null) {
-    global $DB;
-	$now = time();
-    $newsletter->timecreated = $now;
-    $newsletter->timemodified = $now;
-
-    $newsletter->id = $DB->insert_record('newsletter', $newsletter);
-
-    $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
-                         'maxbytes' => 0,
-                         'maxfiles' => -1);
-
-    $context = context_module::instance($newsletter->coursemodule);
-
-    if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
-    }
-
-    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-        $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-
-        $users = get_enrolled_users($context);
-        foreach ($users as $user) {
-            if (!$DB->record_exists("newsletter_subscriptions", array("userid" => $user->id, "newsletterid" => $newsletter->id))) {
-                $sub = new stdClass();
-                $sub->userid  = $user->id;
-                $sub->newsletterid = $newsletter->id;
-                $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
-                $sub->timesubscribed = $now;
-                $sub->timestatuschanged = $now;
-                $sub->subscriberid = $USER->id;
-                $DB->insert_record("newsletter_subscriptions", $sub, true, true);
-                //TODO: Log newsletter instance added
-            }
-        }
-    }
-
-    return $newsletter->id;
+function newsletter_add_instance(stdClass $data, mod_newsletter_mod_form $mform = null) {
+	global $CFG,$DB;
+	require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
+		
+	$newsletter = new mod_newsletter(context_module::instance($data->coursemodule));
+	return $newsletter->add_instance($data, $mform);
 }
 
 /**
@@ -201,44 +189,12 @@ function newsletter_add_instance(stdClass $newsletter, mod_newsletter_mod_form $
  * @param mod_newsletter_mod_form $mform
  * @return boolean Success/Fail
  */
-function newsletter_update_instance(stdClass $newsletter, mod_newsletter_mod_form $mform = null) {
-    global $DB;
-    
-    
-	$now = time();
-    $newsletter->timemodified = $now;
-    $newsletter->id = $newsletter->instance;
-
-    $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS,
-                         'maxbytes' => 0,
-                         'maxfiles' => -1);
-
-    $cmid = get_coursemodule_from_instance('newsletter', $newsletter->id);
-    $context = context_module::instance($cmid->id);
-
-    if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-        file_save_draft_area_files($mform->get_data()->stylesheets, $context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
-    }
-
-    if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-        $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-
-        $users = get_enrolled_users($context);
-        foreach ($users as $user) {
-            if (!$DB->record_exists("newsletter_subscriptions", array("userid" => $user->id, "newsletterid" => $newsletter->id))) {
-                $sub = new stdClass();
-                $sub->userid  = $user->id;
-                $sub->newsletterid = $newsletter->id;
-                $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
-                $sub->timesubscribed = $now;
-                $sub->timestatuschanged = $now;
-                $sub->subscriberid = $USER->id;
-                $DB->insert_record("newsletter_subscriptions", $sub, true, true);
-            }
-        }
-    }
-
-    return $DB->update_record('newsletter', $newsletter);
+function newsletter_update_instance(stdClass $data, mod_newsletter_mod_form $mform = null) {
+	global $CFG;
+	require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
+	$context = context_module::instance($data->coursemodule);
+	$newsletter = new mod_newsletter($context, null, null);
+	return $newsletter->update_instance($data,$mform);
 }
 
 /**
@@ -300,12 +256,10 @@ function newsletter_reset_userdata($data) {
     $params = array('courseid' => $data->courseid);
     if ($newsletterids = $DB->get_fieldset_sql($sql, $params)) {
         foreach ($newsletterids as $newsletterid) {
-            $cm = get_coursemodule_from_instance('newsletter', $newsletterid, $data->courseid, false, MUST_EXIST);
-            $newsletter = new mod_newsletter($cm->id);
+            $newsletter = mod_newsletter::get_newsletter_by_instance($newsletterid);
             $status = array_merge($status, $newsletter->reset_userdata($data));
         }
     }
-
     return $status;
 }
 
@@ -458,7 +412,7 @@ function newsletter_cron() {
     	$urlinfo = parse_url($CFG->wwwroot);
     	$hostname = $urlinfo['host'];
     	$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
-    	$newsletter = new mod_newsletter ( $coursemodule->id );
+    	$newsletter = new mod_newsletter ( $coursemodule );
     	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
     		$url = new moodle_url ( '/mod/newsletter/subscribe.php', array (
     				'id' => $newsletter->get_course_module ()->id

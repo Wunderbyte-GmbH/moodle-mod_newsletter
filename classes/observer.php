@@ -60,7 +60,7 @@ class mod_newsletter_observer {
 		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
 		foreach ($newsletters as $newsletter) {
 			$cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
-			$newsletter = new mod_newsletter($cm->id);
+			$newsletter = new mod_newsletter($cm);
 			$newsletter->subscribe($userid);
 		}
 	}

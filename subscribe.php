@@ -60,7 +60,7 @@ $context = context_module::instance($coursemodule->id);
 
 require_capability('mod/newsletter:viewnewsletter', $context);
 
-$newsletter = new mod_newsletter($coursemodule->id);
+$newsletter = new mod_newsletter($coursemodule);
 
 if ($newsletter->is_subscribed($user->id)) {
     if($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
