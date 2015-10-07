@@ -620,6 +620,7 @@ class mod_newsletter implements renderable {
                                 $this->get_context(),
                                 false,
                                 $this->get_course_module()->id));
+        //TODO: remove ugly config hack and provide js for atto
         $texteditors = $CFG->texteditors;
         $CFG->texteditors = 'tinymce,textarea';
         $output .= $renderer->render(new newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter')));

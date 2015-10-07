@@ -80,7 +80,7 @@ function xmldb_newsletter_upgrade($oldversion) {
             $dbman->change_field_type($table, $field);
         }
 
-        // Forum savepoint reached.
+        // Savepoint reached.
         upgrade_mod_savepoint(true, 2015041400, 'newsletter');
     }   
 
@@ -239,6 +239,22 @@ function xmldb_newsletter_upgrade($oldversion) {
     	$DB->execute($sql);    
     	// Newsletter savepoint reached.
     	upgrade_mod_savepoint(true, 2015081900, 'newsletter');
+    }
+    
+    if ($oldversion < 2015082504) {
+    
+    	$table = new xmldb_table('newsletter_deliveries');
+    	
+    	// Change to XMLDB_NOTNULL
+    	$field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'newsletterid');
+    	
+    	// Conditionally change field type
+    	if ($dbman->field_exists($table, $field)) {
+    		$dbman->change_field_notnull($table, $field);
+    	}
+    	
+    	// Savepoint reached.
+    	upgrade_mod_savepoint(true, 2015082504, 'newsletter');
     }
     
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,

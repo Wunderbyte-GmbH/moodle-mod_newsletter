@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015082503;        // If version == 0 then module will not be installed
+$plugin->version   = 2015082504;        // If version == 0 then module will not be installed
 $plugin->requires  = 2014051200;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
 $plugin->release   = '1.1.6 Die Zeit';  // Release: named after famous newspapers around the world
