@@ -64,7 +64,7 @@ class mod_newsletter implements renderable {
      */
     public static function get_newsletter_by_instance($newsletterid, $eagerload = false) {
         $cm = get_coursemodule_from_instance('newsletter', $newsletterid);
-		$context = context::instance_by_id($cm->id);
+        $context = context_module::instance($cm->id);
         return new mod_newsletter($context, $eagerload);
     }
 
@@ -125,9 +125,9 @@ class mod_newsletter implements renderable {
      * @return stdClass The settings
      */
     public function get_instance() {
+        global $DB;
         if (!$this->instance) {
             if ($this->get_course_module()) {
-                global $DB;
                 $this->instance = $DB->get_record('newsletter', array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
             } else {
                 throw new coding_exception('Improper use of the newsletter class. Cannot load the newsletter record.');

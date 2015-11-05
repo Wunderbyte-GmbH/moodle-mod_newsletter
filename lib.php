@@ -372,7 +372,6 @@ function newsletter_cron() {
 
     require_once('cron_helper.php');
     cron_helper::lock();
-
     require_once('locallib.php');
 
     $unsublinks = array();
@@ -406,13 +405,14 @@ function newsletter_cron() {
     if ($debugoutput) {
         mtrace("Data collection complete. Delivering...\n");
     }
-    require_once('locallib.php');
+
     $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS) );
     foreach ($issuestodeliver as $issueid => $issue) {
     	$urlinfo = parse_url($CFG->wwwroot);
     	$hostname = $urlinfo['host'];
-    	$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
-    	$newsletter = new mod_newsletter ( $coursemodule );
+    	//$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
+    	$newsletter = mod_newsletter::get_newsletter_by_instance ($issue->newsletterid);
+    	 
     	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
     		$url = new moodle_url ( '/mod/newsletter/subscribe.php', array (
     				'id' => $newsletter->get_course_module ()->id
@@ -468,7 +468,7 @@ function newsletter_cron() {
 			$userfrom->customheaders = array (  // Headers to make emails easier to track
 					'Precedence: Bulk',
 					'List-Id: "'.$newsletter->get_instance ()->name.'" <newsletter'.$newsletter->get_course_module()->instance.'@'.$hostname.'>',
-					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$coursemodule->id,
+					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$newsletter->get_context()->id,
 					'Message-ID: '.newsletter_get_email_message_id($issue->id, $recipient->id, $hostname),
 					'X-Course-Id: '.$newsletter->get_instance()->course,
 					'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
