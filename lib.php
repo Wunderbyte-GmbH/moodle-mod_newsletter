@@ -746,7 +746,7 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
  * @param navigation_node $newsletternode {@link navigation_node}
  */
 function newsletter_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $newsletternode=null) {
-	global $PAGE;
+	global $PAGE, $CFG;
 	require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
 	
