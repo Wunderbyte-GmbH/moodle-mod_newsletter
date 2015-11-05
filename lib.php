@@ -409,7 +409,6 @@ function newsletter_cron() {
     foreach ($issuestodeliver as $issueid => $issue) {
     	$urlinfo = parse_url($CFG->wwwroot);
     	$hostname = $urlinfo['host'];
-    	//$coursemodule = get_coursemodule_from_instance ( 'newsletter', $issue->newsletterid, 0, false, MUST_EXIST );
     	$newsletter = mod_newsletter::get_newsletter_by_instance ($issue->newsletterid);
     	 
     	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
@@ -436,7 +435,12 @@ function newsletter_cron() {
             'text' => get_string('unsubscribe_link_text', 'mod_newsletter'));
             $issue->htmlcontent .= get_string('unsubscribe_link', 'newsletter', $a);
         }
-
+        
+        // generate table of content
+        require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
+        $toc = new \mod_newsletter\mod_newsletter_issue_parser($issue);
+        $issue->htmlcontent = $toc->get_toc_and_doc();
+        
         $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php', $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);

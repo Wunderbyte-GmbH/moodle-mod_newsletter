@@ -26,7 +26,6 @@
  */
 namespace mod_newsletter;
 
-use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 
 class mod_newsletter_issue_parser {
 	
@@ -43,7 +42,7 @@ class mod_newsletter_issue_parser {
 	/**
 	 * @var string HTML the altered HTML
 	 */
-	private $htmlwithanchors = NULL;
+	private $finalhtml = NULL;
 	
 	/**
 	 * @var number toc setting
@@ -56,9 +55,13 @@ class mod_newsletter_issue_parser {
 	 * @param objed $issue        	
 	 */
 	public function __construct($issue) {
-		$this->dom = new \DOMDocument ();
-		@$this->dom->loadHTML (mb_convert_encoding($issue->htmlcontent, 'HTML-ENTITIES', 'UTF-8' ));
-		$this->tocsetting = $issue->toc;
+	    if($issue->toc > 0){
+	        $this->dom = new \DOMDocument ();
+	        @$this->dom->loadHTML (mb_convert_encoding($issue->htmlcontent, 'HTML-ENTITIES', 'UTF-8' ));
+	    } else {
+	        $this->finalhtml = $issue->htmlcontent;
+	    }
+	    $this->tocsetting = $issue->toc;
 	}
 	
 	/**
@@ -68,18 +71,22 @@ class mod_newsletter_issue_parser {
 	 * @return string htmlcontent
 	 */
 	public function get_toc_and_doc() {
-		if (is_null ( $this->toc_html )) {
-			$this->generate_toc ();
-		}
-		return $this->toc_html . $this->htmlwithanchors;
+	    if($this->tocsetting > 0) {
+	        if (is_null ( $this->toc_html )) {
+	            $this->generate_toc ();
+	        }
+	        return $this->toc_html . $this->finalhtml;
+	    } else {
+	        return $this->finalhtml;
+	    }
 	}
 	
 	/**
 	 * Generate the table of content for the newsletter issue
 	 * The resulting HTML is saved as the TOC HTML and the modified HTML of the newsletter issue is saved
-	 * as @var string htmlwithanchors
+	 * as @var string finalhtml
 	 * $this->toc_html
-	 * $this->htmlwithanchors
+	 * $this->finalhtml
 	 */
 	private function generate_toc() {
 		$toc = new \DOMDocument ();
@@ -166,14 +173,14 @@ class mod_newsletter_issue_parser {
 		$container = $toc->appendChild ( $toccontainer );
 		$container->appendChild ( $rootnode );
 		$this->toc_html = $toc->saveHTML ();
-		$this->htmlwithanchors = $this->dom->saveHTML ();
+		$this->finalhtml = $this->dom->saveHTML ();
 	}
 	
 	/**
 	 * Apply the anchors referenced in the table of content
 	 * to the original HTML of the newsletter issue.
 	 * Save the
-	 * modified issue HTML in $htmlwithanchors
+	 * modified issue HTML in $finalhtml
 	 */
 	private function apply_anchors($headlinenode) {
 		// add anchor to headline
