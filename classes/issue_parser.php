@@ -143,6 +143,7 @@ class mod_newsletter_issue_parser {
 						$node = $node->parentNode;
 					}
 					for($i = 1; $i <= $levelgap; $i ++) {
+					    $node = $node->appendChild ( $toc->createElement ( 'li' ) );
 						$node = $node->appendChild ( $toc->createElement ( 'ol' ) );
 						// when level reached create the entry
 						if ($i == $levelgap) {
