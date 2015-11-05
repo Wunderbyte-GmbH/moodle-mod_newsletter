@@ -21,7 +21,6 @@
 * @copyright  2015 David Bogner, edulabs.org <info@edulabs.org>
 * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
-namespace mod_newsletter;
 defined('MOODLE_INTERNAL') || die();
 
 /**
