@@ -369,10 +369,9 @@ function newsletter_cron() {
     if ($debugoutput) {
         mtrace("Done.\n");
     }
-
-    require_once('cron_helper.php');
+    require_once($CFG->dirroot . '/mod/newsletter/cron_helper.php');
     cron_helper::lock();
-    require_once('locallib.php');
+    require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 
     $unsublinks = array();
 	if ($debugoutput) {
@@ -748,7 +747,7 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
  */
 function newsletter_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $newsletternode=null) {
 	global $PAGE;
-	require_once 'locallib.php';
+	require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
 	
 	$currentgroup = groups_get_activity_group($PAGE->cm);

@@ -58,13 +58,12 @@ abstract class cron_helper {
     }
 
     public static function lock() {
-        global $argv;
 
         if (!is_dir(NEWSLETTER_LOCK_DIR)) {
             mkdir(NEWSLETTER_LOCK_DIR, 0777, true);
         }
 
-        $lock_file = NEWSLETTER_LOCK_DIR . '/' . $argv[0] . NEWSLETTER_LOCK_SUFFIX;
+        $lock_file = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
 
         if (file_exists($lock_file)) {
             self::$pid = file_get_contents($lock_file);
@@ -83,9 +82,8 @@ abstract class cron_helper {
     }
 
     public static function unlock() {
-        global $argv;
 
-        $lock_file = NEWSLETTER_LOCK_DIR . '/' . $argv[0] . NEWSLETTER_LOCK_SUFFIX;
+        $lock_file = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
 
         if (file_exists($lock_file)) {
             unlink($lock_file);
