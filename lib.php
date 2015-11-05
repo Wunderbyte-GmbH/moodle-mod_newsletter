@@ -468,7 +468,7 @@ function newsletter_cron() {
 			$userfrom->customheaders = array (  // Headers to make emails easier to track
 					'Precedence: Bulk',
 					'List-Id: "'.$newsletter->get_instance ()->name.'" <newsletter'.$newsletter->get_course_module()->instance.'@'.$hostname.'>',
-					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$newsletter->get_context()->id,
+					'List-Help: '.$CFG->wwwroot.'/mod/newsletter/view.php?id='.$newsletter->get_context()->instanceid,
 					'Message-ID: '.newsletter_get_email_message_id($issue->id, $recipient->id, $hostname),
 					'X-Course-Id: '.$newsletter->get_instance()->course,
 					'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
