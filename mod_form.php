@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Module instance settings form
@@ -37,6 +38,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
+        global $CFG;
 
         $mform = $this->_form;
 
@@ -52,9 +54,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'newslettername', 'mod_newsletter');
 
-        $this->add_intro_editor();
-        $version_major = newsletter_get_moodle_version_major();
-        if ( $version_major < '2015051100' ) {
+        if ( $CFG->branch < 29 ) {
             //This is valid before v2.9
             $this->add_intro_editor();
         } else {

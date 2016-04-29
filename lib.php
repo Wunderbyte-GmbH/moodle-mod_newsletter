@@ -1068,17 +1068,6 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
 		}
 		return false;
 	}
-	
-	/**
-	 * check version of Moodle
-	 * @return int Moodle major version
-	 */
-	function newsletter_get_moodle_version_major() {
-	    global $CFG;
-	
-	    $version_array = explode('.', $CFG->version);
-	    return $version_array[0];
-	}
 }
 
 
