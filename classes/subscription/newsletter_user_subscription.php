@@ -11,7 +11,11 @@ require_once($CFG->dirroot . '/user/selector/lib.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 class mod_newsletter_potential_subscribers extends \user_selector_base {
-	protected $newsletterid;
+	
+    /**
+     * @var int newsletterid
+     */
+    protected $newsletterid;
 	
 	public function __construct($name, $options) {
 		$this->newsletterid  = $options['newsletterid'];
@@ -48,10 +52,15 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
             LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = u.id AND ns.newsletterid = :newsletterid)
                 WHERE $wherecondition
                       AND ns.id IS NULL";
+        
+        // enrolled users in the course
+        //$nl = \mod_newsletter::get_newsletter_by_course_module($this->newsletterid)->get_context();
+        //list($esql, $eparams) = get_enrolled_sql($context, '', 0, true);
 
         list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
         $order = ' ORDER BY ' . $sort;
 
+        // Check to see if there are too many to show sensibly.
         if (!$this->is_validating()) {
             $potentialmemberscount = $DB->count_records_sql($countfields . $sql, $params);
             if ($potentialmemberscount > $this->maxusersperpage) {

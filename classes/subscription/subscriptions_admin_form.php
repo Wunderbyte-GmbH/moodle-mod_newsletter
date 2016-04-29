@@ -40,6 +40,7 @@ class mod_newsletter_subscriptions_admin_form extends \moodleform {
      * Defines forms elements
      */
     public function definition() {
+        global $CFG;
 
         $mform = &$this->_form;
         $data = &$this->_customdata;
@@ -53,9 +54,19 @@ class mod_newsletter_subscriptions_admin_form extends \moodleform {
         $mform->addElement('header', 'cohort_management', get_string('cohortmanagement','mod_newsletter'));
         $mform->setExpanded('cohort_management', false);
         
-        $options = cohort_get_visible_list($data['course']);
+        if ( isset($CFG->branch) && $CFG->branch < 28 ) {
+            //This is valid before v2.8
+            $cohorts = cohort_get_visible_list($data['course']);
+        } else {
+            //This is valid after v2.8
+            $coursecontext = \context_course::instance($data['course']->id);
+            $options =  cohort_get_available_cohorts($coursecontext, COHORT_WITH_ENROLLED_MEMBERS_ONLY);
+            foreach($options as $opionobj) {
+                $cohorts[$opionobj->id] = $opionobj->name ." (". $opionobj->memberscnt. ")";
+            }
+        }
 
-        $cohorts = $mform->addElement('select', 'cohorts', get_string('cohortsavailable', 'mod_newsletter'), $options);
+        $cohorts = $mform->addElement('select', 'cohorts', get_string('cohortsavailable', 'mod_newsletter'), $cohorts);
         $cohorts->setMultiple(true);
 
         $buttonarray=array();

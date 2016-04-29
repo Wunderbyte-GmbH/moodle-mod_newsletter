@@ -58,8 +58,7 @@ class mod_newsletter_observer {
 		$newsletters = $DB->get_records_sql($sql, $params);
 		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
 		foreach ($newsletters as $newsletter) {
-			$cm = get_coursemodule_from_instance('newsletter', $newsletter->id);
-			$newsletter = new mod_newsletter($cm);
+			$newsletter = mod_newsletter::get_newsletter_by_instance($newsletter->id);
 			$newsletter->subscribe($userid);
 		}
 	}

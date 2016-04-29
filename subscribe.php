@@ -1,5 +1,6 @@
 <?php
 
+use mod_newsletter;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -24,6 +25,7 @@ $user = optional_param(NEWSLETTER_PARAM_USER, 0, PARAM_INT);
 $confirm = optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, PARAM_INT);
 $secret = optional_param(NEWSLETTER_PARAM_HASH, false, PARAM_TEXT);
 
+// create a new user if the user has used the guest subscription form
 if ($user) {
     global $DB;
     $sub = $DB->get_record('newsletter_subscriptions', array('userid' => $user, 'health' => NEWSLETTER_SUBSCRIBER_STATUS_OK));
@@ -50,6 +52,7 @@ if ($user) {
 } else {
     $user = $USER;
 }
+
 $url = new moodle_url('/mod/newsletter/subscribe.php', array('id' => $id));
 $PAGE->set_url($url);
 $coursemodule = get_coursemodule_from_id('newsletter', $id, 0, false, MUST_EXIST);
@@ -60,7 +63,8 @@ $context = context_module::instance($coursemodule->id);
 
 require_capability('mod/newsletter:viewnewsletter', $context);
 
-$newsletter = new mod_newsletter($coursemodule);
+$newsletter = mod_newsletter::get_newsletter_by_course_module($id);
+
 
 if ($newsletter->is_subscribed($user->id)) {
     if($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {

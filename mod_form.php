@@ -53,6 +53,14 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $mform->addHelpButton('name', 'newslettername', 'mod_newsletter');
 
         $this->add_intro_editor();
+        $version_major = newsletter_get_moodle_version_major();
+        if ( $version_major < '2015051100' ) {
+            //This is valid before v2.9
+            $this->add_intro_editor();
+        } else {
+            //This is valid after v2.9
+            $this->standard_intro_elements();
+        }
 
         $mform->addElement('select', 'subscriptionmode', get_string('subscription_mode', 'mod_newsletter'), $this->make_subscription_option_list());
         $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'mod_newsletter');

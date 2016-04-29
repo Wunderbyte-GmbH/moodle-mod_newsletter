@@ -328,7 +328,7 @@ class mod_newsletter implements renderable {
 				NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE 
 		) );
 		
-		if ($mform->is_cancelled ()) {
+		if ($mform->is_cancelled () || isloggedin () || !isguestuser()) {
 			redirect ( new moodle_url ( 'view.php', array (
 					'id' => $this->get_course_module ()->id,
 					NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
@@ -348,7 +348,6 @@ class mod_newsletter implements renderable {
 			$output .= $renderer->render_footer ();
 			return $output;
 		}
-		
 	}
 	
     /**
