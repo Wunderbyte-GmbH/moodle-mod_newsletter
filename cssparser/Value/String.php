@@ -2,7 +2,7 @@
 
 namespace Sabberworm\CSS\Value;
 
-class String extends PrimitiveValue {
+class cString extends PrimitiveValue {
 
 	private $sString;
 

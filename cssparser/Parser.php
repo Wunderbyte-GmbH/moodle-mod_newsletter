@@ -17,7 +17,7 @@ use Sabberworm\CSS\Value\RuleValueList;
 use Sabberworm\CSS\Value\Size;
 use Sabberworm\CSS\Value\Color;
 use Sabberworm\CSS\Value\URL;
-use Sabberworm\CSS\Value\String;
+use Sabberworm\CSS\Value\cString;
 use Sabberworm\CSS\Rule\Rule;
 use Sabberworm\CSS\Parsing\UnexpectedTokenException;
 
@@ -214,7 +214,7 @@ class Parser {
 			}
 			$this->consume($sQuote);
 		}
-		return new String($sResult);
+		return new cString($sResult);
 	}
 
 	private function parseCharacter($bIsForIdentifier) {
