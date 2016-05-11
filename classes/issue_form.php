@@ -123,7 +123,9 @@ class mod_newsletter_issue_form extends moodleform {
         );
         $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toc_types);
         $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
-
+        
+        //$mform->addElement('text', 'replaceinfo', get_string('issue_title', 'mod_newsletter'), array('size' => '64'));
+        
         $mform->addElement('header', 'header_publish', get_string('header_publish', 'mod_newsletter'));
         $mform->addElement('static', 'publishinfo', '', get_string('header_publishinfo', 'mod_newsletter'));
         

@@ -26,7 +26,6 @@
  */
 namespace mod_newsletter;
 
-
 class mod_newsletter_issue_parser {
 	
 	/**
@@ -42,7 +41,7 @@ class mod_newsletter_issue_parser {
 	/**
 	 * @var string HTML the altered HTML
 	 */
-	private $finalhtml = NULL;
+	private $htmlcontent = NULL;
 	
 	/**
 	 * @var number toc setting
@@ -50,19 +49,53 @@ class mod_newsletter_issue_parser {
 	private $tocsetting = NULL;
 	
 	/**
-	 * Convert the inital HTML to \DOMDocument
-	 * 
-	 * @param objed $issue        	
+	 * @var array
 	 */
-	public function __construct($issue) {
-	    if($issue->toc > 0){
-	        $this->dom = new \DOMDocument ();
-	        @$this->dom->loadHTML (mb_convert_encoding($issue->htmlcontent, 'HTML-ENTITIES', 'UTF-8' ));
-	    } else {
-	        $this->finalhtml = $issue->htmlcontent;
-	    }
-	    $this->tocsetting = $issue->toc;
-	}
+	private $tags = array(
+	                'issueurl' => 'replace_issueurl',
+	                'issuelink' => 'replace_issuelink',
+	                'firstname' => 'replace_firstname',
+	                'lastname' => 'replace_lastname',
+	                'fullname' => 'replace_fullname'
+	);
+	
+	/**
+	 * @var integer context id
+	 */
+	private static $contextid = null;
+	
+	/**
+	 * @var integer issue id
+	 */
+	private static $issueid = null;
+	
+	/**
+	 * @var integer newsletter id
+	 */
+	private static $newsletterid = null;
+	
+	/**
+	 * @var boolean called from cron: true otherwise false
+	 */
+	private static $cron = false;
+
+    /**
+     * Convert the inital HTML to \DOMDocument
+     *
+     * @param object $issue
+     * @param boolean $cron true if called from cron job false if newsletter is called from browser
+     */
+    public function __construct($issue, $cron = false) {
+        self::$newsletterid = $issue->newsletterid;
+        self::$contextid = $issue->cmid;
+        self::$issueid = $issue->id;
+        self::$cron = $cron;
+        $this->htmlcontent = $issue->htmlcontent;
+        $this->tocsetting = $issue->toc;
+        if($this->has_tag($this->htmlcontent)){
+            $this->htmlcontent = $this->replace_tags ( $issue );
+        }
+    }
 	
 	/**
 	 * Return the table of content and the modified newsletter content with anchors as an array
@@ -70,23 +103,34 @@ class mod_newsletter_issue_parser {
 	 *
 	 * @return string htmlcontent
 	 */
-	public function get_toc_and_doc() {
+	public function get_parsed_html() {
+   
 	    if($this->tocsetting > 0) {
+	        $this->dom = new \DOMDocument();
+	        @$this->dom->loadHTML(mb_convert_encoding($this->htmlcontent, 'HTML-ENTITIES', 'UTF-8'));
 	        if (is_null ( $this->toc_html )) {
 	            $this->generate_toc ();
 	        }
-	        return $this->toc_html . $this->finalhtml;
+	        return $this->toc_html . $this->htmlcontent;
 	    } else {
-	        return $this->finalhtml;
+	        return $this->htmlcontent;
 	    }
+	}
+	
+	/**
+	 * Get the supported tag names as an array
+	 * @return array of strings
+	 */
+	public function get_supported_tags (){
+	    return array_keys($this->tags);
 	}
 	
 	/**
 	 * Generate the table of content for the newsletter issue
 	 * The resulting HTML is saved as the TOC HTML and the modified HTML of the newsletter issue is saved
-	 * as @var string finalhtml
+	 * as @var string htmlcontent
 	 * $this->toc_html
-	 * $this->finalhtml
+	 * $this->htmlcontent
 	 */
 	private function generate_toc() {
 		$toc = new \DOMDocument ();
@@ -133,7 +177,8 @@ class mod_newsletter_issue_parser {
 					$a->setAttribute ( 'href', '#' . $headlinenode->id );
 					$node->appendChild ( $a );
 				} else if ($toclevel == 0) {
-					$node = $rootnode->firstChild->appendChild ( $toc->createElement ( 'li' ) );
+				    $node = $rootnode->firstChild->appendChild ( $toc->createElement ( 'ol' ) );
+					$node = $node->appendChild ( $toc->createElement ( 'li' ) );
 					$a = $toc->createElement ( 'a', $headlinenode->headline->textContent );
 					$a->setAttribute ( 'href', '#' . $headlinenode->id );
 					$node->appendChild ( $a );
@@ -174,14 +219,14 @@ class mod_newsletter_issue_parser {
 		$container = $toc->appendChild ( $toccontainer );
 		$container->appendChild ( $rootnode );
 		$this->toc_html = $toc->saveHTML ();
-		$this->finalhtml = $this->dom->saveHTML ();
+		$this->htmlcontent = $this->dom->saveHTML ();
 	}
 	
 	/**
 	 * Apply the anchors referenced in the table of content
 	 * to the original HTML of the newsletter issue.
 	 * Save the
-	 * modified issue HTML in $finalhtml
+	 * modified issue HTML in $htmlcontent
 	 */
 	private function apply_anchors($headlinenode) {
 		// add anchor to headline
@@ -190,4 +235,196 @@ class mod_newsletter_issue_parser {
 		$a->setAttribute ( 'id', $headlinenode->id );
 		$headlinenode->headline->insertBefore ( $a, $headlinenode->headline->firstChild );
 	}
+
+	/**
+	 * Whether the passed content contains the specified tag
+	 *
+	 * @param string $content Content to search for tags.
+	 * @param string $tag tag to check.
+	 * @return bool Whether the passed content contains the given tag.
+	 */
+	private function has_tag( $content ) {
+	    if ( false === strpos( $content, 'news://' ) ) {
+	        return false;
+	    }
+	
+	    /*
+	    if ( tag_exists( $tag ) ) {
+	        preg_match_all( '/' . get_tag_regex() . '/', $content, $matches, PREG_SET_ORDER );
+	        if ( empty( $matches ) ){
+	            return false;
+	        }
+	
+	        foreach ( $matches as $tag ) {
+	            if ( $tag === $tag[1] ) {
+	                return true;
+	            }
+	        }
+	    }
+	    */
+	    return true;
+	}
+	
+	/**
+	 * Whether a registered tag exists
+	 *
+	 * @param string $tag tag to check.
+	 * @return bool Whether the given shortcode exists.
+	 */
+	private function tag_exists( $tag ) {
+	    return array_key_exists( $tag, $this->tags );
+	}
+	
+	
+	/**
+	 * Search content for tags and filter tags through their hooks.
+	 *
+	 * If there are no tag tags defined, then the content will be returned
+	 * without any filtering. 
+	 *
+	 * @param object $issue to search for tags.
+	 * @return string Content with tags filtered out.
+	 */
+	private function replace_tags( $issue ) {
+	    $content = $issue->htmlcontent;
+	
+	    if ( false === strpos( $content, 'news://' ) ) {
+	        return $content;
+	    }
+	
+	    if (empty($this->tags) || !is_array($this->tags)) {
+	        return $content;
+	    }
+	
+	    // Find all registered tag names in $content.
+	    preg_match_all( '@news:\/\/([a-zA-Z0-9_]+)\/@', $content, $matches );
+	    $tagnames = array_intersect( array_keys( $this->tags ), $matches[1] );
+	
+	    if ( empty( $tagnames ) ) {
+	        return $content;
+	    }
+		
+	    $pattern = $this->get_tag_regex( $tagnames );
+	    $content = preg_replace_callback( "/$pattern/",
+	            function ($matches) {
+	                return $this->perform_tag_replacement($matches);
+	            },
+	            $content );	            
+	    return $content;
+	}
+	
+	/**
+	 * Return regular expression for searching all occurances of
+	 * all tags
+	 * 
+	 * @param array $tagnames
+	 * @return string regular expression
+	 */
+	private function get_tag_regex($tagnames = null) {
+	    if ( empty( $tagnames ) ) {
+	        $tagnames = array_keys( $this->tags );
+	    }
+	    $tagregexp = join( '|', array_map('preg_quote', $tagnames) );
+	    
+	    return 
+	       'news:\\/\\/'                      // Opening
+	    . "($tagregexp)"                      // 1: tagname
+	    . '\\/';                              // Closing
+	}
+	
+	/**
+	 * Regular Expression callable for replacing a tag
+	 * @see get_tag_regex for details of the match array contents.
+	 *
+	 * @param array $m Regular expression match array
+	 * @return string|false False on failure.
+	 */
+	private function perform_tag_replacement ( $m ) {
+	    $replacement = '';
+	    $callable = null;
+	    if( array_key_exists($m[1], $this->tags) ){
+	       $callable = "\mod_newsletter\mod_newsletter_issue_parser::". "replace_" . $m[1];
+	    }
+	    if ( ! is_callable( $callable ) ) {
+	        // $message = sprintf( __( 'Attempting to parse a tag without a valid callback: %s' ), $this->tag[$m[1]] );
+	        $this->tags[$m[1]];
+	        return $m[0];
+	    }
+	    $replacement = call_user_func ($callable, $m);
+	    return $replacement;
+	}
+	
+	
+	/**
+	 * @param $m regular expression match array
+	 * @return moodle_url issueurl
+	 */
+	public static function replace_issueurl ($m) {
+	    $url = new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => self::$contextid, NEWSLETTER_PARAM_ISSUE => self::$issueid, NEWSLETTER_PARAM_ACTION => 'readissue'));
+	    return $url;
+	}
+	
+	/**
+	 * return issuelink only if sent as email. Return empty string when viewing online
+	 * 
+	 * @param $m regular expression match array
+	 * @return moodle_url issuelink
+	 */
+	public static function replace_issuelink ($m) {
+	    $url = new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => self::$contextid, NEWSLETTER_PARAM_ISSUE => self::$issueid, NEWSLETTER_PARAM_ACTION => 'readissue'));
+        $link = '<a href="' . $url . '">'. get_string ('readonline', 'mod_newsletter') . "</a>";
+        if(self::$cron){
+            return $link;
+        }
+        return '';
+	}
+	
+	/**
+	 * @param $m regular expression match array
+	 * @return string lastname
+	 */
+	public static function replace_lastname ($m) {
+	    global $USER;
+	    if (!self::$cron AND !isloggedin() OR isguestuser()){
+	        return get_string('user');
+	    }
+	    if (self::$cron){
+	        return $m[0];
+	    } else {
+	        return $USER->lastname;
+	    }
+	}
+	
+	/**
+	 * @param $m regular expression match array
+	 * @return string lastname
+	 */
+	public static function replace_firstname ($m) {
+	    global $USER;
+	    if (!self::$cron AND !isloggedin() OR isguestuser()){
+	        return get_string('guest');
+	    }
+	    if (self::$cron){
+	        return $m[0];
+	    } else {
+	        return $USER->firstname;
+	    }	    
+	}
+	
+	/**
+	 * @param $m regular expression match array
+	 * @return string fullname
+	 */
+	public static function replace_fullname ($m) {
+	    global $USER;
+	    if (!self::$cron AND !isloggedin() OR isguestuser()){
+	        return get_string('guest') . " " . get_string('user');
+	    }
+	    if (self::$cron){
+	        return $m[0];
+	    } else {
+	        return fullname($USER) ;
+	    }
+	}
+
 }

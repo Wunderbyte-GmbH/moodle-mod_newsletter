@@ -7,7 +7,7 @@ M.mod_newsletter.collapse_subscribe_form = function (Y) {
     }
 }
 
-M.mod_newsletter.init_tinymce = function (Y, stylesheets, selected) {
+M.mod_newsletter.init_editor = function (Y, stylesheets, selected) {
     if (tinyMCE.activeEditor) {
         var win = tinyMCE.activeEditor.getWin();
         var doc = tinyMCE.activeEditor.getDoc();
@@ -52,6 +52,6 @@ M.mod_newsletter.init_tinymce = function (Y, stylesheets, selected) {
         Y.one('#id_stylesheetid').on('change', change_stylesheet);
     } else {
         // TODO: this seems like an ugly hack - replace with an event handler if at all possible
-        setTimeout(function(){M.mod_newsletter.init_tinymce(Y, stylesheets, selected);}, 100);
+        setTimeout(function(){M.mod_newsletter.init_editor(Y, stylesheets, selected);}, 100);
     }
 }

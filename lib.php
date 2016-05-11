@@ -405,11 +405,12 @@ function newsletter_cron() {
         mtrace("Data collection complete. Delivering...\n");
     }
 
-    $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS) );
+    $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS), null, 'id, newsletterid' );
     foreach ($issuestodeliver as $issueid => $issue) {
     	$urlinfo = parse_url($CFG->wwwroot);
     	$hostname = $urlinfo['host'];
     	$newsletter = mod_newsletter::get_newsletter_by_instance ($issue->newsletterid);
+    	$issue = $newsletter->get_issue($issue->id);
     	 
     	if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
     		$url = new moodle_url ( '/mod/newsletter/subscribe.php', array (
@@ -438,8 +439,8 @@ function newsletter_cron() {
         
         // generate table of content
         require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
-        $toc = new \mod_newsletter\mod_newsletter_issue_parser($issue);
-        $issue->htmlcontent = $toc->get_toc_and_doc();
+        $parsedhtml = new \mod_newsletter\mod_newsletter_issue_parser($issue, true);
+        $issue->htmlcontent = $parsedhtml->get_parsed_html();
         
         $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php', $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
@@ -465,8 +466,31 @@ function newsletter_cron() {
 			if ($debugoutput) {
 				mtrace("Sending message to {$recipient->email}... ");
 			}
-			$plaintext = str_replace ( 'replacewithuserid', $delivery->userid, $plaintexttmp );
-			$html = str_replace ( 'replacewithuserid', $delivery->userid, $htmltmp );
+			
+			// TODO: when someone uses the string "replacewithuserid" in a text it will be replaced with the userid = not good
+			// Replace user specific data here
+			$toreplace = array();
+			$replacement = array ();
+			
+			$tags = $parsedhtml->get_supported_tags();
+			foreach ($tags as $name) {
+				$toreplace[$name] = "news://" . $name . "/";
+			    if( $name == 'lastname' OR $name == 'firstname'){
+			        $replacement[$name] = $recipient->$name;
+			    } else if ($name == 'fullname'){
+			        $replacement[$name] = fullname($recipient);
+			    } else {
+			        $replacement[$name] = '';
+			    }
+			}
+			$toreplace['replacewithuserid'] = 'replacewithuserid';
+			$replacement['replacewithuserid'] = $delivery->userid;
+			
+			
+			$plaintext = str_replace ( $toreplace, $replacement, $plaintexttmp );
+			$html = str_replace ( $toreplace, $replacement, $htmltmp );
+			
+			// user data replaced
 			
 			$userfrom->customheaders = array (  // Headers to make emails easier to track
 					'Precedence: Bulk',

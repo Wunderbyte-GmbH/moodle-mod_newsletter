@@ -65,7 +65,7 @@ class mod_newsletter implements renderable {
     public static function get_newsletter_by_instance($newsletterid, $eagerload = false) {
         $cm = get_coursemodule_from_instance('newsletter', $newsletterid);
         $context = context_module::instance($cm->id);
-        return new mod_newsletter($context, $eagerload);
+        return self::create_newsletter_instance($context, $eagerload);
     }
 
     /**
@@ -75,12 +75,32 @@ class mod_newsletter implements renderable {
      * @return mod_newsletter
      */
     public static function get_newsletter_by_course_module($cmid, $eagerload = false) {
-    	$context = context_module::instance($cmid);
-        return new mod_newsletter($context, $eagerload);
+    	$context = context_module::instance($cmid); 
+        return self::create_newsletter_instance($context, $eagerload);
+    }
+    
+    /**
+     * When not cached create the newsletter instance otherwise 
+     * return it from the cache
+     * 
+     * @param context_module $context
+     * @param boolean $eagerload
+     * @return mod_newsletter $nl the newsletter instance
+     */
+    private static function create_newsletter_instance (context_module $context, $eagerload) {
+        $cmid = $context->id;
+        if (!$nl = \mod_newsletter_instance_store::instance($cmid, 'newsletter')) {
+            $nl = new mod_newsletter($context, $eagerload);
+            \mod_newsletter_instance_store::register($cmid, 'newsletter', $nl);
+        }
+        return $nl;
     }
 
     /**
-     * Constructor for the mod_newsletter class
+     * Constructor for the mod_newsletter class. 
+     * Always use get_newsletter_by_instance or get_newsletter_by_course_module
+     * to get a new instance 
+     * Do not use $nl = new mod_newsletter($context)!!!
      * 
      * @param context_module $context
      * @param bolean $eagerload
@@ -448,8 +468,8 @@ class mod_newsletter implements renderable {
         
         // generate table of content
         require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
-        $toc = new \mod_newsletter\mod_newsletter_issue_parser($currentissue);
-        $currentissue->htmlcontent = $toc->get_toc_and_doc();
+        $parsedhtml = new \mod_newsletter\mod_newsletter_issue_parser($currentissue);
+        $currentissue->htmlcontent = $parsedhtml->get_parsed_html();
         		
         //render the html with inline css based on the used stylesheet
         $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent, 'pluginfile.php', $this->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],  mod_newsletter_issue_form::editor_options($this->get_context(), $params[NEWSLETTER_PARAM_ISSUE]) );
@@ -571,7 +591,7 @@ class mod_newsletter implements renderable {
         }
 
         $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_init_call('M.mod_newsletter.init_tinymce', array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
+        $PAGE->requires->js_init_call('M.mod_newsletter.init_editor', array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
 
         require_once(dirname(__FILE__).'/classes/issue_form.php');
         $mform = new mod_newsletter_issue_form(null, array(
@@ -1161,7 +1181,7 @@ class mod_newsletter implements renderable {
 	 * @param number $issueid        	
 	 * @return NULL|mixed returns null if no issueid given otherwise the object of $DB->get_reccord
 	 */
-	private function get_issue($issueid) {
+	public function get_issue($issueid) {
 		global $DB;
 		if ($issueid == 0) {
 			return null;
@@ -1502,6 +1522,7 @@ class mod_newsletter implements renderable {
      * that will be fetched and processed by the bounce processor
      */
     public function get_bounceemail_address() {
+    	global $CFG;
     	if (!$this->config) {
     		$settings = $this->get_config();
     	} else {

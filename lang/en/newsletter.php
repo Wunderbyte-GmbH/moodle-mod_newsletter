@@ -194,6 +194,7 @@ $string['newsletter:viewnewsletter'] = 'View a newsletter instance';
 $string['emailexists'] = 'A user account with this e-mail address already exists. Please login in order to subscribe to the newsletter. If you forgot your login, use the {$a} link on the login page to recover it.';
 $string['guestsubscriptionsuccess'] = 'Your email was successfully registered. <br /> In order to activate the subscription, please check the inbox of your mailaccount ({$a}) and click on the confirmation link';
 
+$string['readonline'] = 'View web version';
 $string['subscribercandidatesmatching'] = 'Matching users for ({$a})';
 $string['subscribercandidates'] = 'Potential subscribers';
 $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';
