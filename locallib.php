@@ -887,8 +887,7 @@ class mod_newsletter implements renderable {
         $firstdayofweek = (int) get_string('firstdayofweek', 'langconfig');
         switch ($groupby) {
         case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
-            $from = strtotime("first day of this year", $firstissue->publishon);
-            $to = strtotime("next year", $from);
+			list($from, $to) = $this->get_year_from_to_issuelist($firstissue->publishon);
             $dateformat = "%Y";
             break;
         case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
@@ -907,23 +906,8 @@ class mod_newsletter implements renderable {
         $sectionlist = new newsletter_section_list($heading);
         $currentissuelist = new newsletter_issue_summary_list();
         foreach ($issues as $issue) {
-            while ($issue->publishon < $from) {
-                $from = $to;
-                switch ($groupby) {
-                case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
-                    $to = strtotime("next year", $from);
-                    break;
-                case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
-                    $to = strtotime("next month", $from);
-                    break;
-                case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-                    $to = strtotime("next monday", $from);
-                    break;
-                }
-            }
-            if ($issue->publishon < $to) {
-            	// do not display issues that are not yet published
-            	if (!($issue->publishon > time() && !$editissue)){
+            if ($issue->publishon >= $from && $issue->publishon < $to) {   // if issue in timeslot         	
+            	if (!($issue->publishon > time() && !$editissue)){  // do not display issues that are not yet published
             		$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
             	}
             } else {
@@ -932,28 +916,30 @@ class mod_newsletter implements renderable {
                 } else {
                     $heading = userdate($from, $dateformat);
                 }
-                while ($issue->publishon < $from || $issue->publishon > $to) {
-                    $from = $to;
-                    switch ($groupby) {
-                    case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
-                        $to = strtotime("next year", $from);
-                        break;
-                    case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
-                        $to = strtotime("next month", $from);
-                        break;
-                    case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-                        $to = strtotime("next monday", $from);
-                        break;
-                    }
-                }
+				switch ($groupby) {
+				case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
+					list($from, $to) = $this->get_year_from_to_issuelist($issue->publishon);
+					$dateformat = "%Y";
+					break;
+				case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
+					$from = strtotime("first day of this month", $issue->publishon);
+					$to = strtotime("next month", $from);
+					$dateformat = "%B %Y";
+					break;
+				case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
+					$from = strtotime(date('o-\\WW', $issue->publishon));
+					$to = strtotime("next monday", $from);
+					$dateformat = "Week %W of year %Y";
+					$datefromto = "%d. %B %Y";
+					break;
+				}
                 $sectionlist->add_issue_section(new newsletter_section($heading, $currentissuelist));
                 $currentissuelist = new newsletter_issue_summary_list();
-                // do not display issues that are not yet published
-                if (!($issue->publishon > time() && !$editissue)){
-                	$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
-                }
-            }
-        }
+            	if (!($issue->publishon > time() && !$editissue)){  // do not display issues that are not yet published
+            		$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
+            	}
+            } // end if issue in timeslot
+        }  // foreach issue
         if (!empty($currentissuelist->issues)) {
             if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
                 $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(strtotime('yesterday', $to), $datefromto) . ')';
@@ -964,6 +950,19 @@ class mod_newsletter implements renderable {
         }
         return $sectionlist;
     }
+	
+    /**
+     * get first day of year (from) and the first day of the following year (to) of the issue's publication date
+     * @param unix_timestamp $publishon_ts issue's publication date
+     * @return array:number number |from to| from:first day of the year of the publication, to: first day of the following year
+     */
+	private function get_year_from_to_issuelist($publishon_ts) {
+		$year = date("Y", $publishon_ts);
+		$from = strtotime($year."/01/01");
+		$to = strtotime("+1 year", $from);
+		
+		return array ($from, $to);
+	}
 	
     /**
      * calculate number of pages for displaying subscriptions
@@ -1157,7 +1156,7 @@ class mod_newsletter implements renderable {
                    WHERE i.newsletterid = :newsletterid
                      AND " . ($from ? " i.publishon > :from" : "1") .
                    " AND " . ($to ? " i.publishon > :to" : "1") .
-              " ORDER BY i.publishon ASC";
+              " ORDER BY i.publishon DESC";
         $params = array('newsletterid' => $this->get_instance()->id,
                                 'from' => $from,
                                   'to' => $to);
