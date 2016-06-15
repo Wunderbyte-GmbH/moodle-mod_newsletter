@@ -156,6 +156,7 @@ $string['account_already_confirmed'] = 'Your account has already been enabled.
 To proceed to the newsletter, click {$a->newsletterlink}.';
 $string['allusers'] = 'Users (including unsubscribed): ';
 $string['filteredusers'] = 'Filtered users: ';
+$string['groupby'] = 'Group issues by:';
 
 
 

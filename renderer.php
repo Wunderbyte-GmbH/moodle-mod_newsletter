@@ -214,7 +214,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output = '';
         $output .= html_writer::start_tag('div');
         $output .= html_writer::start_tag('span');
-        $output .= 'Group issues by';
+        $output .= get_string('groupby', 'mod_newsletter');
         $output .= html_writer::end_tag('span');
         $options = array(
             NEWSLETTER_GROUP_ISSUES_BY_YEAR => get_string('year'),

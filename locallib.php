@@ -898,7 +898,7 @@ class mod_newsletter implements renderable {
         case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
             $from = strtotime(date('o-\\WW', $firstissue->publishon));
             $to = strtotime("next monday", $from);
-            $dateformat = "Week %W of year %Y";
+            $dateformat = get_string("week") . " %W/%Y";
             $datefromto = "%d. %B %Y";
             break;
         }
@@ -929,7 +929,7 @@ class mod_newsletter implements renderable {
 				case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
 					$from = strtotime(date('o-\\WW', $issue->publishon));
 					$to = strtotime("next monday", $from);
-					$dateformat = "Week %W of year %Y";
+		            $dateformat = get_string("week") . " %W/%Y";
 					$datefromto = "%d. %B %Y";
 					break;
 				}

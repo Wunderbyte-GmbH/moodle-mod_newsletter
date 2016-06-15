@@ -66,8 +66,10 @@ class mod_newsletter_subscriptions_admin_form extends \moodleform {
             }
         }
 
-        $cohorts = $mform->addElement('select', 'cohorts', get_string('cohortsavailable', 'mod_newsletter'), $cohorts);
-        $cohorts->setMultiple(true);
+		if ( isset($cohorts) ) {
+        	$cohorts = $mform->addElement('select', 'cohorts', get_string('cohortsavailable', 'mod_newsletter'), $cohorts);
+        	$cohorts->setMultiple(true);
+		}
 
         $buttonarray=array();
         $buttonarray[] =& $mform->createElement('submit', 'subscribe', "Subscribe");
