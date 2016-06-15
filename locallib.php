@@ -911,29 +911,31 @@ class mod_newsletter implements renderable {
             		$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
             	}
             } else {
-                if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
-                    $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(strtotime('yesterday', $to), $datefromto) . ')';
-                } else {
-                    $heading = userdate($from, $dateformat);
-                }
-				switch ($groupby) {
-				case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
-					list($from, $to) = $this->get_year_from_to_issuelist($issue->publishon);
-					$dateformat = "%Y";
-					break;
-				case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
-					$from = strtotime("first day of this month", $issue->publishon);
-					$to = strtotime("next month", $from);
-					$dateformat = "%B %Y";
-					break;
-				case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
-					$from = strtotime(date('o-\\WW', $issue->publishon));
-					$to = strtotime("next monday", $from);
-		            $dateformat = get_string("week") . " %W/%Y";
-					$datefromto = "%d. %B %Y";
-					break;
-				}
-                $sectionlist->add_issue_section(new newsletter_section($heading, $currentissuelist));
+				if (!empty($currentissuelist->issues)) {
+					if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
+						$heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(strtotime('yesterday', $to), $datefromto) . ')';
+					} else {
+						$heading = userdate($from, $dateformat);
+					}
+					switch ($groupby) {
+					case NEWSLETTER_GROUP_ISSUES_BY_YEAR:
+						list($from, $to) = $this->get_year_from_to_issuelist($issue->publishon);
+						$dateformat = "%Y";
+						break;
+					case NEWSLETTER_GROUP_ISSUES_BY_MONTH:
+						$from = strtotime("first day of this month", $issue->publishon);
+						$to = strtotime("next month", $from);
+						$dateformat = "%B %Y";
+						break;
+					case NEWSLETTER_GROUP_ISSUES_BY_WEEK:
+						$from = strtotime(date('o-\\WW', $issue->publishon));
+						$to = strtotime("next monday", $from);
+						$dateformat = get_string("week") . " %W/%Y";
+						$datefromto = "%d. %B %Y";
+						break;
+					}
+					$sectionlist->add_issue_section(new newsletter_section($heading, $currentissuelist));
+				}				
                 $currentissuelist = new newsletter_issue_summary_list();
             	if (!($issue->publishon > time() && !$editissue)){  // do not display issues that are not yet published
             		$currentissuelist->add_issue_summary(new newsletter_issue_summary($issue, $editissue, $deleteissue));
