@@ -96,7 +96,7 @@ $string['default_stylesheet'] = 'Default stylesheet';
 
 $string['header_email'] = 'E-Mail';
 $string['header_name'] = 'Name';
-$string['header_health'] = 'Status';
+$string['header_health'] = 'Status (Bounces)';
 $string['header_actions'] = 'Actions';
 $string['header_timesubscribed'] = 'Subscription date';
 $string['header_timestatuschanged'] = 'Last status change';
