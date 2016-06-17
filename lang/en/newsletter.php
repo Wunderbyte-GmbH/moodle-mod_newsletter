@@ -61,6 +61,7 @@ $string['mode_group_by_week'] = 'Group issues by week';
 
 $string['attachments'] = 'Attachments';
 $string['attachments_help'] = 'Upload files you want to deliver with this issue as attachments.';
+$string['attachments_no'] = 'No Attachments uploaded.';
 
 $string['delete_all_subscriptions'] = 'Delete all subscriptions';
 

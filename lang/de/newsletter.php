@@ -37,6 +37,7 @@ $string['allusers'] = 'Nutzer/innen (inklusive Abgemeldete):';
 $string['already_published'] = 'Die Ausgabe wurde veröffentlicht.';
 $string['attachments'] = 'Anhänge';
 $string['attachments_help'] = 'Laden Sie hier Dateien hoch, die Sie als Anhang mit dieser Ausgabe versenden möchten.';
+$string['attachments_no'] = 'Keine Anhänge vorhanden.';
 $string['cohortmanagement'] = 'Globale Gruppen an/abmelden';
 $string['cohortsavailable'] = 'Verfügbare Globale Gruppen';
 $string['config_activation_timeout_desc'] = 'Wählen Sie hier, für wie viele Tage der per Email versendete Aktivierungslink gültig sein soll.';

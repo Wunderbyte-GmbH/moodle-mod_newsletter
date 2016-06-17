@@ -492,6 +492,18 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    public function render_newsletter_attachment_list_empty() {
+        global $OUTPUT;
+        $output = '';
+        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__attachment_list'));
+        $output .= html_writer::start_tag('h3');
+        $output .= get_string('attachments_no', 'mod_newsletter');
+        $output .= html_writer::end_tag('h3');
+        $output .= html_writer::end_tag('div');
+        return $output;
+    }
+
+
     public function render_newsletter_action_link(newsletter_action_link $link) {
         $output = '';
         $output .= html_writer::start_tag('span');

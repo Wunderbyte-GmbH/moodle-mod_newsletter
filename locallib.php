@@ -457,14 +457,17 @@ class mod_newsletter implements renderable {
                         false,
                         $this->get_course_module()->id));
         $currentissue = $this->get_issue($params[NEWSLETTER_PARAM_ISSUE]);
+
+		$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE, NEWSLETTER_PARAM_ISSUE => $currentissue->id));
+ 		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));       
+
         $navigation_bar = new newsletter_navigation_bar(
                                 $currentissue,
                                 $this->get_first_issue($currentissue),
                                 $this->get_previous_issue($currentissue),
                                 $this->get_next_issue($currentissue),
                                 $this->get_last_issue($currentissue));
-        $output .= $renderer->render($navigation_bar);
-        
+        $output .= $renderer->render($navigation_bar); 
         
         // generate table of content
         require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
@@ -475,7 +478,6 @@ class mod_newsletter implements renderable {
         $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent, 'pluginfile.php', $this->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],  mod_newsletter_issue_form::editor_options($this->get_context(), $params[NEWSLETTER_PARAM_ISSUE]) );
         $currentissue->htmlcontent = $this->inline_css($currentissue->htmlcontent, $currentissue->stylesheetid);
         
-
         $output .= $renderer->render(new newsletter_issue($currentissue));
 
         $fs = get_file_storage();
@@ -484,7 +486,12 @@ class mod_newsletter implements renderable {
             $file->link = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$this->get_context()->id.'/mod_newsletter/attachment/'.$currentissue->id.'/'.$file->get_filename());
         }
 
-        $output .= $renderer->render(new newsletter_attachment_list($files));
+		if(!empty($files)) {
+        	$output .= $renderer->render(new newsletter_attachment_list($files));
+		} else {
+        	$output .= $renderer->render_newsletter_attachment_list_empty();
+		}
+  		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));       
         $output .= $renderer->render($navigation_bar);
         $output .= $renderer->render_footer();
         
