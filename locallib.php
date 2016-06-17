@@ -348,7 +348,7 @@ class mod_newsletter implements renderable {
 				NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE 
 		) );
 		
-		if ($mform->is_cancelled () || isloggedin () || !isguestuser()) {
+		if ($mform->is_cancelled() || !isguestuser()) {
 			redirect ( new moodle_url ( 'view.php', array (
 					'id' => $this->get_course_module ()->id,
 					NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
@@ -363,7 +363,7 @@ class mod_newsletter implements renderable {
 			) );
 			$output .= html_writer::link($url, get_string('continue'), array ('class' => 'btn mdl-align')) ;
 			return $output;
-		} else if ($this->get_config ()->allow_guest_user_subscriptions && (!isloggedin () || isguestuser())) {
+		} else if ($this->get_instance ()->allowguestusersubscriptions && (!isloggedin() || isguestuser())) {
 			$output .= $renderer->render ( new newsletter_form ( $mform, null ) );
 			$output .= $renderer->render_footer ();
 			return $output;
@@ -394,7 +394,7 @@ class mod_newsletter implements renderable {
                                 $params[NEWSLETTER_PARAM_GROUP_BY],
                                 has_capability('mod/newsletter:createissue', $this->context),
                                 has_capability('mod/newsletter:managesubscriptions', $this->context)));
-        
+								
         if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
         	if (!$this->is_subscribed()) {
         		$url = new moodle_url('/mod/newsletter/view.php',
@@ -416,7 +416,7 @@ class mod_newsletter implements renderable {
         	} else {
         		$guestsignup_possible = false;
         	}
-        	if ($this->get_config()->allow_guest_user_subscriptions && (!isloggedin() || isguestuser()) && $guestsignup_possible) {
+        	if ($this->get_instance ()->allowguestusersubscriptions && (!isloggedin() || isguestuser()) && $guestsignup_possible) {
         		$url = new moodle_url('/mod/newsletter/view.php',
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
@@ -1609,7 +1609,7 @@ class mod_newsletter implements renderable {
         $cm = $this->get_course_module();
         $newslettername = $DB->get_field('newsletter', 'name', array('id' => $cm->instance));
 
-        $data = "{$secret}-{$user->id}-{$cm->instance}";
+        $data = "{$secret}-{$user->id}-{$cm->instance}-guest";
         $activateurl = new moodle_url('/mod/newsletter/confirm.php', array(NEWSLETTER_PARAM_DATA => $data));
 
         $site = get_site();

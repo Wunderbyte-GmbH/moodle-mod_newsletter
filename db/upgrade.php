@@ -256,6 +256,44 @@ function xmldb_newsletter_upgrade($oldversion) {
     	// Savepoint reached.
     	upgrade_mod_savepoint(true, 2015082504, 'newsletter');
     }
+
+    if ($oldversion < 2016061700) {
+    
+    	$table = new xmldb_table('newsletter');
+    	
+    	// new field allowguestusersubscriptions in newsletter
+    	$field = new xmldb_field('allowguestusersubscriptions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'subscriptionmode');
+    	
+    	// add new field
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+
+    	// new field welcomemessage in newsletter
+    	$field = new xmldb_field('welcomemessage', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'allowguestusersubscriptions');
+    	
+    	// add new field
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+
+    	// new field welcomemessageguestuser in newsletter
+    	$field = new xmldb_field('welcomemessageguestuser', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'welcomemessage');
+    	
+    	// add new field
+    	if (!$dbman->field_exists($table, $field)) {
+    		$dbman->add_field($table, $field);
+    	}
+   
+   		$config = get_config('mod_newsletter');
+   		if($config->allow_guest_user_subscriptions==1) {
+			$sql = 'UPDATE {newsletter} SET allowguestusersubscriptions = 1 where 1';
+			$DB->execute($sql);  
+		}
+    	
+    	// Savepoint reached.
+    	upgrade_mod_savepoint(true, 2016061700, 'newsletter');
+    }
     
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,
     // related with the module

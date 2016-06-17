@@ -31,10 +31,11 @@ $settings->add(new admin_setting_configcheckbox('mod_newsletter/debug',
                                                 get_string('config_debug_label', 'mod_newsletter'),
                                                 get_string('config_debug_desc', 'mod_newsletter'), 0));
 
+/* Suspended June 2016 TN : This option is now an instance-level setting
 $settings->add(new admin_setting_configcheckbox('mod_newsletter/allow_guest_user_subscriptions',
                                                 get_string('allow_guest_user_subscriptions_label', 'mod_newsletter'),
                                                 get_string('allow_guest_user_subscriptions_desc', 'mod_newsletter'), 0));
-
+*/
 $settings->add(new admin_setting_configcheckbox('mod_newsletter/send_notifications',
                                                 get_string('config_send_notifications_label', 'mod_newsletter'),
                                                 get_string('config_send_notifications_desc', 'mod_newsletter'), 0));

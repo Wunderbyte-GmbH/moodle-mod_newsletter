@@ -173,8 +173,12 @@ $string['edit_subscription_title'] = 'Edit subscription';
 $string['subscribe'] = 'Subscribe';
 $string['unsubscribe'] = 'Unsubscribe';
 
-$string['allow_guest_user_subscriptions_label'] = 'Allow guest user subscription';
-$string['allow_guest_user_subscriptions_desc'] = 'Enable to allow guest users to subscribe to newsletters on this site. This will necessitate their creating user accounts.';
+$string['allowguestusersubscriptions'] = 'Allow guest user subscription';
+$string['allowguestusersubscriptions_help'] = 'Enable to allow guest users to subscribe to newsletters on this site. This will necessitate their creating user accounts.';
+$string['welcomemessage'] = 'Welcome message';
+$string['welcomemessage_help'] = 'This text will be presented to a user after he had enrolled successfully for a newsletter.';
+$string['welcomemessageguestuser'] = 'Welcome message guest user';
+$string['welcomemessageguestuser_help'] = 'This text will be displayed to a new user after he had enrolled successfully AS A GUESTUSER for a newsletter.';
 
 $string['newsletter:viewnewsletter'] = 'View newsletter';
 $string['newsletter:addinstance'] = 'Add a newsletter';
@@ -203,6 +207,7 @@ $string['subscribedusers'] = 'Subscribed users';
 $string['cohortmanagement'] = 'Subscribe/Unsubscribe cohorts';
 $string['cohortsavailable'] = 'Available cohorts';
 $string['welcometonewsletter'] = 'Welcome to the newsletter';
+$string['welcometonewsletter_guestsubscription'] = 'Welcome to the newsletter!<br />You can unsubscribe anytime by clicking on the unsubscribe-button after login or on the unsubscribe link in every newsletter issue.';
 $string['unsubscribedinfo'] = 'Users marked with (!) are unsubscribed';
 $string['toc_header'] = 'Table of Content';
 $string['toc_no'] = 'Do not autogenerate a table of content';

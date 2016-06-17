@@ -31,8 +31,8 @@ $string['account_confirmed'] = 'Willkommen bei {$a->sitename}, {$a->fullname}!
 Ihr Account {$a->username} wurde aktiviert.
 Um Ihre Profildetails zu bearbeiten, klicken Sie bitte auf folgenden Link: {$a->editlink}.
 Um zum Newsletter zu gelangen, klicken Sie bitte auf folgenden Link:  {$a->newsletterlink}.';
-$string['allow_guest_user_subscriptions_desc'] = 'Erlauben Sie Gastnutzer/innen, Newsletter auf dieser Seite zu abonnieren. Dazu ist es erforderlich, dass Sie das Anlegen von Gastzugängen in den Moodleeinstellungen erlauben.';
-$string['allow_guest_user_subscriptions_label'] = 'Gasteinschreibungen erlauben';
+$string['allowguestusersubscriptions_help'] = 'Erlauben Sie Gastnutzer/innen, Newsletter auf dieser Seite zu abonnieren. Dazu ist es erforderlich, dass Sie das Anlegen von Gastzugängen in den Moodleeinstellungen erlauben.';
+$string['allowguestusersubscriptions'] = 'Gasteinschreibungen erlauben';
 $string['allusers'] = 'Nutzer/innen (inklusive Abgemeldete):';
 $string['already_published'] = 'Die Ausgabe wurde veröffentlicht.';
 $string['attachments'] = 'Anhänge';
@@ -171,6 +171,11 @@ $string['unsubscribedinfo'] = 'Mit (!) markierte Nutzer/innen sind abgemeldet';
 $string['unsubscribe_link_text'] = 'Klicken Sie hier, um das Abonnement zu kündigen';
 $string['unsubscribe_question'] = 'Möchten Sie das Abonnement der E-Mailadresse "{$a->email}" für den Newsletter "{$a->name}" wirklich kündigen?';
 $string['unsubscription_succesful'] = 'Ihr Abonnement mit der E-Mailadresse "{$a->email}" wurde für den folgenden Newsletter erfolgreich gekündigt: "{$a->name}"';
+$string['welcomemessage'] = 'Willkommens-Nachricht';
+$string['welcomemessage_help'] = 'Geben Sie hier die Nachricht an, die dem neuen Abonnenten nach seiner Anmeldung zu einem Newsletter angezeigt werden soll.';
+$string['welcomemessageguestuser'] = 'Willkommens-Nachricht Gastuser-Anmeldung';
+$string['welcomemessageguestuser_help'] = 'Geben Sie hier die Nachricht an, die einem Gastuser nach seiner Anmeldung zu einem Newsletter angezeigt werden soll.';
 $string['welcometonewsletter'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.';
+$string['welcometonewsletter_guestsubscription'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.<br />Sie können sich von diesem Newsletter wieder abmelden, wenn Sie den Link "Dieses Newsletter-Abonnement kündigen" nach dem Login anklicken oder mittels Klick auf den "Abmelden"-Link in jeder Ausgabe dieses Newsletters.';
 
 

@@ -68,7 +68,19 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'mod_newsletter'),
                             array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => array('css')));
         $mform->addHelpButton('stylesheets', 'stylesheets', 'mod_newsletter');
+		
+		$mform->addElement('advcheckbox', 'allowguestusersubscriptions', get_string('allowguestusersubscriptions', 'mod_newsletter'));
+        $mform->addHelpButton('allowguestusersubscriptions', 'allowguestusersubscriptions', 'mod_newsletter');
+		$mform->setDefault('allowguestusersubscriptions', 1);
 
+		$mform->addElement('textarea', 'welcomemessage', get_string('welcomemessage', 'mod_newsletter'),
+							 'wrap="virtual" rows="8" cols="50"');
+        $mform->addHelpButton('welcomemessage', 'welcomemessage', 'mod_newsletter');
+
+		$mform->addElement('textarea', 'welcomemessageguestuser', get_string('welcomemessageguestuser', 'mod_newsletter'),
+							 'wrap="virtual" rows="8" cols="50"');
+        $mform->addHelpButton('welcomemessageguestuser', 'welcomemessageguestuser', 'mod_newsletter');
+		
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
 

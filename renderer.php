@@ -353,12 +353,12 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                             array(NEWSLETTER_PARAM_ID => $list->cmid,
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_EDIT_SUBSCRIPTION,
                                   NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
-                    $content = $this->render(new newsletter_action_link($url, get_string('edit')));
+                    $content = $this->render(new newsletter_action_link($url, get_string('edit'), 'btn-small'));
                     $url = new moodle_url('/mod/newsletter/view.php',
                             array(NEWSLETTER_PARAM_ID => $list->cmid,
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
                                   NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
-                    $content .= $this->render(new newsletter_action_link($url, get_string('delete')));
+                    $content .= $this->render(new newsletter_action_link($url, get_string('delete'), 'btn-small'));
                     break;
                 default:
                     print_error('Unsupported column type: ' . $column);
