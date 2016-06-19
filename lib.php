@@ -800,6 +800,12 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
 			$issuenode = $cmnode->add(get_string('delete_issue', 'mod_newsletter'), $url);
 			$issuenode->make_active();
             break;
+        case NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS:
+            require_capability('mod/newsletter:managesubscriptions', $context);
+			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+			$subnode = $cmnode->add(get_string('newsletter:managesubscriptions','mod_newsletter'), $url);
+			$subnode->make_active();
+            break;
         default:
              break;			
 	}

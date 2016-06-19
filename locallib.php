@@ -724,7 +724,7 @@ class mod_newsletter implements renderable {
         }
         
         require_once(dirname(__FILE__).'/classes/subscription/newsletter_user_subscription.php');
-        $subscriberselector = new \mod_newsletter\subscription\mod_newsletter_potential_subscribers('subsribeusers', array('newsletterid' => $this->get_instance()->id));
+        $subscriberselector = new \mod_newsletter\subscription\mod_newsletter_potential_subscribers('subsribeusers', array('courseid' => $this->get_course()->id, 'newsletterid' => $this->get_instance()->id));
         $subscribedusers = new \mod_newsletter\subscription\mod_newsletter_existing_subscribers('subscribedusers', array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this));
         
         if(optional_param('add', false, PARAM_BOOL) && confirm_sesskey()){

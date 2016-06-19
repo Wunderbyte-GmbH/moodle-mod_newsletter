@@ -16,9 +16,11 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
      * @var int newsletterid
      */
     protected $newsletterid;
+    protected $courseid;
 	
 	public function __construct($name, $options) {
 		$this->newsletterid  = $options['newsletterid'];
+		$this->courseid  = $options['courseid'];
 		parent::__construct($name, $options);
 	}
 	
@@ -41,22 +43,36 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
      */
     public function find_users($search) {
         global $DB;
-        // By default wherecondition retrieves all users except the deleted, not confirmed and guest.
-        list($wherecondition, $params) = $this->search_sql($search, 'u');
-        $params['newsletterid'] = $this->newsletterid;
+        // By default wherecondition reget_enrolled_sql()trieves all users except the deleted, not confirmed and guest.
 
         $fields      = 'SELECT ' . $this->required_fields_sql('u');
-        $countfields = 'SELECT COUNT(1)';
+        $countfields = 'SELECT COUNT(1)';		
+		list($wherecondition, $params) = $this->search_sql($search, 'u');
 
-        $sql = " FROM {user} u
-            LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = u.id AND ns.newsletterid = :newsletterid)
-                WHERE $wherecondition
-                      AND ns.id IS NULL";
-        
-        // enrolled users in the course
-        //$nl = \mod_newsletter::get_newsletter_by_course_module($this->newsletterid)->get_context();
-        //list($esql, $eparams) = get_enrolled_sql($context, '', 0, true);
-
+		$params['newsletterid'] = $this->newsletterid;
+		if ($this->courseid==1) {
+			$sql = "	FROM {user} u
+						LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = u.id AND ns.newsletterid = :newsletterid)
+						WHERE $wherecondition
+						AND ns.id IS NULL";
+		} else {  // only enrolled users selectable
+			$eparams['courseid'] = $this->courseid;
+			$eparams['now1'] = $eparams['now2'] = strtotime("now");
+			$enrolsql = "	SELECT DISTINCT u.id FROM {user} u 
+							JOIN {user_enrolments} ue ON ue.userid = u.id 
+							JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid) 
+							WHERE u.deleted = 0 
+							AND u.id <> 1 
+							AND ue.status = 0 
+							AND e.status = 0 
+							AND ue.timestart < :now1 
+							AND (ue.timeend = 0 OR ue.timeend > :now2)";
+	        $params = array_merge($params, $eparams);
+			$sql   = "	FROM {user} u INNER JOIN ($enrolsql) enrolled_users_view ON u.id = enrolled_users_view.id 
+						LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = enrolled_users_view.id AND ns.newsletterid = :newsletterid)
+						WHERE ns.id IS NULL";
+		}
+		
         list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
         $order = ' ORDER BY ' . $sort;
 
@@ -67,7 +83,7 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
                 return $this->too_many_results($search, $potentialmemberscount);
             }
         }
-
+		
         $availableusers = $DB->get_records_sql($fields . $sql . $order, array_merge($params, $sortparams));
 
         if (empty($availableusers)) {
