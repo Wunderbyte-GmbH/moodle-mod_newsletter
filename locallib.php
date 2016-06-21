@@ -302,10 +302,14 @@ class mod_newsletter implements renderable {
             break;
         case NEWSLETTER_ACTION_SUBSCRIBE:
             require_capability('mod/newsletter:manageownsubscription', $this->context);
-            $this->subscribe();
-            $url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
-            redirect($url);
-            break;
+			if($this->get_subscription_status($this->get_subid()) == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {				
+				$output = $this->display_resubscribe_form($params);
+			} else {
+				$this->subscribe();
+				$url = new moodle_url('/mod/newsletter/view.php', array('id' => $this->get_course_module()->id));
+				redirect($url);
+			}
+			break;
         case NEWSLETTER_ACTION_UNSUBSCRIBE:
             require_capability('mod/newsletter:manageownsubscription', $this->context);
             $this->unsubscribe($this->get_subid());
@@ -348,7 +352,7 @@ class mod_newsletter implements renderable {
 				NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE 
 		) );
 		
-		if ($mform->is_cancelled() || !isguestuser()) {
+		if ($mform->is_cancelled()) {
 			redirect ( new moodle_url ( 'view.php', array (
 					'id' => $this->get_course_module ()->id,
 					NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
@@ -369,6 +373,58 @@ class mod_newsletter implements renderable {
 			return $output;
 		}
 	}
+
+    /**
+     * display a resubscription form for users who are unsubscribed and want to subscribe again. 
+     * 
+     * @param array $params url params passed as get variables
+     * @return string html rendered resubscription
+     */
+	private function display_resubscribe_form(array $params) {
+		global $PAGE, $USER;
+		$PAGE->requires->js_module($this->get_js_module());
+		$output = '';
+		$renderer = $this->get_renderer ();
+
+		require_once (dirname ( __FILE__ ) . '/resubscribe_form.php');
+		
+		$output .= $renderer->render ( new newsletter_header ( $this->get_instance (), $this->get_context (), false, $this->get_course_module ()->id ) );
+		$mform = new mod_newsletter_resubscribe_form ( null, array (
+				'id' => $this->get_course_module ()->id,
+				NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE 
+		) );
+		
+		if ($mform->is_cancelled()) {
+			redirect ( new moodle_url ( 'view.php', array (
+					'id' => $this->get_course_module ()->id,
+					NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
+			) ) );
+			return;
+		} else if ($data = $mform->get_data()) {
+			if($data->resubscribe_confirmation) {	
+				$this->subscribe(0, false, NEWSLETTER_SUBSCRIBER_STATUS_OK, true, 0);
+				$output .= html_writer::div('&nbsp;');
+				$output .= html_writer::div(get_string('resubscriptionsuccess', 'mod_newsletter'));
+				$output .= html_writer::div('&nbsp;');
+				$url = new moodle_url ( '/mod/newsletter/view.php', array (
+						'id' => $this->get_course_module ()->id 
+				) );
+				$output .= html_writer::link($url, get_string('continue'), array ('class' => 'btn mdl-align')) ;
+				$output .= $renderer->render_footer ();
+				return $output;
+			} else {
+				redirect ( new moodle_url ( 'view.php', array (
+						'id' => $this->get_course_module ()->id,
+						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER 
+				) ) );				
+			}
+		} else {
+			$output .= $renderer->render ( new newsletter_form ( $mform, null ) );
+			$output .= $renderer->render_footer ();
+			return $output;
+		}
+	}
+
 	
     /**
      * Display all newsletter issues in a view. Display action links
@@ -447,6 +503,7 @@ class mod_newsletter implements renderable {
         if(!(has_capability('mod/newsletter:editissue', $this->get_context())) && $this->get_issue($params[NEWSLETTER_PARAM_ISSUE])->publishon > time()){
         	require_capability('mod/newsletter:editissue', $this->get_context());
         }
+		
         
         $renderer = $this->get_renderer();
 
@@ -458,8 +515,10 @@ class mod_newsletter implements renderable {
                         $this->get_course_module()->id));
         $currentissue = $this->get_issue($params[NEWSLETTER_PARAM_ISSUE]);
 
-		$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE, NEWSLETTER_PARAM_ISSUE => $currentissue->id));
- 		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));       
+		if(has_capability('mod/newsletter:editissue', $this->get_context())) {
+			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE, NEWSLETTER_PARAM_ISSUE => $currentissue->id));
+			$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));
+		}
 
         $navigation_bar = new newsletter_navigation_bar(
                                 $currentissue,
@@ -491,7 +550,9 @@ class mod_newsletter implements renderable {
 		} else {
         	$output .= $renderer->render_newsletter_attachment_list_empty();
 		}
-  		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));       
+ 		if(has_capability('mod/newsletter:editissue', $this->get_context())) {
+	 		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn')); 
+		}
         $output .= $renderer->render($navigation_bar);
         $output .= $renderer->render_footer();
         
@@ -1377,7 +1438,19 @@ class mod_newsletter implements renderable {
             	$sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
             	$sub->timestatuschanged = $now;
             	$sub->subscriberid = $USER->id;
-            	return $DB->update_record('newsletter_subscriptions', $sub);
+            	$result = $DB->update_record('newsletter_subscriptions', $sub);
+				if ($result){
+					$params = array(
+							'context' => $this->get_context(),
+							'objectid' => $sub->id,
+							'relateduserid' => $userid,
+							'other' => array('newsletterid' => $sub->newsletterid),
+					
+					);
+					$event  = \mod_newsletter\event\subscription_resubscribed::create($params);
+					$event->trigger();
+				}
+				return $result;
             } else {
             	return false;
             }

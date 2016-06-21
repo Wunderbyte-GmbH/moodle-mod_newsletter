@@ -44,6 +44,7 @@ $string['eventsubscriptiondeleted'] = 'Newsletter subscription deleted';
 $string['eventsubscriptionunsubscribed'] = 'Newsletter subscription unsubscribed';
 $string['eventissueviewed'] = 'Newsletter issue viewed';
 $string['eventsubscriptionsviewed'] = 'Newsletter subscriptions viewed';
+$string['eventsubscriptionresubscribed'] = 'Re-subscription to newsletter';
 
 $string['edit_issue'] = 'Edit this issue';
 $string['delete_issue'] = 'Delete this issue';
@@ -120,6 +121,9 @@ $string['page_last'] = 'Last';
 
 $string['subscribe'] = 'Subscribe';
 $string['guestsubscribe'] = 'Subscribe now!';
+$string['resubscribe'] = 'Confirm re-subscription';
+$string['resubscribe_text'] = 'You have been unsubscribed from this newsletter. Do you really want to resubscribe?';
+$string['resubscribe_btn'] = 'Confirm';
 
 $string['subscribe_question'] = 'Would you like to subscribe to newsletter "{$a->name}" using the e-mail address "{$a->email}"?';
 $string['unsubscribe_question'] = 'Would you like to unsubscribe your e-mail address "{$a->email}" from newsletter "{$a->name}"?';
@@ -159,8 +163,6 @@ $string['allusers'] = 'Users (including unsubscribed): ';
 $string['filteredusers'] = 'Filtered users: ';
 $string['groupby'] = 'Group issues by:';
 
-
-
 $string['unsubscribe_link_text'] = 'Click here to unsubscribe';
 $string['unsubscribe_link'] = '<hr /><p><a href="{$a->link}">{$a->text}</a></p>';
 
@@ -199,6 +201,7 @@ $string['newsletter:viewnewsletter'] = 'View a newsletter instance';
 
 $string['emailexists'] = 'A user account with this e-mail address already exists. Please login in order to subscribe to the newsletter. If you forgot your login, use the {$a} link on the login page to recover it.';
 $string['guestsubscriptionsuccess'] = 'Your email was successfully registered. <br /> In order to activate the subscription, please check the inbox of your mailaccount ({$a}) and click on the confirmation link';
+$string['resubscriptionsuccess'] = 'You was successfully re-subscribed.';
 
 $string['readonline'] = 'View web version';
 $string['subscribercandidatesmatching'] = 'Matching users for ({$a})';
