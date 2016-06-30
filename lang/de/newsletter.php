@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'newsletter', language 'de', branch 'MOODLE_29_STABLE'
+ * Strings for component 'newsletter', language 'de', branch 'MOODLE_30_STABLE'
  *
  * @package   newsletter
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
@@ -42,6 +42,7 @@ $string['cohortmanagement'] = 'Globale Gruppen an/abmelden';
 $string['cohortsavailable'] = 'Verfügbare Globale Gruppen';
 $string['config_activation_timeout_desc'] = 'Wählen Sie hier, für wie viele Tage der per Email versendete Aktivierungslink gültig sein soll.';
 $string['config_activation_timeout_label'] = 'Ablaufzeitpunkt für Aktivierungslinks';
+$string['config_bounce_email'] = 'Die E-Mail-Adresse an die die Bounces geschickt werden sollen. Benutzen Sie diese E-Mailadresse ausschließlich zum Bounce Handling.';
 $string['config_bounce_enable'] = 'Bounce Processing für das Newslettermodul aktivieren';
 $string['config_bounceinfo'] = 'Bounce Handling  für Newslettermodul nur dann verwenden, wenn Moodle VERP Bounce Einstellungen wie auf der folgenden Seite beschrieben nicht aktiviert werden können:
 https://docs.moodle.org/dev/Email_processing
