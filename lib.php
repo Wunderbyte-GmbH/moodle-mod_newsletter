@@ -765,7 +765,8 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
 	global $PAGE, $DB;
 
 	$action = optional_param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_VIEW_NEWSLETTER, PARAM_ALPHA);
-	$context = context_system::instance ();
+	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
+	$context = $newsletter->get_context();
 
 	$cmnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
 

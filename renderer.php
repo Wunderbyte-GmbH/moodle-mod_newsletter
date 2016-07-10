@@ -213,9 +213,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     public function render_newsletter_main_toolbar(newsletter_main_toolbar $toolbar) {
         $output = '';
         $output .= html_writer::start_tag('div');
-        $output .= html_writer::start_tag('span');
-        $output .= get_string('groupby', 'mod_newsletter');
-        $output .= html_writer::end_tag('span');
+		$output .= html_writer::tag('span', get_string('groupby', 'mod_newsletter'));
         $options = array(
             NEWSLETTER_GROUP_ISSUES_BY_YEAR => get_string('year'),
             NEWSLETTER_GROUP_ISSUES_BY_MONTH => get_string('month'),
@@ -299,6 +297,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     }
 
     public function render_newsletter_subscription_list(newsletter_subscription_list $list) {
+		global $OUTPUT;
+		
         $table = new html_table();
 
         $header = array();
@@ -354,12 +354,16 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                             array(NEWSLETTER_PARAM_ID => $list->cmid,
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_EDIT_SUBSCRIPTION,
                                   NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
-                    $content = $this->render(new newsletter_action_link($url, get_string('edit'), 'btn-small'));
-                    $url = new moodle_url('/mod/newsletter/view.php',
+					$content = \html_writer::link($url,
+                                              \html_writer::empty_tag('img', array( 'src' => $OUTPUT->pix_url('t/edit'))),
+                                              array('class' => 'editbutton', 'title' => get_string('edit')));			  
+					$url = new \moodle_url('/mod/newsletter/view.php',
                             array(NEWSLETTER_PARAM_ID => $list->cmid,
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
-                                  NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
-                    $content .= $this->render(new newsletter_action_link($url, get_string('delete'), 'btn-small'));
+                                  NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));								  
+					$content .= \html_writer::link($url,
+                                              \html_writer::empty_tag('img', array( 'src' => $OUTPUT->pix_url('t/delete'))),
+                                              array('class' => 'deletebutton', 'title' => get_string('delete')));			  
                     break;
                 default:
                     print_error('Unsupported column type: ' . $column);

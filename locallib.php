@@ -477,7 +477,7 @@ class mod_newsletter implements renderable {
         				array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
         						NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
         		$text = get_string('subscribe', 'mod_newsletter');
-        		$output .= html_writer::link($url, $text, array( 'class' => 'btn'));
+        		$output .= html_writer::link($url, $text, array( 'class' => 'btn btn-default'));
         	}
         }
         
@@ -517,7 +517,7 @@ class mod_newsletter implements renderable {
 
 		if(has_capability('mod/newsletter:editissue', $this->get_context())) {
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE, NEWSLETTER_PARAM_ISSUE => $currentissue->id));
-			$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn'));
+			$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn btn-default'));
 		}
 
         $navigation_bar = new newsletter_navigation_bar(
@@ -551,7 +551,7 @@ class mod_newsletter implements renderable {
         	$output .= $renderer->render_newsletter_attachment_list_empty();
 		}
  		if(has_capability('mod/newsletter:editissue', $this->get_context())) {
-	 		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn')); 
+	 		$output .= $renderer->render(new newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'), 'btn btn-default')); 
 		}
         $output .= $renderer->render($navigation_bar);
         $output .= $renderer->render_footer();
