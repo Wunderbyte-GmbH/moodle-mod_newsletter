@@ -150,7 +150,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $output .= html_writer::end_tag('div');
         }
         if ($now > $issue->publishon) {
-            $output .= $this->render(new newsletter_progressbar($issue->numnotyetdelivered, $issue->numdelivered));
+			if($issue->editissue) {
+            	$output .= $this->render(new newsletter_progressbar($issue->numnotyetdelivered, $issue->numdelivered));
+			}
         } else {
             $output .= $this->render(new newsletter_publish_countdown($now, $issue->publishon));
         }
@@ -285,7 +287,13 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         } else {
         	$completed = '';
         }
-        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter'));
+		
+        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter_progress'));
+        $output .= html_writer::div($completed, '', array('class' => 'mod_newsletter_progress-bar', 'role' => 'progressbar', 'aria-valuenow' => $value,  'aria-valuemin' => '0', 'aria-valuemax' => '100', 'style' => 'width:' . $value . '%'));
+        $output .= html_writer::end_tag('div');
+
+		
+/*        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter'));
         $output .= html_writer::div($remaining,'', array('class' => 'mod_newsletter_remaining'));
         $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__meter__foreground', 'style' => "width: $value%;"));
         $output .= html_writer::span($completed);
@@ -293,7 +301,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div');
-        return $output;
+*/		      
+		return $output;
     }
 
     public function render_newsletter_subscription_list(newsletter_subscription_list $list) {
