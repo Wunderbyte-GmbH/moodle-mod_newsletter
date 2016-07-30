@@ -568,9 +568,15 @@ function newsletter_get_all_valid_recipients($newsletterid) {
  */
 function newsletter_convert_html_to_plaintext($content) {
     global $CFG;
-    require_once($CFG->libdir . '/html2text/lib.php');
-    $html2text = new core_html2text($content);	
-    return $html2text->get_text();
+    if ($CFG->branch < 30) {
+        require_once ($CFG->libdir . '/html2text.php');
+        $html2text = new html2text($content);
+        return $html2text->get_text();
+    } else {
+        require_once ($CFG->libdir . '/html2text/lib.php');
+        $html2text = new core_html2text($content);
+        return $html2text->get_text();
+    }
 }
 
 /**
