@@ -28,7 +28,8 @@ $secret = optional_param(NEWSLETTER_PARAM_HASH, false, PARAM_TEXT);
 // create a new user if the user has used the guest subscription form
 if ($user) {
     global $DB;
-    $sub = $DB->get_record('newsletter_subscriptions', array('userid' => $user, 'health' => NEWSLETTER_SUBSCRIBER_STATUS_OK));
+    $select = " userid = $user AND (health = " . NEWSLETTER_SUBSCRIBER_STATUS_OK . " OR health = " . NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC .")";
+    $sub = $DB->record_exists_select('newsletter_subscriptions', $select );
     if ($sub && $secret) {
         $user = $DB->get_record('user', array('id' => $user));
         if ($secret == $user->secret) {
