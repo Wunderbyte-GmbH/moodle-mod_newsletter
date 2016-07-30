@@ -825,6 +825,10 @@ class bouncehandler
         $this->output('<h2>Init openImapLocal</h2>', CWSMBH_VERBOSE_SIMPLE, false);
     
         set_time_limit(6000);
+        
+        if (! function_exists('imap_open')) {
+            return false;
+        }
     
         $this->_handler = imap_open($file_path, '', '', !$this->test_mode ? CL_EXPUNGE : null);
     
@@ -844,6 +848,9 @@ class bouncehandler
      */
     public function openImapRemote()
     {
+        if (! function_exists('imap_open')) {
+            return false;
+        }
         $this->output('<h2>Init openImapRemote</h2>', CWSMBH_VERBOSE_SIMPLE, false);
         
         // disable move operations if server is Gmail... Gmail does not support mailbox creation

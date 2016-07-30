@@ -531,6 +531,8 @@ function newsletter_cron() {
 	    if ($bounceprocessor->openImapRemote()) {
 	    	$bounceprocessor->process_bounces();
 	    	$bounceprocessor->update_health();
+	    } else {
+	        mtrace("!!! FAILURE to use IMAP: PHP imap does not seem to be enabled on your server!!!");
 	    }
     }
 
