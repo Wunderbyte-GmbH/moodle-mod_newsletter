@@ -770,26 +770,23 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
  * @param cm_info $cm
  */
 function newsletter_extend_navigation(navigation_node $navref, stdclass $course, stdclass $module, cm_info $cm) {
-	global $PAGE, $DB;
+	global $DB;
 
 	$action = optional_param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_VIEW_NEWSLETTER, PARAM_ALPHA);
-	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
-	$context = $newsletter->get_context();
-
-	$cmnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
+	$context = $cm->context;
 
 	switch($action) {
         case NEWSLETTER_ACTION_CREATE_ISSUE:
             require_capability('mod/newsletter:createissue', $context);
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE));
-			$issuenode = $cmnode->add(get_string('create_new_issue', 'mod_newsletter'), $url);
+			$issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
 			$issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_EDIT_ISSUE:
             require_capability('mod/newsletter:editissue', $context);
 			$issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE, NEWSLETTER_PARAM_ISSUE => $issueid));
-			$issuenode = $cmnode->add(get_string('edit_issue', 'mod_newsletter'), $url);
+			$issuenode = $navref->add(get_string('edit_issue', 'mod_newsletter'), $url);
 			$issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_READ_ISSUE:
@@ -798,20 +795,20 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
 			$issuename = $DB->get_field('newsletter_issues', 'title',
                 array('id' => $issueid, 'newsletterid' => $module->id));
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_READ_ISSUE, NEWSLETTER_PARAM_ISSUE => $issueid));
-			$issuenode = $cmnode->add($issuename, $url);
+			$issuenode = $navref->add($issuename, $url);
 			$issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_DELETE_ISSUE:
             require_capability('mod/newsletter:deleteissue', $context);
 			$issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_DELETE_ISSUE, NEWSLETTER_PARAM_ISSUE => $issueid));
-			$issuenode = $cmnode->add(get_string('delete_issue', 'mod_newsletter'), $url);
+			$issuenode = $navref->add(get_string('delete_issue', 'mod_newsletter'), $url);
 			$issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS:
             require_capability('mod/newsletter:managesubscriptions', $context);
 			$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
-			$subnode = $cmnode->add(get_string('newsletter:managesubscriptions','mod_newsletter'), $url);
+			$subnode = $navref->add(get_string('newsletter:managesubscriptions','mod_newsletter'), $url);
 			$subnode->make_active();
             break;
         default:
@@ -834,9 +831,6 @@ function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
 	
 	require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
 	$newsletter = mod_newsletter::get_newsletter_by_course_module($PAGE->cm->id);
-	
-	$currentgroup = groups_get_activity_group($PAGE->cm);
-	$groupmode = groups_get_activity_groupmode($PAGE->cm);
 	
 	if (has_capability('mod/newsletter:managesubscriptions', $newsletter->get_context())) { // took out participation list here!
 		$newsletternode->add(get_string('manage_subscriptions', 'mod_newsletter'), new moodle_url('/mod/newsletter/view.php', array(

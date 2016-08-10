@@ -105,7 +105,7 @@ class mod_newsletter implements renderable {
      * @param context_module $context
      * @param bolean $eagerload
      */
-    public function __construct($context, $eagerload = false) {
+    public function __construct(context_module $context, $eagerload = false) {
         $this->context = $context;
         if ($eagerload) {
             global $DB, $PAGE, $USER;
@@ -113,6 +113,7 @@ class mod_newsletter implements renderable {
             $this->course = $DB->get_record('course', array('id' => $this->coursemodule->course), '*', MUST_EXIST);
             $this->instance = $DB->get_record('newsletter', array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
             $this->config = get_config('mod_newsletter');
+            $this->context = $context;
         }
     }
 
