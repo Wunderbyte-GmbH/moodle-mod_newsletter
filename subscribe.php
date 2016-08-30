@@ -35,7 +35,7 @@ if ($user) {
         if ($secret == $user->secret) {
             if ($confirm == NEWSLETTER_CONFIRM_YES) {
                 $DB->set_field('user', 'confirmed', 1, array('id' => $user));
-                redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), "Welcome! You will be redirected to the login page shortly.", 5);
+                redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), get_string('welcomeredirec','mod_newsletter'), 5);
             } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
                 $DB->delete_records('newsletter_subscriptions', array('userid' => $user));
                 $user = $DB->get_record('user', array('id' => $user));

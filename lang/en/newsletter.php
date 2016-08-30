@@ -210,6 +210,7 @@ $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';
 $string['subscribedusers'] = 'Subscribed users';
 $string['cohortmanagement'] = 'Subscribe/Unsubscribe cohorts';
 $string['cohortsavailable'] = 'Available cohorts';
+$string['welcomeredirect'] = 'Welcome! You will be redirected to the login page shortly.';
 $string['welcometonewsletter'] = 'Welcome to the newsletter';
 $string['welcometonewsletter_guestsubscription'] = 'Welcome to the newsletter!<br />You can unsubscribe anytime by clicking on the unsubscribe-button after login or on the unsubscribe link in every newsletter issue.';
 $string['unsubscribedinfo'] = 'Users marked with (!) are unsubscribed';
@@ -218,6 +219,3 @@ $string['toc_no'] = 'Do not autogenerate a table of content';
 $string['toc_yes'] = 'Use {$a} headline level(s)';
 $string['toc'] = 'Select how to autogenerate the table of content';
 $string['toc_help'] = 'This is the number of headline levels to include. Example: You have a newsletter issue with three different headline levels (h1, h2, h3). Then you could choose to only use the most important headlines for the table of content. Then you choose to select only 1 headline level. If you want also to inclide h2 in the table of content, choose 2 levels.';
-
-
-

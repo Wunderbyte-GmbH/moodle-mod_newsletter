@@ -1706,7 +1706,7 @@ class mod_newsletter implements renderable {
 
         $htmlcontent = text_to_html(get_string('new_user_subscribe_message', 'newsletter', $a));
 
-        if (!email_to_user($user, "newsletter", "Welcome", '', $htmlcontent)) {
+        if (!email_to_user($user, "newsletter", get_string('welcometonewsletter', 'mod_newsletter'), '', $htmlcontent)) {
             return false;
         }
         return true;
