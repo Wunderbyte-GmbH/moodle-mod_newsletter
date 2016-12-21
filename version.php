@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016083000;        // If version == 0 then module will not be installed
+$plugin->version   = 2016122100;        // If version == 0 then module will not be installed
 $plugin->requires  = 2014051200;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.3.2 Le Monde Diplomatique';  // Already used names: Der Standard, Le Monde Diplomatique
+$plugin->release   = '1.3.3 Le Monde Diplomatique';  // Already used names: Der Standard, Le Monde Diplomatique
 $plugin->cron      = 30;                // Period for cron to check this module (secs)
 $plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place

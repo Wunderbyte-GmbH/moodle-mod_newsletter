@@ -1225,9 +1225,9 @@ class mod_newsletter implements renderable {
         $query = "SELECT i.*
                     FROM {newsletter_issues} i
                    WHERE i.newsletterid = :newsletterid
-                     AND " . ($from ? " i.publishon > :from" : "1") .
-                   " AND " . ($to ? " i.publishon > :to" : "1") .
-              " ORDER BY i.publishon DESC";
+                     AND i.publishon > :from
+                     AND i.publishon > :to
+                ORDER BY i.publishon DESC";
         $params = array('newsletterid' => $this->get_instance()->id,
                                 'from' => $from,
                                   'to' => $to);
