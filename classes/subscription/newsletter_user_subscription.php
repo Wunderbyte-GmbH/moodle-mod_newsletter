@@ -32,6 +32,7 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
 		$options = parent::get_options();
 		$options['file'] = 'mod/newsletter/classes/subscription/newsletter_user_subscription.php';
 		$options['newsletterid'] = $this->newsletterid;
+        $options['courseid'] = $this->courseid;
 		// Add our custom options to the $options array.
 		return $options;
 	}
@@ -61,7 +62,7 @@ class mod_newsletter_potential_subscribers extends \user_selector_base {
 			$enrolsql = "	SELECT DISTINCT u.id FROM {user} u 
 							JOIN {user_enrolments} ue ON ue.userid = u.id 
 							JOIN {enrol} e ON (e.id = ue.enrolid AND e.courseid = :courseid) 
-							WHERE u.deleted = 0 
+      						WHERE $wherecondition
 							AND u.id <> 1 
 							AND ue.status = 0 
 							AND e.status = 0 
