@@ -126,8 +126,10 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     }
 
     public function render_newsletter_issue_summary(newsletter_issue_summary $issue) {
+        global $OUTPUT;
+
         $link = '';
-        $link .= html_writer::empty_tag('img', array('src' => $this->output->pix_url('icon', 'mod_newsletter'), 'class' => 'mod_newsletter__issue--summary__link-read-icon'));
+        $link .= $OUTPUT->image_icon('icon', '', 'mod_newsletter', array('class' => 'mod_newsletter__issue--summary__link-read-icon'));
         $link .= html_writer::start_tag('span');
         $link .= $issue->title . " (" . userdate($issue->publishon, '%d %B %Y') . ")";
         $link .= html_writer::end_tag('span');
@@ -224,7 +226,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('form', array('method' => 'GET', 'action' => new moodle_url('/mod/newsletter/view.php')));
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $toolbar->cmid));
         $output .= html_writer::select($options, NEWSLETTER_PARAM_GROUP_BY, $toolbar->groupby, false);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('refresh')));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('refresh'),
+                'class' => 'btn btn-secondary', 'style' => 'margin-left:5px;'));
         $output .= html_writer::end_tag('form');
         // if (has_capability('mod/newsletter:createissue', $this->context)) {
         if ($toolbar->createissues) {
@@ -364,14 +367,14 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_EDIT_SUBSCRIPTION,
                                   NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));
 					$content = \html_writer::link($url,
-                                              \html_writer::empty_tag('img', array( 'src' => $OUTPUT->pix_url('t/edit'))),
-                                              array('class' => 'editbutton', 'title' => get_string('edit')));			  
+                                              $OUTPUT->image_icon('t/edit', get_string('edit')),
+                                              array('class' => 'editbutton', 'title' => get_string('edit')));
 					$url = new \moodle_url('/mod/newsletter/view.php',
                             array(NEWSLETTER_PARAM_ID => $list->cmid,
                                   NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
                                   NEWSLETTER_PARAM_SUBSCRIPTION => $subscription->id));								  
 					$content .= \html_writer::link($url,
-                                              \html_writer::empty_tag('img', array( 'src' => $OUTPUT->pix_url('t/delete'))),
+                                              $OUTPUT->image_icon('t/delete', get_string('delete')),
                                               array('class' => 'deletebutton', 'title' => get_string('delete')));			  
                     break;
                 default:

@@ -58,14 +58,15 @@ class mod_newsletter_subscriber_selector_form extends \moodleform {
         
         $existingcell = new \html_table_cell();
         $existingcell->text = $existing->display(true);
-        $existingcell->attributes['class'] = 'existing';
+        $existingcell->id = 'existingcell';
         $actioncell = new \html_table_cell();
         $actioncell->text  = \html_writer::start_tag('div', array());
         $actioncell->text .= \html_writer::empty_tag('input', array(
         		'type' => 'submit',
         		'name' => 'add',
         		'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
-        		'class' => 'actionbutton')
+        		'class' => 'btn btn-secondary',
+                'style' => 'margin-bottom: 3px;')
         );
         $actioncell->text .= \html_writer::end_tag('div', array());
 
@@ -74,7 +75,8 @@ class mod_newsletter_subscriber_selector_form extends \moodleform {
         		'type' => 'submit',
         		'name' => 'unsubscribe',
         		'value' => ' ' . get_string('unsubscribe', 'mod_newsletter'),
-        		'class' => 'actionbutton')
+        		'class' => 'btn btn-secondary',
+                'style' => 'margin-bottom: 3px;')
         );
         $actioncell->text .= \html_writer::end_tag('div', array()); 
                
@@ -83,17 +85,18 @@ class mod_newsletter_subscriber_selector_form extends \moodleform {
         		'type' => 'submit',
         		'name' => 'remove',
         		'value' => get_string('delete') . ' ' . $rightarrow,
-        		'class' => 'actionbutton')
+        		'class' => 'btn btn-secondary')
         );
         $actioncell->text .= \html_writer::end_tag('div', array());
         $actioncell->text .= \html_writer::div('<br />' . get_string('unsubscribedinfo','mod_newsletter'));
-        $actioncell->attributes['class'] = 'actions';
+        $actioncell->id = 'buttonscell';
+        $actioncell->style = 'vertical-align:middle;';
         $potentialcell = new \html_table_cell();
         $potentialcell->text = $potential->display(true);
-        $potentialcell->attributes['class'] = 'potential';
+        $potentialcell->id = 'potentialcell';
         
         $table = new \html_table();
-        $table->attributes['class'] = 'subscribertable boxaligncenter';
+        $table->attributes['class'] = 'groupmanagementtable boxaligncenter';
         $table->data = array(new \html_table_row(array($existingcell, $actioncell, $potentialcell)));
         $mform->addElement('html', \html_writer::table($table));
     }
