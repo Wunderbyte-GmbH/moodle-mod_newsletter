@@ -124,8 +124,6 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toc_types);
         $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
         
-        //$mform->addElement('text', 'replaceinfo', get_string('issue_title', 'mod_newsletter'), array('size' => '64'));
-        
         $mform->addElement('header', 'header_publish', get_string('header_publish', 'mod_newsletter'));
         $mform->addElement('static', 'publishinfo', '', get_string('header_publishinfo', 'mod_newsletter'));
         
@@ -133,8 +131,6 @@ class mod_newsletter_issue_form extends moodleform {
         $mform->setType('deliverystarted', PARAM_ALPHANUM);
 
         $mform->addElement('date_time_selector', 'publishon', get_string('publishon', 'mod_newsletter'));
-        $mform->setType('plaincontent', PARAM_INT);
-        $mform->setDefault('publishon', strtotime("+24 hours"));
         $mform->disabledIf('publishon', 'deliverystarted', 'eq', 'yes');
 
         $this->add_action_buttons(false);

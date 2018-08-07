@@ -152,7 +152,9 @@ class bounceprocessor extends bouncehandler {
 									$issueid = max(array_keys($this->issues));
 								}
 							} else {
-								$issueid = $DB->get_field_sql('SELECT id, MAX(publishon) FROM {newsletter_issues} WHERE publishon < :time)', array('time' => $this->timecreated));
+								$issueid = $DB->get_field_sql(
+								        'SELECT id, MAX(publishon) FROM {newsletter_issues} WHERE publishon < :time',
+                                        array('time' => $this->timecreated));
 							}
 							$bouncedata->issueid = $issueid;
 							$this->bounces [] = $bouncedata;

@@ -635,7 +635,7 @@ class mod_newsletter implements renderable {
         	$issue->htmlcontent = '';
         	$issue->id = 0;
         	$issue->title = '';
-        	$issue->publishon = null;
+        	$issue->publishon = strtotime("+48 hours");
         	$issue->toc = 0;
         	$issue->stylesheetid = NEWSLETTER_DEFAULT_STYLESHEET;
         	$issue->delivered = NEWSLETTER_DELIVERY_STATUS_UNKNOWN;
