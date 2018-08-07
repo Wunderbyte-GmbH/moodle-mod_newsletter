@@ -219,3 +219,26 @@ $string['toc_no'] = 'Do not autogenerate a table of content';
 $string['toc_yes'] = 'Use {$a} headline level(s)';
 $string['toc'] = 'Select how to autogenerate the table of content';
 $string['toc_help'] = 'This is the number of headline levels to include. Example: You have a newsletter issue with three different headline levels (h1, h2, h3). Then you could choose to only use the most important headlines for the table of content. Then you choose to select only 1 headline level. If you want also to inclide h2 in the table of content, choose 2 levels.';
+
+// Privacy API.
+$string['privacy:metadata:newsletter_subscriptions'] = 'Represent a subscription to a newsletter.';
+$string['privacy:metadata:newsletter_subscriptions:userid'] = 'User who created the record';
+$string['privacy:metadata:newsletter_subscriptions:newsletterid'] = 'ID of the subscribed newsletter';
+$string['privacy:metadata:newsletter_subscriptions:health'] = 'Health of the subscription to store if errors were found';
+$string['privacy:metadata:newsletter_subscriptions:timesubscribed'] = 'Timestamp when subscribed';
+$string['privacy:metadata:newsletter_subscriptions:timestatuschanged'] = 'Timestamp of last change';
+$string['privacy:metadata:newsletter_subscriptions:subscriberid'] = 'ID of user who subscribed';
+$string['privacy:metadata:newsletter_subscriptions:unsubscriberid'] = 'ID of user who unsubscribed';
+$string['privacy:metadata:newsletter_subscriptions:sentnewsletters'] = 'Number of newsletters already sent';
+$string['privacy:metadata:newsletter_bounces'] = 'Represent newsletters that we received a bounce from the server.';
+$string['privacy:metadata:newsletter_bounces:userid'] = 'User who created the record';
+$string['privacy:metadata:newsletter_bounces:issueid'] = 'What newsletter was bounced';
+$string['privacy:metadata:newsletter_bounces:statuscode'] = 'Statuscode we received';
+$string['privacy:metadata:newsletter_bounces:timecreated'] = 'Timestamp when we created the entry';
+$string['privacy:metadata:newsletter_bounces:type'] = 'Type we received';
+$string['privacy:metadata:newsletter_bounces:timereceived'] = 'Timestamp when we received the bounce';
+$string['privacy:metadata:newsletter_deliveries'] = 'Represent newsletters we have sent to users.';
+$string['privacy:metadata:newsletter_deliveries:userid'] = 'User who received the newsletter';
+$string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID of the issue we sent';
+$string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID of the newsletter we sent';
+$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Toggle if it was delivered';
