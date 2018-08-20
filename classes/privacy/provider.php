@@ -183,7 +183,14 @@ class provider implements
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
-        return; // TODO:
+        if (!$context instanceof \context_module) {
+            return;
+        }
+
+        if ($cm = get_coursemodule_from_id('newsletter', $context->instanceid)) {
+            $DB->delete_records('newsletter_subscriptions', ['newsletterid' => $cm->instance]);
+            $DB->delete_records('newsletter_deliveries', ['newsletterid' => $cm->instance]);
+        }
     }
 
 
@@ -195,7 +202,21 @@ class provider implements
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
-        return; // TODO:
+
+        if (empty($contextlist->count())) {
+            return;
+        }
+
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+
+            if (!$context instanceof \context_module) {
+                continue;
+            }
+            $instanceid = $DB->get_field('course_modules', 'instance', ['id' => $context->instanceid], MUST_EXIST);
+            $DB->delete_records('newsletter_subscriptions', ['newsletterid' => $instanceid, 'userid' => $userid]);
+            $DB->delete_records('newsletter_deliveries', ['newsletterid' => $instanceid, 'userid' => $userid]);
+        }
     }
 
     /**
