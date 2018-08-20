@@ -115,12 +115,65 @@ class provider implements
 
     /**
      * Export personal data for the given approved_contextlist. User and context information is contained within the contextlist.
-     *
      * @param approved_contextlist $contextlist a list of contexts approved for export.
      */
     public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
-        return; // TODO:
+
+        if (!$contextlist->count()) {
+            return;
+        }
+
+        $user = $contextlist->get_user();
+
+        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+
+        $sql = "SELECT  cm.id AS cmid,
+                        news.name AS newslettername,
+                        cm.course AS courseid,
+                        sub.timesubscribed AS timesubscribed,
+                        issue.title AS issuename
+                  FROM {context} c
+            INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+            INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+            INNER JOIN {newsletter} news ON news.id = cm.instance
+            INNER JOIN {newsletter_subscriptions} sub ON sub.newsletterid = news.id
+            INNER JOIN {newsletter_issues} issue ON news.id = issue.newsletterid
+                 WHERE c.id {$contextsql}
+                       AND sub.userid = :userid
+              ORDER BY cm.id";
+
+        $params = ['modname' => 'newsletter', 'contextlevel' => CONTEXT_MODULE, 'userid' => $user->id] + $contextparams;
+
+        // Reference to the instance seen in the last iteration of the loop. By comparing this with the current record, and
+        // because we know the results are ordered, we know when we've moved to the subscription for a new instance and therefore
+        // when we can export the complete data for the last instance. Used this idea from mod_choice, thank you.
+        $lastcmid = null;
+
+        $newslettersubs = $DB->get_recordset_sql($sql, $params);
+        foreach ($newslettersubs as $newslettersub) {
+            // If we've moved to a new instance, then write the last newsletterdata and reinit the newsletterdata array.
+            if ($lastcmid != $newslettersub->cmid) {
+                if (!empty($newsletterdata)) {
+                    $context = \context_module::instance($lastcmid);
+                    self::export_newsletter($newsletterdata, $context, $user);
+                }
+                $newsletterdata = [
+                    'issuename' => [],
+                    'timesubscribed' => \core_privacy\local\request\transform::datetime($newslettersub->timesubscribed),
+                ];
+            }
+            $newsletterdata['issuename'][] = $newslettersub->issuename;
+            $lastcmid = $newslettersub->cmid;
+        }
+        $newslettersubs->close();
+
+        // The data for the last activity won't have been written yet, so make sure to write it now!
+        if (!empty($newsletterdata)) {
+            $context = \context_module::instance($lastcmid);
+            self::export_newsletter($newsletterdata, $context, $user);
+        }
+
     }
 
     /**
@@ -144,4 +197,24 @@ class provider implements
         global $DB;
         return; // TODO:
     }
+
+    /**
+     * Export the supplied personal data for a newsletter instance, along with any generic data or area files.
+     *
+     * @param array $newsletterdata the personal data to export for the subscription.
+     * @param \context_module $context the context of the subscription.
+     * @param \stdClass $user the user record
+     */
+    protected static function export_newsletter(array $newsletterdata, \context_module $context, \stdClass $user) {
+        // Fetch the generic module data.
+        $contextdata = helper::get_context_data($context, $user);
+
+        // Merge with newsletterdata and write it.
+        $contextdata = (object)array_merge((array)$contextdata, $newsletterdata);
+        writer::with_context($context)->export_data([], $contextdata);
+
+        // Write generic module intro files.
+        helper::export_context_files($context, $user);
+    }
+
 }
