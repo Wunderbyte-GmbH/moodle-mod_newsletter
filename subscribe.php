@@ -28,24 +28,17 @@ if ($user) {
     global $DB;
     $select = " userid = $user AND (health = " . NEWSLETTER_SUBSCRIBER_STATUS_OK . " OR health = " . NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC .")";
     $sub = $DB->record_exists_select('newsletter_subscriptions', $select );
-    // If we find a subscription we assume the user exists.
-    if ($sub && $secret) {
-        $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
-        if ($secret == $user->secret) {
-            // The secret is used to confirm users, old behaviour.
-            if ($confirm == NEWSLETTER_CONFIRM_YES) {
-                $DB->set_field('user', 'confirmed', 1, array('id' => $user));
-                redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), get_string('welcomeredirec','mod_newsletter'), 5);
-            } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
-                $DB->delete_records('newsletter_subscriptions', array('userid' => $user));
-                $user = $DB->get_record('user', array('id' => $user));
-                user_delete_user($user);
-                redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), "The creation of your account was cancelled at your request!", 5);
-            } else {
-                print_error('The link you followed is invalid.');
-            }
-        } else if ($secret != md5($user->id . "+" . $user->firstaccess)) {
-            // The secret is not used to unsubscribe from a newsletter, we don't know what to do.
+    $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
+    if ($sub && $secret && $secret == $user->secret) {
+        if ($confirm == NEWSLETTER_CONFIRM_YES) {
+            $DB->set_field('user', 'confirmed', 1, array('id' => $user));
+            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), get_string('welcomeredirec','mod_newsletter'), 5);
+        } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
+            $DB->delete_records('newsletter_subscriptions', array('userid' => $user));
+            $user = $DB->get_record('user', array('id' => $user));
+            user_delete_user($user);
+            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), "The creation of your account was cancelled at your request!", 5);
+        } else {
             print_error('The link you followed is invalid.');
         }
     }
@@ -79,12 +72,19 @@ if ($newsletter->is_subscribed($user->id)) {
         echo $OUTPUT->footer();
     } else if($confirm == NEWSLETTER_CONFIRM_YES) {
         // Check if secret value is correct.
+        // NOTE: this makes all older unsub links invalid.
         if($secret == md5($user->id . "+" . $user->firstaccess)) {
             $subscriptionid = $newsletter->get_subid($user->id);
             $newsletter->unsubscribe($subscriptionid);
-            // TODO: Send mail to user just to be sure.
+            // Send mail to user just to be sure.
+            // TODO: Multilang.
+            $unsubsubj = "We noticed you unsubscribed";
+            $unsubtext = "<p>Did you revoke your subscription? We noticed your subscription to this nesletter was cancelled.
+                If you did this we are sorry but there is nothing more to do. If you did not unsubscribe please let us know.</p>";
+            email_to_user($user, core_user::get_support_user (), $unsubsubj, html_to_text($unsubtext), $unsubtext, '', '', false);
             echo $OUTPUT->header();
-            echo $OUTPUT->box(get_string('unsubscription_succesful','newsletter', array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),'mdl-align');
+            echo $OUTPUT->box(get_string('unsubscription_succesful','newsletter',
+                array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),'mdl-align');
             echo $OUTPUT->continue_button(new moodle_url('/mod/newsletter/view.php', array('id' => $id)));
             echo $OUTPUT->footer();
         } else {
@@ -98,9 +98,10 @@ if ($newsletter->is_subscribed($user->id)) {
 } else {
     if($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('subscribe_question', 'newsletter', array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),
-                new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
-                new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+        echo $OUTPUT->confirm(get_string('subscribe_question', 'newsletter', array(
+            'name' => $newsletter->get_instance()->name, 'email' => $user->email)),
+            new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
+            new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
         echo $OUTPUT->footer();
     } else if($confirm == NEWSLETTER_CONFIRM_YES) {
         $newsletter->subscribe($user->id);
