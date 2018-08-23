@@ -470,7 +470,6 @@ function newsletter_cron() {
                 mtrace("Sending message to {$recipient->email}... ");
             }
 
-            // TODO: when someone uses the string "replacewithuserid" in a text it will be replaced with the userid = not good
             // Replace user specific data here
             $toreplace = array();
             $replacement = array ();
@@ -486,17 +485,16 @@ function newsletter_cron() {
                     $replacement[$name] = '';
                 }
             }
+            // TODO: when someone uses the string "replacewithuserid" in a text it will be replaced with the userid = not good
             $toreplace['replacewithuserid'] = 'replacewithuserid';
             $replacement['replacewithuserid'] = $delivery->userid;
 
             // #30 Unsubscribe link.
             $toreplace['replacewithsecret'] = 'replacewithsecret';
-            $replacement['replacewithsecret'] = md5($delivery->id . "+" . $delivery->firstaccess);
+            $replacement['replacewithsecret'] = md5($recipient->id . "+" . $recipient->firstaccess);
 
             $plaintext = str_replace ( $toreplace, $replacement, $plaintexttmp );
             $html = str_replace ( $toreplace, $replacement, $htmltmp );
-
-            // user data replaced
 
             $userfrom->customheaders = array (  // Headers to make emails easier to track
                     'Precedence: Bulk',

@@ -28,9 +28,11 @@ if ($user) {
     global $DB;
     $select = " userid = $user AND (health = " . NEWSLETTER_SUBSCRIBER_STATUS_OK . " OR health = " . NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC .")";
     $sub = $DB->record_exists_select('newsletter_subscriptions', $select );
+    // If we find a subscription we assume the user exists.
     if ($sub && $secret) {
-        $user = $DB->get_record('user', array('id' => $user));
+        $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
         if ($secret == $user->secret) {
+            // The secret is used to confirm users, old behaviour.
             if ($confirm == NEWSLETTER_CONFIRM_YES) {
                 $DB->set_field('user', 'confirmed', 1, array('id' => $user));
                 redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)), get_string('welcomeredirec','mod_newsletter'), 5);
@@ -42,11 +44,10 @@ if ($user) {
             } else {
                 print_error('The link you followed is invalid.');
             }
-        } else {
+        } else if ($secret != md5($user->id . "+" . $user->firstaccess)) {
+            // The secret is not used to unsubscribe from a newsletter, we don't know what to do.
             print_error('The link you followed is invalid.');
         }
-    } else {
-        $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
     }
 } else {
     $user = $USER;
@@ -57,7 +58,8 @@ $PAGE->set_url($url);
 $coursemodule = get_coursemodule_from_id('newsletter', $id, 0, false, MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $coursemodule->course), '*', MUST_EXIST);
 
-require_login($course, false, $coursemodule);
+// require_login($course, false, $coursemodule);
+$PAGE->set_context(context_system::instance()); // No login required.
 $context = context_module::instance($coursemodule->id);
 
 require_capability('mod/newsletter:viewnewsletter', $context);
@@ -80,6 +82,7 @@ if ($newsletter->is_subscribed($user->id)) {
         if($secret == md5($user->id . "+" . $user->firstaccess)) {
             $subscriptionid = $newsletter->get_subid($user->id);
             $newsletter->unsubscribe($subscriptionid);
+            // TODO: Send mail to user just to be sure.
             echo $OUTPUT->header();
             echo $OUTPUT->box(get_string('unsubscription_succesful','newsletter', array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),'mdl-align');
             echo $OUTPUT->continue_button(new moodle_url('/mod/newsletter/view.php', array('id' => $id)));
