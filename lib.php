@@ -379,7 +379,8 @@ function newsletter_cron() {
         mtrace("Collecting data...\n");
     }
 
-    $issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) );
+    $nounsublink = array(); // Store userids that don't receive unsublink. #31.
+    $issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) ); // TODO: DEBUG
     foreach ( $issues as $issue ) {
         if ($issue->publishon <= time () && ! $DB->record_exists ( 'newsletter_deliveries', array (
                 'issueid' => $issue->id
@@ -387,7 +388,6 @@ function newsletter_cron() {
             // Populate the deliveries table.
             $recipients = newsletter_get_all_valid_recipients ( $issue->newsletterid );
             $subscriptionobjects = array();
-            $nounsublink = array(); // Store userids that don't receive unsublink. #31.
             foreach ($recipients as $userid => $recipient) {
                 $sub = new stdClass();
                 $sub->userid = $userid;
@@ -395,7 +395,7 @@ function newsletter_cron() {
                 $sub->newsletterid = $issue->newsletterid;
                 $sub->delivered = 0;
                 $subscriptionobjects[] = $sub;
-                if($recipient->nounsublink) $nounsublink[]=$userid;
+                if($recipient->nounsublink) $nounsublink[$issue->id][]=$userid;
             }
             $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
             $DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_INPROGRESS, array('id' => $issue->id));
@@ -403,8 +403,7 @@ function newsletter_cron() {
     }
 
     if ($debugoutput) {
-        mtrace("Data collection complete. Delivering...\n");
-        mtrace("We found ".count($nounsublink)." users that should not see unsubscribe links. \n"); // #31
+        mtrace("Data collection complete. Delivering...");
     }
 
     $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS), null, 'id, newsletterid' );
@@ -447,7 +446,9 @@ function newsletter_cron() {
         $parsedhtml = new \mod_newsletter\mod_newsletter_issue_parser($issue, true);
         $issue->htmlcontent = $parsedhtml->get_parsed_html();
 
-        $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php', $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
+        $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php',
+            $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE,
+            $issue->id,  mod_newsletter_issue_form::editor_options($newsletter->get_context(), $issue->id) );
         $plaintexttmp = newsletter_convert_html_to_plaintext($issue->htmlcontent);
         $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
         $deliveries = $DB->get_records ( 'newsletter_deliveries', array (
@@ -472,7 +473,23 @@ function newsletter_cron() {
                 mtrace("Sending message to {$recipient->email}... ");
             }
 
-            // Replace user specific data here
+            // Make this explicit, $htmltmp and $plaintmp need to remain unchanged.
+            $htmluser = $htmltmp;
+            $plaintextuser = $plaintexttmp;
+
+            // #31 Remove unsub link
+            // Big problem: htmltmp needs to stay as it is.
+            if(isset($nounsublink[$issueid]) && in_array($delivery->userid, $nounsublink[$issueid])) {
+                if ($debugoutput) mtrace("Sending no unsublink to {$recipient->email} for {$issueid}"); // TODO: remove.
+                // Starts with <a  includes hash=replacewithsecret closes </a>.
+                $unsubpattern = '|<a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a>|iU';
+                $htmluser = preg_replace($unsubpattern, '', $htmluser);
+
+                $unsubpattern = '/Click here(.+)replacewithsecret]/s'; // TODO: Use language strings for start.
+                $plaintextuser = preg_replace($unsubpattern, '', $plaintextuser);
+            }
+
+            // Replace user specific data here.
             $toreplace = array();
             $replacement = array ();
 
@@ -495,18 +512,8 @@ function newsletter_cron() {
             $toreplace['replacewithsecret'] = 'replacewithsecret';
             $replacement['replacewithsecret'] = md5($recipient->id . "+" . $recipient->firstaccess);
 
-            // #31 Remove unsub link
-            // Starts with <a  includes hash=replacewithsecret closes  </a>
-            if(in_array($delivery->userid, $nounsublink)) {
-                $unsubpattern = '|<a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a>|iU';
-                $htmltmp = preg_replace($unsubpattern, '', $htmltmp);
-
-                $unsubpattern = '/Click here(.+)replacewithsecret]/s'; // TODO: Use language strings for start.
-                $plaintexttmp = preg_replace($unsubpattern, '', $plaintexttmp);
-            }
-
-            $plaintext = str_replace ( $toreplace, $replacement, $plaintexttmp );
-            $html = str_replace ( $toreplace, $replacement, $htmltmp );
+            $plaintextuser = str_replace ( $toreplace, $replacement, $plaintextuser );
+            $htmluser = str_replace ( $toreplace, $replacement, $htmluser );
 
             $userfrom->customheaders = array (  // Headers to make emails easier to track
                     'Precedence: Bulk',
@@ -517,12 +524,13 @@ function newsletter_cron() {
                     'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
             );
 
-            $result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintext, $html, $attachments, $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79, $bounceemail = '' );
+            $result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintextuser, $htmluser, $attachments, $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79, $bounceemail = '' );
             if ($debugoutput) {
                 echo ($result ? "OK" : "FAILED") . "!\n";
+                echo $plaintextuser; // DEBUG michaelpollak.
+                echo $htmluser; // DEBUG michaelpollak.
             }
-            echo $plaintext; // DEBUG michaelpollak.
-            echo $html; // DEBUG michaelpollak.
+            // TODO: I think these should only be set once $result is true.
             $DB->set_field('newsletter_deliveries', 'delivered', 1,  array('id' => $deliveryid));
             $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";
