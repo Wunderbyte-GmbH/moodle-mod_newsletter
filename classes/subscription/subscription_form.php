@@ -60,7 +60,7 @@ class mod_newsletter_subscription_form extends \moodleform {
         $mform->addElement('static', 'timestatuschanged', get_string('header_timestatuschanged', 'mod_newsletter'), '');
         $mform->addElement('static', 'subscriberid', get_string('header_subscriberid', 'mod_newsletter'), '');
         $mform->addElement('static', 'unsubscriberid', get_string('header_unsubscriberid', 'mod_newsletter'), '');
-        
+
         $options = array(
             NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string("health_0", 'newsletter'),
             NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC => get_string("health_1", 'newsletter'),
@@ -70,6 +70,9 @@ class mod_newsletter_subscription_form extends \moodleform {
 
         $mform->addElement('select', 'health', get_string('header_health', 'mod_newsletter'), $options);
         $mform->setType('health', PARAM_INT);
+
+        // Checkbox to not send unsublink. #31.
+        $mform->addElement('advcheckbox', 'nounsublink', 'No unsublink', 'Don\'t send an unsubscribe link.', '', array(0, 1)); // TODO: Multilang.
 
         $this->add_action_buttons();
 
@@ -83,12 +86,13 @@ class mod_newsletter_subscription_form extends \moodleform {
             $values->timesubscribed = userdate($subscription->timesubscribed, get_string('strftimedatefullshort'));
             $values->timestatuschanged = userdate($subscription->timestatuschanged, get_string('strftimedatefullshort'));
             if($subscription->subscriberid != 0){
-            	$values->subscriberid =  fullname($DB->get_record('user', array('id'=>$subscription->subscriberid), '*', MUST_EXIST));
+                $values->subscriberid =  fullname($DB->get_record('user', array('id'=>$subscription->subscriberid), '*', MUST_EXIST));
             } else {
-            	$values->subscriberid = "No data present";
+                $values->subscriberid = "No data present";
             }
             $values->userid = $subscription->userid;
             $values->unsubscriberid = $subscription->unsubscriberid;
+            $values->nounsublink = $subscription->nounsublink; // Extend nounsublink #31
             $this->set_data($values);
         }
     }
