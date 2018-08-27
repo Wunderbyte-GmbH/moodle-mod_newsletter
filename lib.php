@@ -384,9 +384,10 @@ function newsletter_cron() {
         if ($issue->publishon <= time () && ! $DB->record_exists ( 'newsletter_deliveries', array (
                 'issueid' => $issue->id
         ) )) {
-            //populate the deliveries table
+            // Populate the deliveries table.
             $recipients = newsletter_get_all_valid_recipients ( $issue->newsletterid );
             $subscriptionobjects = array();
+            $nounsublink = array(); // Store userids that don't receive unsublink. #31.
             foreach ($recipients as $userid => $recipient) {
                 $sub = new stdClass();
                 $sub->userid = $userid;
@@ -394,15 +395,16 @@ function newsletter_cron() {
                 $sub->newsletterid = $issue->newsletterid;
                 $sub->delivered = 0;
                 $subscriptionobjects[] = $sub;
+                if($recipient->nounsublink) $nounsublink[]=$userid;
             }
             $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
             $DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_INPROGRESS, array('id' => $issue->id));
         }
     }
 
-
     if ($debugoutput) {
         mtrace("Data collection complete. Delivering...\n");
+        mtrace("We found ".count($nounsublink)." users that should not see unsubscribe links. \n"); // #31
     }
 
     $issuestodeliver = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS), null, 'id, newsletterid' );
@@ -493,6 +495,16 @@ function newsletter_cron() {
             $toreplace['replacewithsecret'] = 'replacewithsecret';
             $replacement['replacewithsecret'] = md5($recipient->id . "+" . $recipient->firstaccess);
 
+            // #31 Remove unsub link
+            // Starts with <a  includes hash=replacewithsecret closes  </a>
+            if(in_array($delivery->userid, $nounsublink)) {
+                $unsubpattern = '|<a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a>|iU';
+                $htmltmp = preg_replace($unsubpattern, '', $htmltmp);
+
+                $unsubpattern = '/Click here(.+)replacewithsecret]/s'; // TODO: Use language strings for start.
+                $plaintexttmp = preg_replace($unsubpattern, '', $plaintexttmp);
+            }
+
             $plaintext = str_replace ( $toreplace, $replacement, $plaintexttmp );
             $html = str_replace ( $toreplace, $replacement, $htmltmp );
 
@@ -509,6 +521,8 @@ function newsletter_cron() {
             if ($debugoutput) {
                 echo ($result ? "OK" : "FAILED") . "!\n";
             }
+            echo $plaintext; // DEBUG michaelpollak.
+            echo $html; // DEBUG michaelpollak.
             $DB->set_field('newsletter_deliveries', 'delivered', 1,  array('id' => $deliveryid));
             $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";
