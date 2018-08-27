@@ -478,14 +478,14 @@ function newsletter_cron() {
             $plaintextuser = $plaintexttmp;
 
             // #31 Remove unsub link
-            // Big problem: htmltmp needs to stay as it is.
             if(isset($nounsublink[$issueid]) && in_array($delivery->userid, $nounsublink[$issueid])) {
-                if ($debugoutput) mtrace("Sending no unsublink to {$recipient->email} for {$issueid}"); // TODO: remove.
+                if ($debugoutput) mtrace("Sending no unsublink to {$recipient->email} for {$issueid}");
                 // Starts with <a  includes hash=replacewithsecret closes </a>.
                 $unsubpattern = '|<a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a>|iU';
                 $htmluser = preg_replace($unsubpattern, '', $htmluser);
 
-                $unsubpattern = '/Click here(.+)replacewithsecret]/s'; // TODO: Use language strings for start.
+                $startstring = get_string('unsubscribe_link_text', 'mod_newsletter');
+                $unsubpattern = '/'.$startstring.'(.+)replacewithsecret]/s';
                 $plaintextuser = preg_replace($unsubpattern, '', $plaintextuser);
             }
 
