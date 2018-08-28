@@ -219,6 +219,10 @@ $string['toc_no'] = 'Do not autogenerate a table of content';
 $string['toc_yes'] = 'Use {$a} headline level(s)';
 $string['toc'] = 'Select how to autogenerate the table of content';
 $string['toc_help'] = 'This is the number of headline levels to include. Example: You have a newsletter issue with three different headline levels (h1, h2, h3). Then you could choose to only use the most important headlines for the table of content. Then you choose to select only 1 headline level. If you want also to inclide h2 in the table of content, choose 2 levels.';
+$string['unsubscribe_mail_subj'] = 'We noticed you unsubscribed';
+$string['unsubscribe_mail_text'] = '<p>Did you revoke your subscription? We noticed your subscription to this nesletter was cancelled. If you did this there is nothing more to do. If you did not unsubscribe please let us know.</p>';
+$string['unsubscribe_nounsub_text'] = 'Don\'t send an unsubscribe link.';
+$string['unsubscribe_nounsub'] = 'Distributor';
 
 // Privacy API.
 $string['privacy:metadata:newsletter_subscriptions'] = 'Represent a subscription to a newsletter.';

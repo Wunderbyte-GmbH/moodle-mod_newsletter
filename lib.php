@@ -379,8 +379,8 @@ function newsletter_cron() {
         mtrace("Collecting data...\n");
     }
 
-    $nounsublink = array(); // Store userids that don't receive unsublink. #31.
-    $issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) ); // TODO: DEBUG
+    $nounsublink = array(); // Store userids that don't receive unsublinks in an array.
+    $issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) );
     foreach ( $issues as $issue ) {
         if ($issue->publishon <= time () && ! $DB->record_exists ( 'newsletter_deliveries', array (
                 'issueid' => $issue->id
@@ -395,7 +395,7 @@ function newsletter_cron() {
                 $sub->newsletterid = $issue->newsletterid;
                 $sub->delivered = 0;
                 $subscriptionobjects[] = $sub;
-                if($recipient->nounsublink) $nounsublink[$issue->id][]=$userid;
+                if($recipient->nounsublink) $nounsublink[$issue->id][]=$userid; // Who doesn't receive unsublink per issue.
             }
             $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
             $DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_INPROGRESS, array('id' => $issue->id));
@@ -480,12 +480,10 @@ function newsletter_cron() {
             // #31 Remove unsub link
             if(isset($nounsublink[$issueid]) && in_array($delivery->userid, $nounsublink[$issueid])) {
                 if ($debugoutput) mtrace("Sending no unsublink to {$recipient->email} for {$issueid}");
-                // Starts with <a  includes hash=replacewithsecret closes </a>.
-                $unsubpattern = '|<a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a>|iU';
+                // Find unsub link.
+                $unsubpattern = '|<hr /><p><a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a></p>|iU';
                 $htmluser = preg_replace($unsubpattern, '', $htmluser);
-
-                $startstring = get_string('unsubscribe_link_text', 'mod_newsletter');
-                $unsubpattern = '/'.$startstring.'(.+)replacewithsecret]/s';
+                $unsubpattern = '/'.get_string('unsubscribe_link_text', 'mod_newsletter').'(.+)replacewithsecret]/s';
                 $plaintextuser = preg_replace($unsubpattern, '', $plaintextuser);
             }
 
@@ -504,7 +502,7 @@ function newsletter_cron() {
                     $replacement[$name] = '';
                 }
             }
-            // TODO: when someone uses the string "replacewithuserid" in a text it will be replaced with the userid = not good
+            // Replace userid in unsubscribe link.
             $toreplace['replacewithuserid'] = 'replacewithuserid';
             $replacement['replacewithuserid'] = $delivery->userid;
 
@@ -527,10 +525,7 @@ function newsletter_cron() {
             $result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintextuser, $htmluser, $attachments, $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79, $bounceemail = '' );
             if ($debugoutput) {
                 echo ($result ? "OK" : "FAILED") . "!\n";
-                echo $plaintextuser; // DEBUG michaelpollak.
-                echo $htmluser; // DEBUG michaelpollak.
             }
-            // TODO: I think these should only be set once $result is true.
             $DB->set_field('newsletter_deliveries', 'delivered', 1,  array('id' => $deliveryid));
             $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";

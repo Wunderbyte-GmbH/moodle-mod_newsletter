@@ -29,6 +29,7 @@ if ($user) {
     $select = " userid = $user AND (health = " . NEWSLETTER_SUBSCRIBER_STATUS_OK . " OR health = " . NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC .")";
     $sub = $DB->record_exists_select('newsletter_subscriptions', $select );
     $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
+    // If the passed secret matches the secret connected to the user it is a guest subscription.
     if ($sub && $secret && $secret == $user->secret) {
         if ($confirm == NEWSLETTER_CONFIRM_YES) {
             $DB->set_field('user', 'confirmed', 1, array('id' => $user));
@@ -77,10 +78,8 @@ if ($newsletter->is_subscribed($user->id)) {
             $subscriptionid = $newsletter->get_subid($user->id);
             $newsletter->unsubscribe($subscriptionid);
             // Send mail to user just to be sure.
-            // TODO: Multilang.
-            $unsubsubj = "We noticed you unsubscribed";
-            $unsubtext = "<p>Did you revoke your subscription? We noticed your subscription to this nesletter was cancelled.
-                If you did this we are sorry but there is nothing more to do. If you did not unsubscribe please let us know.</p>";
+            $unsubsubj = get_string('unsubscribe_mail_subj','newsletter');
+            $unsubtext = get_string('unsubscribe_mail_text','newsletter'); // TODO: Make this prettier.
             email_to_user($user, core_user::get_support_user (), $unsubsubj, html_to_text($unsubtext), $unsubtext, '', '', false);
             echo $OUTPUT->header();
             echo $OUTPUT->box(get_string('unsubscription_succesful','newsletter',

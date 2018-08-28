@@ -72,7 +72,7 @@ class mod_newsletter_subscription_form extends \moodleform {
         $mform->setType('health', PARAM_INT);
 
         // Checkbox to not send unsublink. #31.
-        $mform->addElement('advcheckbox', 'nounsublink', 'No unsublink', 'Don\'t send an unsubscribe link.', '', array(0, 1)); // TODO: Multilang.
+        $mform->addElement('advcheckbox', 'nounsublink', get_string('unsubscribe_nounsub', 'mod_newsletter'), get_string('unsubscribe_nounsub_text', 'mod_newsletter'), '', array(0, 1));
 
         $this->add_action_buttons();
 
