@@ -935,14 +935,12 @@ class mod_newsletter implements renderable {
      * Display  the overview of all newsletter issues as a list
      * //TODO: implement issue navigation from a point of time to a point of time
      *
-     * @param unknown $heading
-     * @param unknown $groupby
+     * @param string $heading
+     * @param string $groupby
      * @return NULL|newsletter_section_list
      */
     private function prepare_issue_list($heading, $groupby) {
-        global $DB;
-        // TODO: Add first day of the week check
-
+        // TODO: Add first day of the week check.
         $editissue = has_capability('mod/newsletter:editissue', $this->get_context());
         $deleteissue = has_capability('mod/newsletter:deleteissue', $this->get_context());
 
