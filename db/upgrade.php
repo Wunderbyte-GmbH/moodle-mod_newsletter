@@ -296,7 +296,7 @@ function xmldb_newsletter_upgrade($oldversion) {
     }
 
     // Add possibility not to send unsubscribe link. Add new field nounsublink, #31.
-    if ($oldversion < 20180827060) {
+    if ($oldversion < 2018082706) {
         // Define field nounsublink to be added to newsletter_subscriptions.
         $table = new xmldb_table('newsletter_subscriptions');
         $field = new xmldb_field('nounsublink', XMLDB_TYPE_INTEGER, '1', null, null, null, '0', 'sentnewsletters');
@@ -307,7 +307,7 @@ function xmldb_newsletter_upgrade($oldversion) {
         }
 
         // Newsletter savepoint reached.
-        upgrade_mod_savepoint(true, 20180827060, 'newsletter');
+        upgrade_mod_savepoint(true, 2018082706, 'newsletter');
     }
 
     // Third example, the next day, 2007/04/02 (with the trailing 00), some actions were performed to install.php,

@@ -1410,6 +1410,16 @@ class mod_newsletter implements renderable {
     }
 
     /**
+     * Returns the base url for the newsletter instance
+     *
+     * @return moodle_url
+     */
+    public function get_url() {
+        $url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->get_course_module()->cmid));
+        return $url;
+    }
+
+    /**
      *  subscribe a user to a newsletter and return the subscription id if successful
      *  When user status is unsubscribed and $resubscribed_unsubscribed is true, user will be subscribed as active again
      *  When user is already subscribed and status is other than unsubscribed, the subscription status remains unchanged
