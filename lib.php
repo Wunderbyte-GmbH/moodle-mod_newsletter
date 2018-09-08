@@ -459,7 +459,6 @@ function newsletter_cron() {
         // Configure the $userfrom. All mails are sent from the support user (but as return path for
         // bounce processing, the address in the newsletter admin settings is used
         $userfrom = core_user::get_support_user ();
-        $bounceemail = $newsletter->get_bounceemail_address();
 
         if(empty($deliveries)){
             $DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
@@ -481,7 +480,7 @@ function newsletter_cron() {
             if(isset($nounsublink[$issueid]) && in_array($delivery->userid, $nounsublink[$issueid])) {
                 if ($debugoutput) mtrace("Sending no unsublink to {$recipient->email} for {$issueid}");
                 // Find unsub link.
-                $unsubpattern = '|<hr /><p><a [^>]*hash=replacewithsecret[^"]*"[^>]*>.*</a></p>|iU';
+                $unsubpattern = '/<hr .+><p><a href=".+hash=replacewithsecret">.+<\/a><\/p>/';
                 $htmluser = preg_replace($unsubpattern, '', $htmluser);
                 $unsubpattern = '/'.get_string('unsubscribe_link_text', 'mod_newsletter').'(.+)replacewithsecret]/s';
                 $plaintextuser = preg_replace($unsubpattern, '', $plaintextuser);
@@ -521,18 +520,20 @@ function newsletter_cron() {
                     'X-Course-Id: '.$newsletter->get_instance()->course,
                     'X-Course-Name: '.format_string($newsletter->get_course()->fullname, true)
             );
-
-            $result = newsletter_email_to_user ( $recipient, $userfrom, $issue->title, $plaintextuser, $htmluser, $attachment, $attachname = '', $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79);
+            $result = newsletter_email_to_user($recipient, $userfrom, $issue->title, $plaintextuser,
+                    $htmluser, $attachment);
             if ($debugoutput) {
                 echo ($result ? "OK" : "FAILED") . "!\n";
             }
-            $DB->set_field('newsletter_deliveries', 'delivered', 1,  array('id' => $deliveryid));
+            $DB->set_field('newsletter_deliveries', 'delivered', 1, array('id' => $deliveryid));
             $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";
-            $params = array ('newsletterid' => $issue->newsletterid, 'userid' => $delivery->userid );
+            $params = array('newsletterid' => $issue->newsletterid, 'userid' => $delivery->userid);
             $DB->execute($sql, $params);
-            if(!$DB->record_exists ('newsletter_deliveries', array ('issueid' => $issue->id, 'delivered' => 0))){
-                $DB->set_field('newsletter_issues', 'delivered', NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+            if (!$DB->record_exists('newsletter_deliveries',
+                    array('issueid' => $issue->id, 'delivered' => 0))) {
+                $DB->set_field('newsletter_issues', 'delivered',
+                        NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
             }
         }
     }

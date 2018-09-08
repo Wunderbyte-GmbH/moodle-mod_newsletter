@@ -30,24 +30,24 @@ require_once $CFG->dirroot . '/mod/newsletter/lib.php';
 define ( 'NEWSLETTER_BOUNCE_HARD', 0 ); // hard bounce
 define ( 'NEWSLETTER_BOUNCE_SOFT', 1 ); // soft bounce
 class bounceprocessor extends bouncehandler {
-	
+
 	/**
 	 *
 	 * @var integer unix timestamp
 	 */
 	protected $timecreated = null;
-	
+
 	/**
 	 *
 	 * @var array
 	 */
 	public $bounces = array();
-	
+
 	/**
 	 * @var array of strings
 	 */
 	public $issues = null;
-	
+
 	/**
 	 * Apply the settings
 	 *
@@ -56,7 +56,7 @@ class bounceprocessor extends bouncehandler {
 	 */
 	public function __construct($conf) {
 		$this->timecreated = time ();
-		
+
 		if (isset ( $conf->open_mode )) {
 			$this->open_mode = CWSMBH_OPEN_MODE_IMAP;
 		}
@@ -88,7 +88,7 @@ class bounceprocessor extends bouncehandler {
 			$this->debug_verbose = $conf->debug_verbose;
 		}
 	}
-	
+
 	/**
 	 * process mails and show results in the browser
 	 * does not save or delete anything.
@@ -100,7 +100,7 @@ class bounceprocessor extends bouncehandler {
 		$this->debug_verbose = CWSMBH_VERBOSE_DEBUG;
 		$this->processMails ();
 	}
-	
+
 	/**
 	 * write bounces to database
 	 * the bounce time is used to check if bounce was already processed
@@ -114,12 +114,12 @@ class bounceprocessor extends bouncehandler {
 		$threshold = $this->timecreated - 5*86400;
 		$this->issues = $DB->get_records_select('newsletter_issues', 'publishon > :threshold', array('threshold' => $threshold), 'id', 'id, title' );
 		$this->processMails ();
-		
+
 		$getusersql = 'SELECT MAX(u.id)
 				FROM {user} u
 				WHERE u.email = ? AND u.id IN (
 					SELECT ns.userid
-					FROM {newsletter_subscriptions} ns				
+					FROM {newsletter_subscriptions} ns
 				)';
 		if (! empty ( $this->result ['msgs'] )) {
 			foreach ( $this->result ['msgs'] as $msg ) {
@@ -146,7 +146,7 @@ class bounceprocessor extends bouncehandler {
 									if(preg_match("/".$value->title."/", $msg['subject']) == 1){
 										$issueid = $key;
 										break;
-									} 
+									}
 								}
 								if($issueid == false){
 									$issueid = max(array_keys($this->issues));
@@ -158,8 +158,8 @@ class bounceprocessor extends bouncehandler {
 							}
 							$bouncedata->issueid = $issueid;
 							$this->bounces [] = $bouncedata;
-							
-						} 
+
+						}
 				}
 			}
 		}
@@ -174,7 +174,7 @@ class bounceprocessor extends bouncehandler {
     public function processMails($max=0)
     {
         $this->output('<h2>Init processMails</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-        
+
         if ($this->isImapOpenMode()) {
             if (!$this->_handler) {
                 $this->error_msg = '<strong>Mailbox not opened</strong>';
@@ -188,27 +188,27 @@ class bounceprocessor extends bouncehandler {
                 exit();
             }
         }
-        
+
         if ($this->move_hard && $this->disable_delete === false) {
             $this->disable_delete = true;
         }
-        
+
         if (!empty($max)) {
             $this->max_messages = $max;
         }
-        
+
         // initialize counter
         $this->result['counter'] = $this->_counter_result;
         $this->result['counter']['total'] = $this->isImapOpenMode() ? imap_num_msg($this->_handler) : count($this->_files);
         $this->result['counter']['fetched'] = $this->result['counter']['total'];
         $this->output('<strong>Total:</strong> ' . $this->result['counter']['total'] . ' messages.');
-        
+
         // process maximum number of messages
         if (!empty($this->max_messages) && $this->result['counter']['fetched'] > $this->max_messages) {
             $this->result['counter']['fetched'] = $this->max_messages;
             $this->output('Processing first <strong>' . $this->result['counter']['fetched'] . ' messages</strong>...');
         }
-        
+
         if ($this->test_mode) {
             $this->output('Running in <strong>test mode</strong>, not deleting messages from mailbox.');
         } else {
@@ -222,16 +222,16 @@ class bounceprocessor extends bouncehandler {
                 $this->output('<strong>Processed messages will be deleted</strong> from mailbox.');
             }
         }
-        
+
         if ($this->isImapOpenMode()) {
             for ($msg_no = 1; $msg_no <= $this->result['counter']['fetched']; $msg_no++) {
                 $this->output('<h3>Msg #' . $msg_no . '</h3>', CWSMBH_VERBOSE_REPORT, false);
-                
+
                 $header = @imap_fetchheader($this->_handler, $msg_no);
                 $headerdata = @imap_headerinfo($this->_handler, $msg_no);
                 $bodydata = @imap_fetchstructure($imap_stream, $msg_no);
                 $body = @imap_body($this->_handler, $msg_no);
-                
+
                 //$this->result['msgs'][] = $this->processParsing($msg_no, $header . '\r\n\r\n' . $body);
                 $this->result['msgs'][] = $this->processMsg($msg_no, $headerdata, $bodydata, $header . '\r\n\r\n' . $body);
             }
@@ -241,7 +241,7 @@ class bounceprocessor extends bouncehandler {
                 $this->result['msgs'][] = $this->processParsing($file['name'], $file['content']);
             }
         }
-        
+
         foreach ($this->result['msgs'] as $msg) {
             if ($msg['processed']) {
                 $this->result['counter']['processed']++;
@@ -263,25 +263,25 @@ class bounceprocessor extends bouncehandler {
                 }
             }
         }
-        
+
         $this->output('<h2>End of process</h2>', CWSMBH_VERBOSE_SIMPLE, false);
         if ($this->isImapOpenMode()) {
             $this->output('Closing mailbox, and purging messages');
             @imap_close($this->_handler);
         }
-        
+
         $this->output($this->result['counter']['fetched'] . ' messages read');
         $this->output($this->result['counter']['processed'] . ' action taken');
         $this->output($this->result['counter']['unprocessed'] . ' no action taken');
         $this->output($this->result['counter']['deleted'] . ' messages deleted');
         $this->output($this->result['counter']['moved'] . ' messages moved');
-        
+
         $this->output($this->_newline . '<strong>Full result:</strong>', CWSMBH_VERBOSE_REPORT);
         $this->output($this->result, CWSMBH_VERBOSE_REPORT, false, true);
-        
+
         return true;
     }
-    
+
     /**
      * Function to process parsing of each individual message
      * @param string $token : message number or filename.
@@ -292,17 +292,17 @@ class bounceprocessor extends bouncehandler {
     {
         $result = $this->_msg_result;
         $result['token'] = $token;
-        
+
         // format content
         $content = $this->formatContent($content);
-        
+
         // split head and body
         if (preg_match('#\r\n\r\n#is', $content)) {
             list($header, $body) = preg_split('#\r\n\r\n#', $content, 2);
         } else {
             list($header, $body) = preg_split('#\n\n#', $content, 2);
         }
-        
+
         $this->output('<strong>Header:</strong>', CWSMBH_VERBOSE_DEBUG);
         $this->output($header, CWSMBH_VERBOSE_DEBUG, false, true);
         $this->output('<strong>Body:</strong>', CWSMBH_VERBOSE_DEBUG);
@@ -319,26 +319,26 @@ class bounceprocessor extends bouncehandler {
 
         // parse header
         $header = $this->parseHeader($header);
-        
+
         // parse body sections
         $body_sections = $this->parseBodySections($header, $body);
-        
+
         // check bounce and fbl
         $is_bounce = $this->isBounce($header);
         $is_fbl = $this->isFbl($header, $body_sections);
-        
+
         if ($is_bounce) {
             $result['type'] = 'bounce';
         } elseif ($is_fbl) {
             $result['type'] = 'fbl';
         }
-        
+
         // begin process
         $result['recipients'] = array();
         if ($is_fbl) {
             $this->output('<strong>Feedback loop</strong> detected', CWSMBH_VERBOSE_DEBUG);
             $result['subject'] = trim(str_ireplace('Fw:', '', $header['Subject']));
-            
+
             if ($this->isHotmailFbl($body_sections)) {
                 $this->output('This message is an <strong>Hotmail fbl</strong>', CWSMBH_VERBOSE_DEBUG);
                 $body_sections['ar_machine']['Content-disposition'] = 'inline';
@@ -383,7 +383,7 @@ class bounceprocessor extends bouncehandler {
                     $body_sections['ar_machine']['Original-rcpt-to'] = $this->extractEmail($body_sections['ar_machine']['Original-rcpt-to']);
                 }
             }
-            
+
             $recipient = $this->_recipient_result;
             $recipient['email'] = $body_sections['ar_machine']['Original-rcpt-to'];
             $recipient['status'] = '5.7.1';
@@ -438,7 +438,7 @@ class bounceprocessor extends bouncehandler {
         } else {
             $result['processed'] = false;
         }
-        
+
         if (empty($result['subject']) && isset($header['Subject'])) {
             $result['subject'] = $header['Subject'];
         }
@@ -466,13 +466,13 @@ class bounceprocessor extends bouncehandler {
                 $result['recipients'][] = $recipient;
             }
         }
-        
+
         $this->output('<strong>Result:</strong>', CWSMBH_VERBOSE_REPORT);
         $this->output($result, CWSMBH_VERBOSE_REPORT, false, true);
-        
+
         return $result;
     }
-    
+
 
     /**
      * update the health satus of the subscribers
@@ -485,14 +485,14 @@ class bounceprocessor extends bouncehandler {
     		$hardbounces = $DB->count_records_select('newsletter_bounces','userid = :userid AND type = '. NEWSLETTER_BOUNCE_HARD,array('userid' => $bounce->userid));
     		$sent = $DB->get_record_sql('SELECT SUM(sentnewsletters) as sent FROM {newsletter_subscriptions} WHERE userid = :userid', array('userid' => $bounce->userid));
 
-    		
+
     		if($bounces > 0){
     			//hardbounces have more weight in calculation of bounce ratio
     			$bounceratio = ($hardbounces + $bounces)/$sent->sent;
     		} else {
     			$bounceratio = 0;
     		}
-    		
+
     		if($hardbounces > 5 AND $bounceratio < 0.2){
     			$health = NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC;
     		} else if ($hardbounces >= 8 AND $bounceratio >= 0.2){
@@ -511,10 +511,5 @@ class bounceprocessor extends bouncehandler {
     			}
     		}
     	}
-    }
-    
-    static public function get_user_bounce_stats(){
-    	global $DB;
-    	
     }
 }

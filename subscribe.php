@@ -56,20 +56,27 @@ $course = $DB->get_record('course', array('id' => $coursemodule->course), '*', M
 $PAGE->set_context(context_system::instance()); // No login required.
 $context = context_module::instance($coursemodule->id);
 
-require_capability('mod/newsletter:viewnewsletter', $context);
-
 $newsletter = mod_newsletter::get_newsletter_by_course_module($id);
 
 if ($newsletter->is_subscribed($user->id)) {
-    if($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
+    if ($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
         echo $OUTPUT->header();
         // Post the secret to the confirm step.
-        echo $OUTPUT->confirm(get_string('unsubscribe_question', 'newsletter', array(
-            'name' => $newsletter->get_instance()->name, 'email' => $user->email)),
-            new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id, NEWSLETTER_PARAM_HASH => $secret,
-                NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
-            new moodle_url($url, array(NEWSLETTER_PARAM_USER => $user->id,
-                NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+        if ($secret == md5($user->id . "+" . $user->firstaccess)) {
+            echo $OUTPUT->confirm(
+                    get_string('unsubscribe_question', 'newsletter',
+                            array('name' => $newsletter->get_instance()->name,
+                                'email' => $user->email)),
+                    new moodle_url($url,
+                            array(NEWSLETTER_PARAM_USER => $user->id,
+                                NEWSLETTER_PARAM_HASH => $secret,
+                                NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
+                    new moodle_url($url,
+                            array(NEWSLETTER_PARAM_USER => $user->id,
+                                NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+        } else {
+            echo \core\notification::error('You used an invalid unsubscription link');
+        }
         echo $OUTPUT->footer();
     } else if($confirm == NEWSLETTER_CONFIRM_YES) {
         // Check if secret value is correct.
@@ -100,6 +107,7 @@ if ($newsletter->is_subscribed($user->id)) {
         print_error('Wrong ' . NEWSLETTER_PARAM_CONFIRM . ' code: ' . $confirm . '!');
     }
 } else {
+    require_capability('mod/newsletter:viewnewsletter', $context);
     if($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('subscribe_question', 'newsletter', array(
