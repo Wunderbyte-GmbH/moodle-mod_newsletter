@@ -766,23 +766,25 @@ class mod_newsletter implements renderable {
         $newurl->params($params);
 
         require_once(dirname(__FILE__).'/classes/subscription/subscriptions_admin_form.php');
-        $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(null, array(
-                'id' => $this->get_course_module()->id,
-                'course' => $this->get_course()));
-
-        if ($data = $mform->get_data()) {
-            if(isset($data->subscribe)) {
-                foreach ($data->cohorts as $cohortid) {
-                    $this->subscribe_cohort($cohortid);
+        $cohorts = \cohort_get_available_cohorts($this->get_context());
+        if (!empty($cohorts)){
+            $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(null, array(
+                            'id' => $this->get_course_module()->id,
+                            'course' => $this->get_course()));
+            if ($data = $mform->get_data()) {
+                if(isset($data->subscribe)) {
+                    foreach ($data->cohorts as $cohortid) {
+                        $this->subscribe_cohort($cohortid);
+                    }
+                } else if(isset($data->unsubscribe)) {
+                    foreach ($data->cohorts as $cohortid) {
+                        $this->unsubscribe_cohort($cohortid);
+                    }
+                } else {
+                    print_error("Wrong submit!");
                 }
-            } else if(isset($data->unsubscribe)) {
-                foreach ($data->cohorts as $cohortid) {
-                    $this->unsubscribe_cohort($cohortid);
-                }
-            } else {
-                print_error("Wrong submit!");
+                redirect($url);
             }
-            redirect($url);
         }
 
         require_once(dirname(__FILE__).'/classes/subscription/newsletter_user_subscription.php');
@@ -833,7 +835,9 @@ class mod_newsletter implements renderable {
         ));
 
         $output .= $renderer->render(new newsletter_form($subscriber_form, null));
-        $output .= $renderer->render(new newsletter_form($mform, null));
+        if (!empty($cohorts)){
+            $output .= $renderer->render(new newsletter_form($mform, null));
+        }
         $output .= $renderer->render(new newsletter_form($filterform));
         $output .= $renderer->render(new newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
         $output .= $renderer->render(new newsletter_subscription_list($this->get_course_module()->id, $subscriptions, $columns));
@@ -1727,7 +1731,6 @@ class mod_newsletter implements renderable {
      * @return array Two-element array with SQL and params for WHERE clause
      */
     protected function get_filter_sql(array $getparams, $count = false) {
-        global $DB;
         $allnamefields = user_picture::fields('u',null,'userid');
         $extrafields = get_extra_user_fields($this->get_context());
         if($count) {
@@ -1744,7 +1747,7 @@ class mod_newsletter implements renderable {
 
         $params = array('newsletterid' => $this->get_instance()->id);
 
-        // Search condition (search for username)
+        // Search condition (search for username).
         list($usersql, $userparams) = users_search_sql($getparams['search'], 'u', true, $extrafields);
         $sql .= $usersql;
         $params += $userparams;
