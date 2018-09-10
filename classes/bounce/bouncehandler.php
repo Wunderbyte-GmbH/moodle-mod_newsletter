@@ -1,5 +1,5 @@
 <?php
-
+// @codingStandardsIgnoreStart
 /**
  * CwsMailBounceHandler
  *
@@ -8,20 +8,20 @@
  * It checks your IMAP/POP3 inbox or eml files and delete or move all 'hard' bounced emails.
  * If a bounce is malformed, it tries to extract some useful information to parse status.
  * A result array is available to process custom post-actions.
- * 
+ *
  * CwsMailBounceHandler is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * CwsMailBounceHandler is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see http://www.gnu.org/licenses/.
- * 
+ *
  * Related post: http://goo.gl/Wrq8J
  *
  * @package CwsMailBounceHandler
@@ -84,82 +84,82 @@ class bouncehandler
      * @var string
      */
     public $version = "1.5";
-    
+
     /**
      * Mail host server.
      * default 'localhost'
      * @var string
      */
     public $host = 'localhost';
-    
+
     /**
      * The username of mailbox.
      * @var string
      */
     public $username;
-    
+
     /**
      * The password needed to access mailbox.
      * @var string
      */
     public $password;
-    
+
     /**
      * Defines port number, other common choices are '110' (pop3), '143' (imap), '995' (tls/ssl)
      * default 143
      * @var integer
      */
     public $port = 143;
-    
+
     /**
      * Defines service, choice includes 'pop3' and 'imap'.
      * default 'imap'
      * @var string
      */
     public $service = 'imap';
-    
+
     /**
      * Defines service option, choices are 'none', 'notls', 'tls', 'ssl'.
      * default 'notls'
      * @var string
      */
     public $service_option = 'notls';
-    
+
     /**
      * Control certificates validation if service_option is 'tls' or 'ssl'.
      * default CWSMBH_CERT_NOVALIDATE
      * @var string
      */
     public $cert = CWSMBH_CERT_NOVALIDATE;
-    
+
     /**
      * Control the method to open e-mail(s).
      * default CWSMBH_OPEN_MODE_IMAP
      * @var int
      */
     public $open_mode = CWSMBH_OPEN_MODE_IMAP;
-    
+
     /**
      * Mailbox type, other choices are (Tasks, Spam, Replies, etc.)
      * default 'INBOX'
      * @var string
      */
     public $boxname = 'INBOX';
-    
+
     /**
      * Determines if soft bounces will be moved to another mailbox or folder.
      * default false
      * @var boolean
      */
     public $move_soft = false;
-    
+
     /**
      * Mailbox or folder to move soft bounces to.
      * default 'INBOX.soft'
      * @var string
      */
     public $folder_soft = 'INBOX.soft';
-    
+
     /**
      * Determines if hard bounces will be moved to another mailbox or folder.
      * NOTE: If true, this will disable delete and perform a move operation instead.
@@ -167,7 +167,7 @@ class bouncehandler
      * @var boolean
      */
     public $move_hard = false;
-    
+
     /**
      * Mailbox or folder to move hard bounces to.
      * default 'INBOX.hard'
@@ -181,27 +181,27 @@ class bouncehandler
      * @var int
      */
     public $max_messages = 0;
-    
+
     /**
      * The last error message.
      * @var string
      */
     public $error_msg;
-    
+
     /**
      * Test mode, if true will not delete messages.
      * default false
      * @var boolean
      */
     public $test_mode = false;
-    
+
     /**
      * Purge unknown messages. Be careful with this option.
      * default false
      * @var boolean
      */
     public $purge = false;
-    
+
     /**
      * Control the debug output.
      * default CWSMBH_VERBOSE_QUIET
@@ -215,42 +215,42 @@ class bouncehandler
      * @var boolean
      */
     public $disable_delete = false;
-    
+
     /**
      * The resource handler for the opened mailbox (POP3/IMAP/NNTP/etc.)
      * @var object
      */
     protected $_handler = false;
-    
+
     /**
      * The eml files opened.
      * @var array
      */
     protected $_files = array();
-    
+
     /**
      * The folder path opened.
      * @var string
      */
     protected $_folder = '';
-    
+
     /**
      * The header of the message.
      * @var string
      */
     protected $_header = array();
-    
+
     /**
      * * The body of the message.
      * @var string
      */
     protected $_body = array();
-    
+
     /**
      * Defines new line ending.
      */
     protected $_newline = "<br />\n";
-    
+
     /**
      * Result array of the process
      * This var returns an array with the following values :
@@ -262,7 +262,7 @@ class bouncehandler
         'counter'   => array(),
         'msgs'      => array(),
     );
-    
+
     /**
      * Result array of the final counter
      * This var returns an array with the following values :
@@ -282,7 +282,7 @@ class bouncehandler
         'deleted'      => 0,
         'moved'        => 0,
     );
-    
+
     /**
      * Result array of a msg process
      * This var returns an array with the following values :
@@ -303,7 +303,7 @@ class bouncehandler
     	'issueid'     => null,
         'recipients'  => array(),
     );
-    
+
     /**
      * Result array of recipients found
      * This var returns an array with the following values :
@@ -323,7 +323,7 @@ class bouncehandler
         'bounce_cat'  => CWSMBH_CAT_UNRECOGNIZED,
         'remove'      => false,
     );
-    
+
     /**
      * Result array of status
      * This var returns an array with the following values :
@@ -339,7 +339,7 @@ class bouncehandler
         CWSMBH_STATUS_SECOND_SUBCODE  => array(),
         CWSMBH_STATUS_THIRD_SUBCODE   => array(),
     );
-    
+
     /**
      * Defines rules categories
      * @var array
@@ -447,7 +447,7 @@ class bouncehandler
             'bounce_type'    => CWSMBH_BOUNCE_SOFT,
         ),
     );
-    
+
     /**
      * Find status code from regexp
      * @var array
@@ -676,9 +676,9 @@ class bouncehandler
         'transaction failed'                                            => '5.7.1',
         'transaction rejected'                                          => '5.7.1',
         'wiadomosc zostala odrzucona przez system antyspamowy'          => '5.7.1',
-        'your message was declared spam'                                => '5.7.1' 
+        'your message was declared spam'                                => '5.7.1'
     );
-    
+
     /**
      * Find rule cat from status code
      * @var array
@@ -710,7 +710,7 @@ class bouncehandler
         '5.6.2'    => CWSMBH_CAT_CONTENT_REJECT,
         '5.7.1'    => CWSMBH_CAT_USER_REJECT,
     );
-    
+
     /**
      * Output additional msg for debug
      * @param string $msg : if not given, output the last error msg
@@ -735,7 +735,7 @@ class bouncehandler
             }
         }
     }
-    
+
     /**
      * Open a folder containing eml files on your system
      * @param string $eml_folder_path : the eml folder path
@@ -744,21 +744,21 @@ class bouncehandler
     public function openFolder($eml_folder_path)
     {
         $this->output('<h2>Init openFolder</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-        
+
         if (!$this->endWith($eml_folder_path, '/')) {
             $eml_folder_path .= '/';
         }
         $this->_folder = $eml_folder_path;
-        
+
         set_time_limit(30000);
-        
+
         $handle = @opendir($this->_folder);
         if (!$handle) {
             $this->error_msg = '<strong>Cannot open the eml folder ' . $this->_folder . '</strong>.';
             $this->output();
             return false;
         }
-        
+
         $nb_files = 0;
         while ($file = readdir($handle)) {
             if ($file == '.' || $file == '..' || !$this->endWith($file, '.eml')) {
@@ -775,7 +775,7 @@ class bouncehandler
             $nb_files++;
         }
         closedir($handle);
-        
+
         if (empty($this->_files)) {
             $this->error_msg = '<strong>no eml file found in ' . $this->_folder . '</strong>.';
             $this->output();
@@ -785,7 +785,7 @@ class bouncehandler
             return true;
         }
     }
-    
+
     /**
      * Open an eml file on your system
      * @param string $eml_path : the eml file path
@@ -794,9 +794,9 @@ class bouncehandler
     public function openFile($eml_path)
     {
         $this->output('<h2>Init openFile</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-    
+
         set_time_limit(6000);
-        
+
         $content = @file_get_contents($eml_path, false, stream_context_create(array('http' => array('method' => 'GET'))));
         if (!empty($content)) {
             $this->_files[] = array(
@@ -804,7 +804,7 @@ class bouncehandler
                 'content' => $content,
             );
         }
-        
+
         if (empty($this->_files)) {
             $this->error_msg = '<strong>Cannot open the eml file ' . $eml_path . '</strong>.';
             $this->output();
@@ -814,7 +814,7 @@ class bouncehandler
             return true;
         }
     }
-    
+
     /**
      * Open a mail box in local file system
      * @param string $file_path : the local mailbox file path
@@ -823,15 +823,15 @@ class bouncehandler
     public function openImapLocal($file_path)
     {
         $this->output('<h2>Init openImapLocal</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-    
+
         set_time_limit(6000);
-        
+
         if (! function_exists('imap_open')) {
             return false;
         }
-    
+
         $this->_handler = imap_open($file_path, '', '', !$this->test_mode ? CL_EXPUNGE : null);
-    
+
         if (!$this->_handler) {
             $this->error_msg = '<strong>Cannot open the mailbox file to ' . $file_path . '</strong>' . $this->_newline . 'Error MSG: ' . imap_last_error();
             $this->output();
@@ -841,7 +841,7 @@ class bouncehandler
             return true;
         }
     }
-    
+
     /**
      * Open a remote mail box
      * @return boolean
@@ -852,21 +852,21 @@ class bouncehandler
             return false;
         }
         $this->output('<h2>Init openImapRemote</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-        
+
         // disable move operations if server is Gmail... Gmail does not support mailbox creation
         if (stristr($this->host, 'gmail')) {
             $this->move_soft = false;
             $this->move_hard = false;
         }
-        
+
         // required options for imap_open connection.
         $opts = '/' . $this->service . '/' . $this->service_option;
         if ($this->service_option == 'tls' || $this->service_option == 'ssl') {
             $opts .= '/' . $this->cert;
         }
-        
+
         set_time_limit(6000);
-        
+
         $this->_handler = imap_open("{" . $this->host . ":" . $this->port . $opts . "}" . $this->boxname, $this->username, $this->password, !$this->test_mode ? CL_EXPUNGE : null);
 
         if (!$this->_handler) {
@@ -878,7 +878,7 @@ class bouncehandler
             return true;
         }
     }
-    
+
     /**
      * Process the messages in a mailbox or a file/folder
      * @param int $max : maximum limit messages processed in one batch, if not given uses the property $max_messages.
@@ -887,7 +887,7 @@ class bouncehandler
     public function processMails($max=0)
     {
         $this->output('<h2>Init processMails</h2>', CWSMBH_VERBOSE_SIMPLE, false);
-        
+
         if ($this->isImapOpenMode()) {
             if (!$this->_handler) {
                 $this->error_msg = '<strong>Mailbox not opened</strong>';
@@ -901,27 +901,27 @@ class bouncehandler
                 exit();
             }
         }
-        
+
         if ($this->move_hard && $this->disable_delete === false) {
             $this->disable_delete = true;
         }
-        
+
         if (!empty($max)) {
             $this->max_messages = $max;
         }
-        
+
         // initialize counter
         $this->result['counter'] = $this->_counter_result;
         $this->result['counter']['total'] = $this->isImapOpenMode() ? imap_num_msg($this->_handler) : count($this->_files);
         $this->result['counter']['fetched'] = $this->result['counter']['total'];
         $this->output('<strong>Total:</strong> ' . $this->result['counter']['total'] . ' messages.');
-        
+
         // process maximum number of messages
         if (!empty($this->max_messages) && $this->result['counter']['fetched'] > $this->max_messages) {
             $this->result['counter']['fetched'] = $this->max_messages;
             $this->output('Processing first <strong>' . $this->result['counter']['fetched'] . ' messages</strong>...');
         }
-        
+
         if ($this->test_mode) {
             $this->output('Running in <strong>test mode</strong>, not deleting messages from mailbox.');
         } else {
@@ -935,14 +935,14 @@ class bouncehandler
                 $this->output('<strong>Processed messages will be deleted</strong> from mailbox.');
             }
         }
-        
+
         if ($this->isImapOpenMode()) {
             for ($msg_no = 1; $msg_no <= $this->result['counter']['fetched']; $msg_no++) {
                 $this->output('<h3>Msg #' . $msg_no . '</h3>', CWSMBH_VERBOSE_REPORT, false);
-                
+
                 $header = @imap_fetchheader($this->_handler, $msg_no);
                 $body = @imap_body($this->_handler, $msg_no);
-                
+
                 $this->result['msgs'][] = $this->processParsing($msg_no, $header . '\r\n\r\n' . $body);
             }
         } else {
@@ -951,7 +951,7 @@ class bouncehandler
                 $this->result['msgs'][] = $this->processParsing($file['name'], $file['content']);
             }
         }
-        
+
         foreach ($this->result['msgs'] as $msg) {
             if ($msg['processed']) {
                 $this->result['counter']['processed']++;
@@ -973,25 +973,25 @@ class bouncehandler
                 }
             }
         }
-        
+
         $this->output('<h2>End of process</h2>', CWSMBH_VERBOSE_SIMPLE, false);
         if ($this->isImapOpenMode()) {
             $this->output('Closing mailbox, and purging messages');
             @imap_close($this->_handler);
         }
-        
+
         $this->output($this->result['counter']['fetched'] . ' messages read');
         $this->output($this->result['counter']['processed'] . ' action taken');
         $this->output($this->result['counter']['unprocessed'] . ' no action taken');
         $this->output($this->result['counter']['deleted'] . ' messages deleted');
         $this->output($this->result['counter']['moved'] . ' messages moved');
-        
+
         $this->output($this->_newline . '<strong>Full result:</strong>', CWSMBH_VERBOSE_REPORT);
         $this->output($this->result, CWSMBH_VERBOSE_REPORT, false, true);
-        
+
         return true;
     }
-    
+
     /**
      * Function to process parsing of each individual message
      * @param string $token : message number or filename.
@@ -1002,45 +1002,45 @@ class bouncehandler
     {
         $result = $this->_msg_result;
         $result['token'] = $token;
-        
+
         // format content
         $content = $this->formatContent($content);
-        
+
         // split head and body
         if (preg_match('#\r\n\r\n#is', $content)) {
             list($header, $body) = preg_split('#\r\n\r\n#', $content, 2);
         } else {
             list($header, $body) = preg_split('#\n\n#', $content, 2);
         }
-        
+
         $this->output('<strong>Header:</strong>', CWSMBH_VERBOSE_DEBUG);
         $this->output($header, CWSMBH_VERBOSE_DEBUG, false, true);
         $this->output('<strong>Body:</strong>', CWSMBH_VERBOSE_DEBUG);
         $this->output($body, CWSMBH_VERBOSE_DEBUG, false, true);
         $this->output('&nbsp;', CWSMBH_VERBOSE_DEBUG);
-        
+
         // parse header
         $header = $this->parseHeader($header);
-        
+
         // parse body sections
         $body_sections = $this->parseBodySections($header, $body);
-        
+
         // check bounce and fbl
         $is_bounce = $this->isBounce($header);
         $is_fbl = $this->isFbl($header, $body_sections);
-        
+
         if ($is_bounce) {
             $result['type'] = 'bounce';
         } elseif ($is_fbl) {
             $result['type'] = 'fbl';
         }
-        
+
         // begin process
         $result['recipients'] = array();
         if ($is_fbl) {
             $this->output('<strong>Feedback loop</strong> detected', CWSMBH_VERBOSE_DEBUG);
             $result['subject'] = trim(str_ireplace('Fw:', '', $header['Subject']));
-            
+
             if ($this->isHotmailFbl($body_sections)) {
                 $this->output('This message is an <strong>Hotmail fbl</strong>', CWSMBH_VERBOSE_DEBUG);
                 $body_sections['ar_machine']['Content-disposition'] = 'inline';
@@ -1085,7 +1085,7 @@ class bouncehandler
                     $body_sections['ar_machine']['Original-rcpt-to'] = $this->extractEmail($body_sections['ar_machine']['Original-rcpt-to']);
                 }
             }
-            
+
             $recipient = $this->_recipient_result;
             $recipient['email'] = $body_sections['ar_machine']['Original-rcpt-to'];
             $recipient['status'] = '5.7.1';
@@ -1135,7 +1135,7 @@ class bouncehandler
         } else {
             $result['processed'] = false;
         }
-        
+
         if (empty($result['subject']) && isset($header['Subject'])) {
             $result['subject'] = $header['Subject'];
         }
@@ -1163,13 +1163,13 @@ class bouncehandler
                 $result['recipients'][] = $recipient;
             }
         }
-        
+
         $this->output('<strong>Result:</strong>', CWSMBH_VERBOSE_REPORT);
         $this->output($result, CWSMBH_VERBOSE_REPORT, false, true);
-        
+
         return $result;
     }
-    
+
     /**
      * Function to delete a message
      * @param string $token : message number or filename.
@@ -1185,7 +1185,7 @@ class bouncehandler
             return @unlink($this->_folder . $token);
         }
     }
-    
+
     /**
      * Function to move a message
      * @param string $token : message number or filename.
@@ -1234,7 +1234,7 @@ class bouncehandler
             }
         }
     }
-    
+
     /**
      * Function to determine the current open mode
      * @return boolean
@@ -1243,7 +1243,7 @@ class bouncehandler
     {
         return $this->open_mode == CWSMBH_OPEN_MODE_IMAP;
     }
-    
+
     /**
      * Function to check if a mailbox exists. If not found, it will create it.
      * @param string $mailbox : the mailbox name, must be in 'INBOX.checkmailbox' format
@@ -1258,16 +1258,16 @@ class bouncehandler
             $this->output();
             exit();
         }
-        
+
         // required options for imap_open connection.
         $opts = '/' . $this->service . '/' . $this->service_option;
         if ($this->service_option == 'tls' || $this->service_option == 'ssl') {
             $opts .= '/' . $this->cert;
         }
-        
+
         $handler = imap_open('{' . $this->host . ':' . $this->port . $opts . '}', $this->username, $this->password, !$this->test_mode ? CL_EXPUNGE : null);
         $list = imap_getmailboxes($handler, '{' . $this->host . ":" . $this->port . $opts . '}', '*');
-        
+
         $mailbox_found = false;
         if (is_array($list)) {
             foreach ($list as $key => $val) {
@@ -1291,7 +1291,7 @@ class bouncehandler
             return false;
         }
     }
-    
+
     /**
      * Function to parse the header with some custom fields.
      * @param array $ar_header : the array or plain text headers
@@ -1303,12 +1303,12 @@ class bouncehandler
             $ar_header = explode("\r\n", $ar_header);
         }
         $ar_header = $this->parseLines($ar_header);
-    
+
         if (isset($ar_header['Received'])) {
             $arrRec = explode("|", $ar_header['Received']);
             $ar_header['Received']= $arrRec;
         }
-    
+
         if (isset($ar_header['Content-type'])) {
             $ar_mr = explode(";", $ar_header['Content-type']);
             $ar_header['Content-type'] = '';
@@ -1319,17 +1319,17 @@ class bouncehandler
                 }
             }
         }
-        
+
         foreach ($ar_header as $key => $value) {
             if (strtolower($key) == 'x-hmxmroriginalrecipient') {
                 unset($ar_header[$key]);
                 $ar_header['X-HmXmrOriginalRecipient'] = $value;
             }
         }
-    
+
         return $ar_header;
     }
-    
+
     /**
      * Function to parse body by sections.
      * @param array $ar_header : the array headers
@@ -1339,7 +1339,7 @@ class bouncehandler
     protected function parseBodySections($ar_header, $body)
     {
         $sections = array();
-        
+
         if (is_array($ar_header) && isset($ar_header['Content-type']) && isset($ar_header['Content-type']['boundary'])) {
             $ar_boundary = explode($ar_header['Content-type']['boundary'], $body);
             $sections['first'] = isset($ar_boundary[1]) ? $ar_boundary[1] : null;
@@ -1347,10 +1347,10 @@ class bouncehandler
             $sections['machine'] = isset($ar_boundary[2]) ? $ar_boundary[2] : null;
             $sections['returned'] = isset($ar_boundary[3]) ? $ar_boundary[3] : null;
         }
-        
+
         return $sections;
     }
-    
+
     /**
      * Function to parse and process the body section machine.
      * @param string $body_section_machine : the body section machine
@@ -1361,7 +1361,7 @@ class bouncehandler
         $result = $this->parseDsnFields($body_section_machine);
         $result['mime_header'] = $this->parseLines($result['mime_header']);
         $result['per_message'] = $this->parseLines($result['per_message']);
-    
+
         if(!$this->isEmpty($result['per_message'], 'X-postfix-sender')){
             $ar_tmp = explode(";", $result['per_message']['X-postfix-sender']);
             $result['per_message']['X-postfix-sender'] = array(
@@ -1376,7 +1376,7 @@ class bouncehandler
                 'addr'    => isset($ar_tmp[1]) ? trim($ar_tmp[1]) : null,
             );
         }
-        
+
         $tmp_per_recipient = array();
         foreach($result['per_recipient'] as $per_recipient) {
             $ar_per_recipient = $this->parseLines(explode("\r\n", $per_recipient));
@@ -1392,14 +1392,14 @@ class bouncehandler
                     $ar_per_recipient['Status'] = '4.3.0';
                 }
             }
-            
+
             $tmp_per_recipient[] = $ar_per_recipient;
         }
         $result['per_recipient'] = $tmp_per_recipient;
-        
+
         return $result;
     }
-    
+
     /**
      * Function to parse DSN fields.
      * @param string $body_section_machine : the body section machine
@@ -1413,7 +1413,7 @@ class bouncehandler
             'per_recipient' => null,
         );
         $dsn_fields = explode("\r\n\r\n", $body_section_machine);
-        
+
         $j = 0;
         for ($i = 0; $i < count($dsn_fields); $i++) {
             $dsn_fields[$i] = trim($dsn_fields[$i]);
@@ -1432,7 +1432,7 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     /**
      * Function to parse standard fields.
      * @param string $content : a generic content
@@ -1460,7 +1460,7 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     /**
      * Function to check if a message is a bounce via headers informations.
      * @param array $ar_header : the array headers
@@ -1479,7 +1479,7 @@ class bouncehandler
         }
         return false;
     }
-    
+
     /**
      * Function to check if a message is a feedback loop via headers and body informations.
      * @param array $ar_header : the array headers
@@ -1499,7 +1499,7 @@ class bouncehandler
         }
         return false;
     }
-    
+
     /**
      * Function to check if a message is a hotmail feedback loop via body informations.
      * @param array $body_sections : the array body sections
@@ -1509,7 +1509,7 @@ class bouncehandler
     {
         return !empty($body_sections) && isset($body_sections['ar_first']) && isset($body_sections['ar_first']['X-HmXmrOriginalRecipient']);
     }
-    
+
     /**
      * Function to check if a message is a specific RFC 1892 report via headers informations.
      * @param array $ar_header : the array headers
@@ -1528,7 +1528,7 @@ class bouncehandler
         }
         return false;
     }
-    
+
     /**
      * Format the content of a message.
      * @param string $content : a generic content
@@ -1545,7 +1545,7 @@ class bouncehandler
         }
         return $content;
     }
-    
+
     /**
      * Format the final recipient with e-mail and type
      * @param string $final_recipient : the final recipient
@@ -1556,7 +1556,7 @@ class bouncehandler
             'addr'    => '',
             'type'    => '',
         );
-        
+
         $ar_final_recipient = explode(";", $final_recipient);
         if (!empty($ar_final_recipient)) {
             if (strpos($ar_final_recipient[0], '@') !== false) {
@@ -1567,10 +1567,10 @@ class bouncehandler
                 $result['type'] = !$this->isEmpty($ar_final_recipient, 0) ? trim($ar_final_recipient[0]) : '';
             }
         }
-        
+
         return $result;
     }
-    
+
     /**
      * Format the original recipient with e-mail and type
      * @param string $original_recipient : the original recipient
@@ -1581,16 +1581,16 @@ class bouncehandler
             'addr'    => '',
             'type'    => '',
         );
-    
+
         $ar_original_recipient = explode(";", $original_recipient);
         if (!empty($ar_original_recipient)) {
             $result['addr'] = $this->extractEmail($ar_original_recipient[1]);
             $result['type'] = !$this->isEmpty($ar_original_recipient, 0) ? trim($ar_original_recipient[0]) : '';
         }
-    
+
         return $result;
     }
-    
+
     /**
      * Format the diagnostic code with type and text
      * @param string $diag_code : the diagnostic recipient
@@ -1601,16 +1601,16 @@ class bouncehandler
             'type'    => '',
             'text'    => '',
         );
-    
+
         $ar_diag_code = explode(";", $diag_code);
         if (!empty($ar_diag_code)) {
             $result['type'] = !$this->isEmpty($ar_diag_code, 0) ? trim($ar_diag_code[0]) : '';
             $result['text'] = !$this->isEmpty($ar_diag_code, 1) ? trim($ar_diag_code[1]) : '';
         }
-    
+
         return $result;
     }
-    
+
     /**
      * Find the recipient e-mail
      * @param string $rcpt : the recipient headers
@@ -1625,7 +1625,7 @@ class bouncehandler
         }
         return null;
     }
-    
+
     /**
      * Find the e-mail(s) from the body section first
      * @param string $body_section_first : the body section first
@@ -1646,7 +1646,7 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     /**
      * Find an action by the status code.
      * @param string $status_code : the status code
@@ -1658,7 +1658,7 @@ class bouncehandler
         if (!empty($status_code)) {
             $status_code = $this->formatStatusCode($status_code);
             $ar_status_code = explode(".", $status_code);
-            
+
             switch ($ar_status_code[0]) {
                 case '2' :
                     $result = 'success';
@@ -1679,7 +1679,7 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     /**
      * Find an status code in body content.
      * @param string $body : the body
@@ -1688,10 +1688,10 @@ class bouncehandler
     protected function findStatusCodeByRecipient($body)
     {
         $ar_body = explode("\r\n", $body);
-    
+
         foreach ($ar_body as $body_line) {
             $body_line = trim($body_line);
-    
+
             foreach ($this->_status_code_resolver as $bounce_body => $bounce_code) {
                 if (preg_match('#' . $bounce_body . '#is', $body_line, $matches)) {
                     $status_code = isset($matches[1]) ? $matches[1] : $bounce_code;
@@ -1700,7 +1700,7 @@ class bouncehandler
                     return $status_code;
                 }
             }
-    
+
             // RFC 1893 (http://www.ietf.org/rfc/rfc1893.txt) return code
             if (preg_match('#\W([245]\.[01234567]\.[012345678])\W#', $body_line, $matches)) {
                 if (stripos($body_line, 'Message-ID') !== false) {
@@ -1711,7 +1711,7 @@ class bouncehandler
                 $this->output('Status code <strong>' . $status_code . '</strong> found via RFC 1893.', CWSMBH_VERBOSE_DEBUG);
                 return $status_code;
             }
-    
+
             // RFC 821 (http://www.ietf.org/rfc/rfc821.txt) return code
             if (preg_match('#\]?: ([45][01257][012345]) #', $body_line, $matches) || preg_match('#^([45][01257][012345]) (?:.*?)(?:denied|inactive|deactivated|rejected|disabled|unknown|no such|not (?:our|activated|a valid))+#i', $body_line, $matches)) {
                 $status_code = $matches[1];
@@ -1728,10 +1728,10 @@ class bouncehandler
                 return $status_code;
             }
         }
-    
+
         return null;
     }
-    
+
     /**
      * Get explanations from DSN status code via the RFC 1893 : http://www.ietf.org/rfc/rfc1893.txt
      * @param string $status_code : consist of three numerical fields separated by ".".
@@ -1741,12 +1741,12 @@ class bouncehandler
     {
         $result = $this->_status_result;
         $status_code = $this->formatStatusCode($status_code);
-        
+
         if (!$this->isEmpty($status_code)) {
             $ar_status_code = explode(".", $status_code);
             if ($ar_status_code != null && count($ar_status_code) == 3) {
                 $result['code'] = $status_code;
-                
+
                 // First sub-code : indicates whether the delivery attempt was successful
                 switch ($ar_status_code[0]) {
                     case '2' :
@@ -1755,25 +1755,25 @@ class bouncehandler
                             'desc'     => 'Success specifies that the DSN is reporting a positive delivery action. Detail sub-codes may provide notification of transformations required for delivery.',
                         );
                         break;
-    
+
                     case '4' :
                         $result[CWSMBH_STATUS_FIRST_SUBCODE] = array(
                             'title'    => 'Persistent Transient Failure',
                             'desc'     => 'A persistent transient failure is one in which the message as sent is valid, but some temporary event prevents the successful sending of the message. Sending in the future may be successful.',
                         );
                         break;
-    
+
                     case '5' :
                         $result[CWSMBH_STATUS_FIRST_SUBCODE] = array(
                             'title'    => 'Permanent Failure',
                             'desc'     => 'A permanent failure is one which is not likely to be resolved by resending the message in the current form. Some change to the message or the destination must be made for successful delivery.',
                         );
                         break;
-    
+
                     default :
                         break;
                 }
-    
+
                 // Second sub-code : indicates the probable source of any delivery anomalies
                 switch ($ar_status_code[1]) {
                     case '0' :
@@ -1782,60 +1782,60 @@ class bouncehandler
                             'desc'     => 'There is no additional subject information available.',
                         );
                         break;
-    
+
                     case '1' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Addressing Status',
                             'desc'     => 'The address status reports on the originator or destination address. It may include address syntax or validity. These errors can generally be corrected by the sender and retried.',
                         );
                         break;
-    
+
                     case '2' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Mailbox Status',
                             'desc'     => 'Mailbox status indicates that something having to do with the mailbox has cause this DSN. Mailbox issues are assumed to be under the general control of the recipient.',
                         );
                         break;
-    
+
                     case '3' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Mail System Status',
                             'desc'     => 'Mail system status indicates that something having to do with the destination system has caused this DSN. System issues are assumed to be under the general control of the destination system administrator.',
                         );
                         break;
-    
+
                     case '4' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Network and Routing Status',
                             'desc'     => 'The networking or routing codes report status about the delivery system itself. These system components include any necessary infrastructure such as directory and routing services. Network issues are assumed to be under the control of the destination or intermediate system administrator.',
                         );
                         break;
-    
+
                     case '5' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Mail Delivery Protocol Status',
                             'desc'     => 'The mail delivery protocol status codes report failures involving the message delivery protocol. These failures include the full range of problems resulting from implementation errors or an unreliable connection. Mail delivery protocol issues may be controlled by many parties including the originating system, destination system, or intermediate system administrators.',
                         );
                         break;
-    
+
                     case '6' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Message Content or Media Status',
                             'desc'     => 'The message content or media status codes report failures involving the content of the message. These codes report failures due to translation, transcoding, or otherwise unsupported message media. Message content or media issues are under the control of both the sender and the receiver, both of whom must support a common set of supported content-types.',
                         );
                         break;
-    
+
                     case '7' :
                         $result[CWSMBH_STATUS_SECOND_SUBCODE] = array(
                             'title'    => 'Security or Policy Status',
                             'desc'     => 'The security or policy status codes report failures involving policies such as per-recipient or per-host filtering and cryptographic operations. Security and policy status issues are assumed to be under the control of either or both the sender and recipient. Both the sender and recipient must permit the exchange of messages and arrange the exchange of necessary keys and certificates for cryptographic operations.',
                         );
                         break;
-    
+
                     default :
                         break;
                 }
-    
+
                 // Second and Third sub-code : indicates a precise error condition
                 switch ($ar_status_code[1] . '.' . $ar_status_code[2]) {
                     case '0.0' :
@@ -1844,343 +1844,343 @@ class bouncehandler
                             'desc'     => 'Other undefined status is the only undefined error code. It should be used for all errors for which only the class of the error is known.',
                         );
                         break;
-    
+
                     case '1.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other address status',
                             'desc'     => 'Something about the address specified in the message caused this DSN.',
                         );
                         break;
-    
+
                     case '1.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad destination mailbox address',
                             'desc'     => 'The mailbox specified in the address does not exist. For Internet mail names, this means the address portion to the left of the @ sign is invalid. This code is only useful for permanent failures.',
                         );
                         break;
-    
+
                     case '1.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad destination system address',
                             'desc'     => 'The destination system specified in the address does not exist or is incapable of accepting mail. For Internet mail names, this means the address portion to the right of the @ is invalid for mail. This codes is only useful for permanent failures.',
                         );
                         break;
-    
+
                     case '1.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad destination mailbox address syntax',
                             'desc'     => 'The destination address was syntactically invalid. This can apply to any field in the address. This code is only useful for permanent failures.',
                         );
                         break;
-    
+
                     case '1.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Destination mailbox address ambiguous',
                             'desc'     => 'The mailbox address as specified matches one or more recipients on the destination system. This may result if a heuristic address mapping algorithm is used to map the specified address to a local mailbox name.',
                         );
                         break;
-    
+
                     case '1.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Destination address valid',
                             'desc'     => 'This mailbox address as specified was valid. This status code should be used for positive delivery reports.',
                         );
                         break;
-    
+
                     case '1.6' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Destination mailbox has moved, No forwarding address',
                             'desc'     => 'The mailbox address provided was at one time valid, but mail is no longer being accepted for that address. This code is only useful for permanent failures.',
                         );
                         break;
-    
+
                     case '1.7' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad sender\'s mailbox address syntax',
                             'desc'     => 'The sender\'s address was syntactically invalid. This can apply to any field in the address.',
                         );
                         break;
-    
+
                     case '1.8' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad sender\'s system address',
                             'desc'     => 'The sender\'s system specified in the address does not exist or is incapable of accepting return mail. For domain names, this means the address portion to the right of the @ is invalid for mail.',
                         );
                         break;
-    
+
                     case '2.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined mailbox status',
                             'desc'     => 'The mailbox exists, but something about the destination mailbox has caused the sending of this DSN.',
                         );
                         break;
-    
+
                     case '2.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mailbox disabled, not accepting messages',
                             'desc'     => 'The mailbox exists, but is not accepting messages. This may be a permanent error if the mailbox will never be re-enabled or a transient error if the mailbox is only temporarily disabled.',
                         );
                         break;
-    
+
                     case '2.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mailbox full',
                             'desc'     => 'The mailbox is full because the user has exceeded a per-mailbox administrative quota or physical capacity. The general semantics implies that the recipient can delete messages to make more space available. This code should be used as a persistent transient failure.',
                         );
                         break;
-    
+
                     case '2.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Message length exceeds administrative limit',
                             'desc'     => 'A per-mailbox administrative message length limit has been exceeded. This status code should be used when the per-mailbox message length limit is less than the general system limit. This code should be used as a permanent failure.',
                         );
                         break;
-    
+
                     case '2.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mailing list expansion problem',
                             'desc'     => 'The mailbox is a mailing list address and the mailing list was unable to be expanded. This code may represent a permanent failure or a persistent transient failure.',
                         );
                         break;
-    
+
                     case '3.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined mail system status',
                             'desc'     => 'The destination system exists and normally accepts mail, but something about the system has caused the generation of this DSN.',
                         );
                         break;
-    
+
                     case '3.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mail system full',
                             'desc'     => 'Mail system storage has been exceeded. The general semantics imply that the individual recipient may not be able to delete material to make room for additional messages. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '3.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'System not accepting network messages',
                             'desc'     => 'The host on which the mailbox is resident is not accepting messages. Examples of such conditions include an immanent shutdown, excessive load, or system maintenance. This is useful for both permanent and permanent transient errors.',
                         );
                         break;
-    
+
                     case '3.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'System not capable of selected features',
                             'desc'     => 'Selected features specified for the message are not supported by the destination system. This can occur in gateways when features from one domain cannot be mapped onto the supported feature in another.',
                         );
                         break;
-    
+
                     case '3.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Message too big for system',
                             'desc'     => 'The message is larger than per-message size limit. This limit may either be for physical or administrative reasons. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '3.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'System incorrectly configured',
                             'desc'     => 'The system is not configured in a manner which will permit it to accept this message.',
                         );
                         break;
-    
+
                     case '4.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined network or routing status',
                             'desc'     => 'Something went wrong with the networking, but it is not clear what the problem is, or the problem cannot be well expressed with any of the other provided detail codes.',
                         );
                         break;
-    
+
                     case '4.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'No answer from host',
                             'desc'     => 'The outbound connection attempt was not answered, either because the remote system was busy, or otherwise unable to take a call. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '4.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Bad connection',
                             'desc'     => 'The outbound connection was established, but was otherwise unable to complete the message transaction, either because of time-out, or inadequate connection quality. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '4.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Directory server failure',
                             'desc'     => 'The network system was unable to forward the message, because a directory server was unavailable. This is useful only as a persistent transient error. The inability to connect to an Internet DNS server is one example of the directory server failure error.',
                         );
                         break;
-    
+
                     case '4.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Unable to route',
                             'desc'     => 'The mail system was unable to determine the next hop for the message because the necessary routing information was unavailable from the directory server. This is useful for both permanent and persistent transient errors. A DNS lookup returning only an SOA (Start of Administration) record for a domain name is one example of the unable to route error.',
                         );
                         break;
-    
+
                     case '4.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mail system congestion',
                             'desc'     => 'The mail system was unable to deliver the message because the mail system was congested. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '4.6' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Routing loop detected',
                             'desc'     => 'A routing loop caused the message to be forwarded too many times, either because of incorrect routing tables or a user forwarding loop. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '4.7' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Delivery time expired',
                             'desc'     => 'The message was considered too old by the rejecting system, either because it remained on that host too long or because the time-to-live value specified by the sender of the message was exceeded. If possible, the code for the actual problem found when delivery was attempted should be returned rather than this code. This is useful only as a persistent transient error.',
                         );
                         break;
-    
+
                     case '5.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined protocol status',
                             'desc'     => 'Something was wrong with the protocol necessary to deliver the message to the next hop and the problem cannot be well expressed with any of the other provided detail codes.',
                         );
                         break;
-    
+
                     case '5.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Invalid command',
                             'desc'     => 'A mail transaction protocol command was issued which was either out of sequence or unsupported. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '5.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Syntax error',
                             'desc'     => 'A mail transaction protocol command was issued which could not be interpreted, either because the syntax was wrong or the command is unrecognized. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '5.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Too many recipients',
                             'desc'     => 'More recipients were specified for the message than could have been delivered by the protocol. This error should normally result in the segmentation of the message into two, the remainder of the recipients to be delivered on a subsequent delivery attempt. It is included in this list in the event that such segmentation is not possible.',
                         );
                         break;
-    
+
                     case '5.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Invalid command arguments',
                             'desc'     => 'A valid mail transaction protocol command was issued with invalid arguments, either because the arguments were out of range or represented unrecognized features. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '5.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Wrong protocol version',
                             'desc'     => 'A protocol version mis-match existed which could not be automatically resolved by the communicating parties.',
                         );
                         break;
-    
+
                     case '6.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined media error',
                             'desc'     => 'Something about the content of a message caused it to be considered undeliverable and the problem cannot be well expressed with any of the other provided detail codes.',
                         );
                         break;
-    
+
                     case '6.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Media not supported',
                             'desc'     => 'The media of the message is not supported by either the delivery protocol or the next system in the forwarding path. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '6.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Conversion required and prohibited',
                             'desc'     => 'The content of the message must be converted before it can be delivered and such conversion is not permitted. Such prohibitions may be the expression of the sender in the message itself or the policy of the sending host.',
                         );
                         break;
-    
+
                     case '6.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Conversion required but not supported',
                             'desc'     => 'The message content must be converted to be forwarded but such conversion is not possible or is not practical by a host in the forwarding path. This condition may result when an ESMTP gateway supports 8bit transport but is not able to downgrade the message to 7 bit as required for the next hop.',
                         );
                         break;
-    
+
                     case '6.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Conversion with loss performed',
                             'desc'     => 'This is a warning sent to the sender when message delivery was successfully but when the delivery required a conversion in which some data was lost. This may also be a permanant error if the sender has indicated that conversion with loss is prohibited for the message.',
                         );
                         break;
-    
+
                     case '6.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Conversion Failed',
                             'desc'     => 'A conversion was required but was unsuccessful. This may be useful as a permanent or persistent temporary notification.',
                         );
                         break;
-    
+
                     case '7.0' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Other or undefined security status',
                             'desc'     => 'Something related to security caused the message to be returned, and the problem cannot be well expressed with any of the other provided detail codes. This status code may also be used when the condition cannot be further described because of security policies in force.',
                         );
                         break;
-    
+
                     case '7.1' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Delivery not authorized, message refused',
                             'desc'     => 'The sender is not authorized to send to the destination. This can be the result of per-host or per-recipient filtering. This memo does not discuss the merits of any such filtering, but provides a mechanism to report such. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '7.2' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Mailing list expansion prohibited',
                             'desc'     => 'The sender is not authorized to send a message to the intended mailing list. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '7.3' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Security conversion required but not possible',
                             'desc'     => 'A conversion from one secure messaging protocol to another was required for delivery and such conversion was not possible. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '7.4' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Security features not supported',
                             'desc'     => 'A message contained security features such as secure authentication which could not be supported on the delivery protocol. This is useful only as a permanent error.',
                         );
                         break;
-    
+
                     case '7.5' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Cryptographic failure',
                             'desc'     => 'A transport system otherwise authorized to validate or decrypt a message in transport was unable to do so because necessary information such as key was not available or such information was invalid.',
                         );
                         break;
-    
+
                     case '7.6' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                             'title'    => 'Cryptographic algorithm not supported',
                             'desc'     => 'A transport system otherwise authorized to validate or decrypt a message was unable to do so because the necessary algorithm was not supported.',
                         );
                         break;
-    
+
                     case '7.7' :
                         $result[CWSMBH_STATUS_THIRD_SUBCODE] = array(
                         'title'    => 'Message integrity failure',
                         'desc'     => 'A transport system otherwise authorized to validate a message was unable to do so because the message was corrupted or altered. This may be useful as a permanent, transient persistent, or successful delivery code.',
                         );
                         break;
-    
+
                     default :
                         break;
                 }
@@ -2188,14 +2188,14 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     protected static function endWith($string, $search)
     {
         $length = strlen($search);
         $start  = $length * -1;
         return (substr($string, $start) === $search);
     }
-    
+
     protected static function isEmpty($value, $key='')
     {
         if (!empty($key) && is_array($value)) {
@@ -2204,7 +2204,7 @@ class bouncehandler
             return !isset($value) || empty($value);
         }
     }
-    
+
     protected static function extractEmail($string)
     {
         $result = $string;
@@ -2216,7 +2216,7 @@ class bouncehandler
         }
         return $result;
     }
-    
+
     protected static function formatStatusCode($status_code)
     {
         if (!empty($status_code)) {
@@ -2237,5 +2237,5 @@ class bouncehandler
         return null;
     }
 }
-
+// @codingStandardsIgnoreEnd
 ?>

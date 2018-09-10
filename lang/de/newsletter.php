@@ -178,6 +178,15 @@ $string['unsubscribedinfo'] = 'Mit (!) markierte Nutzer/innen sind abgemeldet';
 $string['unsubscribe_link_text'] = 'Klicken Sie hier, um das Abonnement zu kündigen';
 $string['unsubscribe_question'] = 'Möchten Sie das Abonnement der E-Mailadresse "{$a->email}" für den Newsletter "{$a->name}" wirklich kündigen?';
 $string['unsubscription_succesful'] = 'Ihr Abonnement mit der E-Mailadresse "{$a->email}" wurde für den folgenden Newsletter erfolgreich gekündigt: "{$a->name}"';
+$string['unsubscribe_mail_subj'] = 'Sie wurden erfolgreich vom Newsletter abgemeldet';
+$string['unsubscribe_mail_text'] = '<p>
+Dear {$a->firstname} {$a->lastname},
+<br>
+You were successfully unsubscribed from the newsletter {$a->newslettertitle}. If you did this on purpose, there is nothing more to do. If you did accidentally unsubscribe, you can resubscribe now under the following link:
+<br>
+{$a->newsletterurl}</p>';
+$string['unsubscribe_nounsub_text'] = 'Link zur Newsletter-Abokündigung nicht senden';
+$string['unsubscribe_nounsub'] = 'Distributor';
 $string['welcomemessage'] = 'Willkommens-Nachricht';
 $string['welcomemessage_help'] = 'Geben Sie hier die Nachricht an, die dem neuen Abonnenten nach seiner Anmeldung zu einem Newsletter angezeigt werden soll.';
 $string['welcomemessageguestuser'] = 'Willkommens-Nachricht Gastuser-Anmeldung';
@@ -186,3 +195,25 @@ $string['welcometonewsletter'] = 'Vielen Dank! Sie erhalten von nun ab diesen Ne
 $string['welcometonewsletter_guestsubscription'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.<br />Sie können sich von diesem Newsletter wieder abmelden, wenn Sie den Link "Dieses Newsletter-Abonnement kündigen" nach dem Login anklicken oder mittels Klick auf den "Abmelden"-Link in jeder Ausgabe dieses Newsletters.';
 
 
+// Privacy API.
+$string['privacy:metadata:newsletter_subscriptions'] = 'Newsletter-Abo anzeigen';
+$string['privacy:metadata:newsletter_subscriptions:userid'] = 'Nutzer/in, die das Abo initiert hat.';
+$string['privacy:metadata:newsletter_subscriptions:newsletterid'] = 'ID des abonnierten Newsletters';
+$string['privacy:metadata:newsletter_subscriptions:health'] = 'Status der abgewiesenen Newsletter';
+$string['privacy:metadata:newsletter_subscriptions:timesubscribed'] = 'Zeitpunk des Abo-Beginns';
+$string['privacy:metadata:newsletter_subscriptions:timestatuschanged'] = 'Letzte Änderung';
+$string['privacy:metadata:newsletter_subscriptions:subscriberid'] = 'ID des/der Nutzer/in, die das Newsletter-Abo erhalten hat';
+$string['privacy:metadata:newsletter_subscriptions:unsubscriberid'] = 'ID des/der Nutzer/in, die das Abo gekündigt hat';
+$string['privacy:metadata:newsletter_subscriptions:sentnewsletters'] = 'Anzahl der an die Person gesendeten Newsletter';
+$string['privacy:metadata:newsletter_bounces'] = 'Newsletter deren Zustellung verweigert wurde';
+$string['privacy:metadata:newsletter_bounces:userid'] = 'Nutzer/in die/der den Eintrag erstellt hat';
+$string['privacy:metadata:newsletter_bounces:issueid'] = 'Newsletterausgabe, die zurückgewiesen wurde';
+$string['privacy:metadata:newsletter_bounces:statuscode'] = 'Statuscode der Zurückweisund';
+$string['privacy:metadata:newsletter_bounces:timecreated'] = 'Zeitpunkt an dem der Eintrag erstellt wurde';
+$string['privacy:metadata:newsletter_bounces:type'] = 'Bounce-Typ';
+$string['privacy:metadata:newsletter_bounces:timereceived'] = 'Zeitpunkt an dem die Zurückweisung erhalten wurde';
+$string['privacy:metadata:newsletter_deliveries'] = 'Zeige Newsletter, die dem/der Nutzer/in zugestellt wurden';
+$string['privacy:metadata:newsletter_deliveries:userid'] = 'Nuetzer/in die/der den Newsletter erhalten hat';
+$string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID der zugesandten Newsletterausgabe';
+$string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID des Newsletters';
+$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Zeigt an, ob Newsletter zugestellt wurde';
