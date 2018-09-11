@@ -30,8 +30,8 @@ $tasks = array(
         'blocking' => 0,
         'minute' => '30',
         'hour' => '17',
-        'day' => '*',
+        'day' => '6',
         'dayofweek' => '0',
-        'month' => '1,7'
+        'month' => '*'
     )
 );
