@@ -1237,7 +1237,10 @@ class mod_newsletter implements renderable {
         foreach ($records as $record) {
             $record->cmid = $this->get_course_module()->id;
             $record->numsubscriptions = $total;
-            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED || $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
+            // Task #34, deliveries can be removed after completion.
+            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED) {
+                $record->numdelivered = 100; // TODO: Mark this somehow?
+            } else if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
                 $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id, 'delivered' => 0) );
                 $record->numdelivered = $DB->count_records('newsletter_deliveries', array( 'issueid' => $record->id, 'delivered' => 1) );
             } else {

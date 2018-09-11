@@ -380,6 +380,7 @@ function newsletter_cron() {
     }
 
     $nounsublink = array(); // Store userids that don't receive unsublinks in an array.
+    // We only import issues that are not marked as delivered.
     $issues = $DB->get_records ( 'newsletter_issues', array ('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN) );
     foreach ( $issues as $issue ) {
         if ($issue->publishon <= time () && ! $DB->record_exists ( 'newsletter_deliveries', array (

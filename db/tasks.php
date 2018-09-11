@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of newsletter
+ * Definition of mod_newsletter tasks.
  *
  * @package    mod_newsletter
- * @copyright  2015 David Bogner <info@edulabs.org>
+ * @copyright  2018 michael pollak <moodle@michaelpollak.org>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018091100;        // If version == 0 then module will not be installed
-$plugin->requires  = 2017111300;        // Requires this Moodle version
-$plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.4 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique
-$plugin->cron      = 30;                // Period for cron to check this module (secs)
-$plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place
+$tasks = array(
+    array(
+        'classname' => 'mod_newsletter\task\remove_delivered',
+        'blocking' => 0,
+        'minute' => '30',
+        'hour' => '17',
+        'day' => '*',
+        'dayofweek' => '0',
+        'month' => '1,7'
+    )
+);
