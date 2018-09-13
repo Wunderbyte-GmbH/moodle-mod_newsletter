@@ -36,10 +36,10 @@ class mod_newsletter_observer {
 	 */
 	public static function subscribe($userid,$courseid){
 		global $DB, $CFG;
-	
-		//needed for constants
+
+		// Needed for constants.
 		require_once $CFG->dirroot . '/mod/newsletter/lib.php';
-	
+
 		$sql = "SELECT n.id, cm.id AS cmid
               FROM {newsletter} n
               JOIN {course_modules} cm ON cm.instance = n.id
@@ -54,11 +54,10 @@ class mod_newsletter_observer {
 				'userid' => $userid,
 				'submode1' => NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT,
 				'submode2' => NEWSLETTER_SUBSCRIPTION_MODE_FORCED);
-	
+
 		$newsletters = $DB->get_records_sql($sql, $params);
-		require_once $CFG->dirroot.'/mod/newsletter/locallib.php';
 		foreach ($newsletters as $newsletter) {
-			$newsletter = mod_newsletter::get_newsletter_by_instance($newsletter->id);
+			$newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
 			$newsletter->subscribe($userid);
 		}
 	}
@@ -69,11 +68,10 @@ class mod_newsletter_observer {
 	 * @param \core\event\user_created $event
 	 */
 	public static function user_created(\core\event\user_created $event) {
-		global $DB;
 		$user = $event->get_record_snapshot('user', $event->objectid);
 		self::subscribe($user->id, 1);
 	}
-	
+
 	/**
 	 * Triggered via user_enrolment_deleted event.
 	 *
@@ -81,7 +79,7 @@ class mod_newsletter_observer {
 	 */
 	public static function user_enrolment_deleted(\core\event\user_enrolment_deleted $event) {
 		global $DB;
-	
+
 		// NOTE: this has to be as fast as possible.
 		// Get user enrolment info from event.
 		$cp = (object)$event->other['userenrolment'];
@@ -90,16 +88,14 @@ class mod_newsletter_observer {
 			$DB->delete_records_select('newsletter_subscriptions', 'userid = :userid AND newsletterid IN (SELECT n.id FROM {newsletter} n WHERE n.course = :courseid)', $params);
 		}
 	}
-	
+
 	/**
 	 * Observer for role_assigned event
 	 * Subscribes user to newsletter of the related course
-	 * 
+	 *
 	 * @param \core\event\role_assigned $event
 	 */
 	public static function role_assigned(\core\event\role_assigned $event) {
-		global $CFG;
-		
 		$context = context::instance_by_id($event->contextid, MUST_EXIST);
 
 		// If contextlevel is course then only subscribe user. Role assignment
@@ -109,20 +105,20 @@ class mod_newsletter_observer {
 		}
 	    self::subscribe($event->relateduserid, $event->courseid);
 	}
-	
+
 	/**
 	 * Observer for the user_deleted event
 	 * deletes all newsletter subscriptions of the user
 	 *
-	 * @param \core\event\user_deleted $event        	
+	 * @param \core\event\user_deleted $event
 	 */
 	public static function user_deleted(\core\event\user_deleted $event) {
 		global $DB;
-		
+
 		$params = array (
-				'userid' => $event->relateduserid 
+				'userid' => $event->relateduserid
 		);
 		$DB->delete_records_select ( 'newsletter_subscriptions', 'userid = :userid', $params );
 	}
-	
+
 }

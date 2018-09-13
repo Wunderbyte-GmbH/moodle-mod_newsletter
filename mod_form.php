@@ -106,13 +106,9 @@ class mod_newsletter_mod_form extends moodleform_mod {
     function make_cohort_option_list() {
         $cohorts = cohort_get_cohorts($this->context->id);
         $options = array();
-        foreach ($cohorts as $cohortid -> $cohort) {
+        foreach ($cohorts as $cohortid => $cohort) {
             $options[$cohortid] = $cohort->name;
         }
         return $options;
-
-
-        // $select = $mform->addElement('select', 'cohorts', get_string('cohorts', 'mod_newsletter'), make_cohort_option_list());
-        // $select->setMultiple(true);
     }
 }

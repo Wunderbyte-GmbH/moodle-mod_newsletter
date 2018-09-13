@@ -29,7 +29,13 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
-require_once($CFG->dirroot . '/mod/newsletter/locallib.php');
+
+$id = required_param('id', PARAM_INT);
+
+if (!$course = $DB->get_record("course", array("id" => $id))) {
+    print_error('invalidcourseid');
+}
+require_login($course);
 
 $PAGE->set_url('/mod/newsletter/index.php');
 

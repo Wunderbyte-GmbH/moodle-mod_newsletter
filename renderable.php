@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,7 +24,6 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * Renderable page header
@@ -214,7 +212,7 @@ class newsletter_pager implements renderable {
     var $pages;
     var $totalentries;
     var $totalfiltered;
-    
+
     public function __construct(moodle_url $url, $from, $count, array $pages, $totalentries, $totalfiltered) {
         $this->url = $url;
         $this->from = $from;
@@ -292,12 +290,3 @@ class newsletter_action_link implements renderable {
         $this->class = $class;
     }
 }
-
-
-/*
-class newsletter_manage_subscriptions_toolbar implements renderable {
-    public function __construct() {
-
-    }
-}
-//*/

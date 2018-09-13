@@ -164,7 +164,6 @@ $string['filteredusers'] = 'Filtered users: ';
 $string['groupby'] = 'Group issues by:';
 
 $string['unsubscribe_link_text'] = 'Click here to unsubscribe';
-$string['unsubscribe_link'] = '<hr /><p><a href="{$a->link}">{$a->text}</a></p>';
 
 $string['publish_in'] = 'To be published in {$a->days} days, {$a->hours} hrs, {$a->minutes} min, {$a->seconds} sec.';
 $string['already_published'] = 'This issue has been published.';
