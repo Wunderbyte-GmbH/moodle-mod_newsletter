@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,17 +15,33 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of newsletter
+ * Definition of Newsletter scheduled tasks.
  *
- * @package    mod_newsletter
- * @copyright  2015 David Bogner <info@edulabs.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_newsletter
+ * @category  task
+ * @copyright 2018 David Bogner <dan@moodle.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018091407;        // If version == 0 then module will not be installed
-$plugin->requires  = 2017111300;        // Requires this Moodle version
-$plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.4 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique
-$plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place
+$tasks = array(
+    array(
+        'classname' => 'mod_newsletter\task\send_newsletter',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    ),
+    array(
+        'classname' => 'mod_newsletter\task\process_bounces',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '23,3',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    )
+);

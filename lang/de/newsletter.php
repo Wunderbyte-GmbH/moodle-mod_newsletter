@@ -143,6 +143,8 @@ Sollte dies nicht der Fall sein, kopieren Sie bitte diesen Link und fügen Sie i
 Wenn Sie Hilfe benötigen, kontaktieren Sie bitte den/die Administrator/in der Website,
 {$a->admin}';
 $string['no_issues'] = 'Zu diesem Newsletter bestehen noch keine Ausgaben.';
+$string['send_newsletter'] = 'Newsletter versenden';
+$string['process_bounces'] = 'Zurückgewiesene E-Mails verarbeiten';
 $string['page_first'] = 'Erste Seite';
 $string['page_last'] = 'Letzte Seite';
 $string['page_next'] = 'Nächste';

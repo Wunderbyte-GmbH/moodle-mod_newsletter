@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 namespace mod_newsletter\bounce;
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
@@ -41,33 +56,4 @@ if ($bounceprocessor->openImapRemote()) {
 }
 
 echo $OUTPUT->footer();
-
-//$bounceprocessor->test_mode            = true;                  // default false
-//$bounceprocessor->debug_verbose        = CWSMBH_VERBOSE_DEBUG;  // default CWSMBH_VERBOSE_QUIET
-//$bounceprocessor->purge              = false;                 // default false
-//$bounceprocessor->disable_delete     = false;                 // default false
-//$bounceprocessor->open_mode          = CWSMBH_OPEN_MODE_IMAP; // default CWSMBH_OPEN_MODE_IMAP
-//$bounceprocessor->move_soft          = false;                 // default false
-//$bounceprocessor->folder_soft        = 'INBOX.soft';          // default 'INBOX.hard' - NOTE: for open_mode IMAP it must start with 'INBOX.'
-//$bounceprocessor->move_hard          = false;                 // default false
-//$bounceprocessor->folder_hard        = 'INBOX.hard';          // default 'INBOX.soft' - NOTE: for open_mode IMAP it must start with 'INBOX.'
-
-
-/**
- * .eml file
- */
-//$bounceprocessor->open_mode = CWSMBH_OPEN_MODE_FILE;
-//if ($bounceprocessor->openFile('test/01.eml')) {
-//    $bounceprocessor->processMails();
-//}
-
-/**
- * Local mailbox
- */
-//$bounceprocessor->open_mode     = CWSMBH_OPEN_MODE_IMAP;
-//if ($bounceprocessor->openImapLocal('/home/email/temp/mailbox')) {
-//    $bounceprocessor->processMails();
-//}
-
-
 ?>

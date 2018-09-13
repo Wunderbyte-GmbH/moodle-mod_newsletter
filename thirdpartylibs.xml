@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraries>
+    <library>
+        <location>CssToInlineStyles/</location>
+        <name>CSS to Inline Styles class</name>
+        <version>1.3.0</version>
+        <license>BSD</license>
+        <licenseversion></licenseversion>
+    </library>
+        <library>
+        <location>classes/bounce/bounceprocessor.php</location>
+        <name>CwsMailBounceHandler</name>
+        <version>1.5</version>
+        <license>GNU LESSER GENERAL PUBLIC LICENSE</license>
+        <licenseversion>3</licenseversion>
+    </library>
+</libraries>

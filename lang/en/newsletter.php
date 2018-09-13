@@ -203,6 +203,8 @@ $string['guestsubscriptionsuccess'] = 'Your email was successfully registered. <
 $string['resubscriptionsuccess'] = 'You was successfully re-subscribed.';
 
 $string['readonline'] = 'View web version';
+$string['send_newsletter'] = 'Send newsletter';
+$string['process_bounces'] = 'Process bounced e-mails';
 $string['subscribercandidatesmatching'] = 'Matching users for ({$a})';
 $string['subscribercandidates'] = 'Potential subscribers';
 $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';

@@ -148,6 +148,7 @@ class mod_newsletter_issue_parser {
 		$previouslevel = null;
 		foreach ( $xpath->query ( '//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]' ) as $headline ) {
 			// get level of current headline
+			$curr = null;
 			sscanf ( $headline->tagName, 'h%u', $curr );
 			if ($curr < $highestlevel) {
 				$highestlevel = $curr;
@@ -297,6 +298,7 @@ class mod_newsletter_issue_parser {
 	    }
 
 	    // Find all registered tag names in $content.
+	    $matches = array();
 	    preg_match_all( '@news:\/\/([a-zA-Z0-9_]+)\/@', $content, $matches );
 	    $tagnames = array_intersect( array_keys( $this->tags ), $matches[1] );
 
@@ -334,7 +336,7 @@ class mod_newsletter_issue_parser {
 
 	/**
 	 * Regular Expression callable for replacing a tag
-	 * @see get_tag_regex for details of the match array contents.
+	 * @see $this->get_tag_regex for details of the match array contents.
 	 *
 	 * @param array $m Regular expression match array
 	 * @return string|false False on failure.
@@ -396,7 +398,7 @@ class mod_newsletter_issue_parser {
 	}
 
 	/**
-	 * @param $m regular expression match array
+	 * @param array $m regular expression match array
 	 * @return string lastname
 	 */
 	public static function replace_firstname ($m) {
@@ -412,7 +414,7 @@ class mod_newsletter_issue_parser {
 	}
 
 	/**
-	 * @param $m regular expression match array
+	 * @param array $m regular expression match array
 	 * @return string fullname
 	 */
 	public static function replace_fullname ($m) {
