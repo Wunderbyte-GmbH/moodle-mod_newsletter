@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -44,7 +43,8 @@ class mod_newsletter_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('newslettername', 'mod_newsletter'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('newslettername', 'mod_newsletter'),
+                array('size' => '64'));
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -53,32 +53,30 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'newslettername', 'mod_newsletter');
+        $this->standard_intro_elements();
 
-        if ( $CFG->branch < 29 ) {
-            //This is valid before v2.9
-            $this->add_intro_editor();
-        } else {
-            //This is valid after v2.9
-            $this->standard_intro_elements();
-        }
-
-        $mform->addElement('select', 'subscriptionmode', get_string('subscription_mode', 'mod_newsletter'), $this->make_subscription_option_list());
+        $mform->addElement('select', 'subscriptionmode',
+                get_string('subscription_mode', 'mod_newsletter'),
+                $this->make_subscription_option_list());
         $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'mod_newsletter');
 
         $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'mod_newsletter'),
-                            array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => 'css'));
+                array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => 'css'));
         $mform->addHelpButton('stylesheets', 'stylesheets', 'mod_newsletter');
 
-        $mform->addElement('advcheckbox', 'allowguestusersubscriptions', get_string('allowguestusersubscriptions', 'mod_newsletter'));
-        $mform->addHelpButton('allowguestusersubscriptions', 'allowguestusersubscriptions', 'mod_newsletter');
+        $mform->addElement('advcheckbox', 'allowguestusersubscriptions',
+                get_string('allowguestusersubscriptions', 'mod_newsletter'));
+        $mform->addHelpButton('allowguestusersubscriptions', 'allowguestusersubscriptions',
+                'mod_newsletter');
         $mform->setDefault('allowguestusersubscriptions', 1);
 
-        $mform->addElement('textarea', 'welcomemessage', get_string('welcomemessage', 'mod_newsletter'),
-                             'wrap="virtual" rows="8" cols="50"');
+        $mform->addElement('textarea', 'welcomemessage',
+                get_string('welcomemessage', 'mod_newsletter'), 'wrap="virtual" rows="8" cols="50"');
         $mform->addHelpButton('welcomemessage', 'welcomemessage', 'mod_newsletter');
 
-        $mform->addElement('textarea', 'welcomemessageguestuser', get_string('welcomemessageguestuser', 'mod_newsletter'),
-                             'wrap="virtual" rows="8" cols="50"');
+        $mform->addElement('textarea', 'welcomemessageguestuser',
+                get_string('welcomemessageguestuser', 'mod_newsletter'),
+                'wrap="virtual" rows="8" cols="50"');
         $mform->addHelpButton('welcomemessageguestuser', 'welcomemessageguestuser', 'mod_newsletter');
 
         $this->standard_coursemodule_elements();
@@ -87,8 +85,10 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $newsletterid = empty($this->current->id) ? null : $this->current->id;
 
         $draftitemid = file_get_submitted_draft_itemid(NEWSLETTER_FILE_AREA_STYLESHEET);
-        file_prepare_draft_area($draftitemid, $this->context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletterid,
-                                             array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0, 'maxfiles' => -1));
+        file_prepare_draft_area($draftitemid, $this->context->id, 'mod_newsletter',
+                NEWSLETTER_FILE_AREA_STYLESHEET, $newsletterid,
+                array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
+                    'maxfiles' => -1));
         $entry = new stdClass();
         $entry->stylesheets = $draftitemid;
 
@@ -97,9 +97,12 @@ class mod_newsletter_mod_form extends moodleform_mod {
 
     function make_subscription_option_list() {
         $options = array();
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in', 'mod_newsletter');
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT] = get_string('sub_mode_opt_out', 'mod_newsletter');
-        $options[NEWSLETTER_SUBSCRIPTION_MODE_FORCED] = get_string('sub_mode_forced', 'mod_newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in',
+                'mod_newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT] = get_string('sub_mode_opt_out',
+                'mod_newsletter');
+        $options[NEWSLETTER_SUBSCRIPTION_MODE_FORCED] = get_string('sub_mode_forced',
+                'mod_newsletter');
         return $options;
     }
 

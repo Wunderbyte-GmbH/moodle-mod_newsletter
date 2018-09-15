@@ -1,61 +1,56 @@
-
-#newsletter-toc ol
-{
+#newsletter-toc ol {
+	font-weight: bold;
 	margin: 0;
 	padding: 0;
-	font-weight: bold;
 }
 
-#newsletter-toc ol ol
-{
+#newsletter-toc ol ol {
+	font-weight: normal;
 	margin: 0;
 	text-indent: 10px;
 	padding: 0;
-	font-weight: normal;
 }
 
-#newsletter-toc ol ol ol
-{
+#newsletter-toc ol ol ol {
 	text-indent: 20px;
 	padding: 0;
 }
 
-
-#newsletter-toc ol ol ol ol
-{
+#newsletter-toc ol ol ol ol {
 	text-indent: 30px;
 	padding: 0;
 }
 
-#newsletter-toc ol ol ol ol ol
-{
+#newsletter-toc ol ol ol ol ol {
 	text-indent: 40px;
 	padding: 0;
 }
 
-#newsletter-toc li
-{
+#newsletter-toc li {
+	border-top: 1px solid #DDE;
 	list-style: none;
 	margin: 0;
-	border-top: 1px solid #DDE;
 	text-align: left;
 }
 
-#newsletter-toc li a
-{
+#newsletter-toc li a {
+	background: #EEF;
+	border-left: 1em solid #DDE;
 	display: block;
 	padding: 0.25em 0.5em 0.25em 0.75em;
-	border-left: 1em solid #DDE;
-	background: #EEF;
 	text-decoration: none;
 }
 
-#newsletter-toc li a:link { color: #448; }
-#newsletter-toc li a:visited { color: #667; }
+#newsletter-toc li a:link {
+	color: #448;
+}
 
-#newsletter-toc li a:hover
-{
+#newsletter-toc li a:visited {
+	color: #667;
+}
+
+#newsletter-toc li a:hover {
+	background: #887;
 	border-color: #FE3;
 	color: #FFF;
-	background: #887;
 }

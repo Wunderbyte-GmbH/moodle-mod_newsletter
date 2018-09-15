@@ -24,7 +24,10 @@
  */
 namespace mod_newsletter\task;
 
+defined('MOODLE_INTERNAL') || die();
+
 class process_bounces extends \core\task\scheduled_task {
+
     public function get_name() {
         // Shown in admin screens.
         return get_string('process_bounces', 'mod_newsletter');
@@ -33,7 +36,6 @@ class process_bounces extends \core\task\scheduled_task {
     public function execute() {
         $config = get_config('mod_newsletter');
         if ($config->enablebounce == 1) {
-            require_once ('classes/bounce/bounceprocessor.php');
             $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($config);
             $bounceprocessor->open_mode = CWSMBH_OPEN_MODE_IMAP;
             if ($bounceprocessor->openImapRemote()) {

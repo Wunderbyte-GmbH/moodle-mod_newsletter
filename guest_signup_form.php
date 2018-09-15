@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -29,22 +28,21 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/user/profile/lib.php');
-require_once $CFG->dirroot . '/mod/newsletter/lib.php';
-
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
 class mod_newsletter_guest_signup_form extends moodleform {
+
     /**
      * Defines forms elements
      */
     public function definition() {
-
         $mform = &$this->_form;
         $data = &$this->_customdata;
 
         $mform->addElement('hidden', 'id', $data['id']);
         $mform->setType('id', PARAM_INT);
-        
+
         $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
@@ -65,17 +63,10 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addRule('email', null, 'required', null, 'client');
         $mform->addRule('email', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        /*
-        if (!empty($CFG->recaptchapublickey) && !empty($CFG->recaptchaprivatekey)) {
-            $mform->addElement('recaptcha', 'recaptcha');
-        }
-        //*/
-
-        //$mform->addElement('submit', 'submitbutton', get_string('subscribe', 'mod_newsletter'));
         $this->add_action_buttons(true, get_string('subscribe', 'mod_newsletter'));
     }
 
-    function definition_after_data(){
+    function definition_after_data() {
         $mform = $this->_form;
         $mform->applyFilter('firstname', 'trim');
         $mform->applyFilter('lastname', 'trim');
@@ -83,20 +74,21 @@ class mod_newsletter_guest_signup_form extends moodleform {
     }
 
     function validation($usernew, $files) {
-    	global $CFG, $DB;
-    	$err = array();
-    	$usernew = (object)$usernew;
-    	
-    	$user = $DB->get_record('user', array('id' => $usernew->id));
+        global $CFG, $DB;
+        $err = array();
+        $usernew = (object) $usernew;
+
+        $user = $DB->get_record('user', array('id' => $usernew->id));
         if (!$user or $user->email !== $usernew->email) {
             if (!validate_email($usernew->email)) {
                 $err['email'] = get_string('invalidemail');
-            } else if ($DB->record_exists('user', array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
+            } else if ($DB->record_exists('user',
+                    array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
                 $a = get_string('forgotten');
-            	$err['email'] = get_string('emailexists', 'mod_newsletter', $a);
+                $err['email'] = get_string('emailexists', 'mod_newsletter', $a);
             }
         }
-        
+
         // Next the customisable profile fields.
         $err += profile_validation($usernew, $files);
         return $err;

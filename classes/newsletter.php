@@ -26,7 +26,6 @@
 namespace mod_newsletter;
 
 use context_module;
-use mod_newsletter_issue_form;
 use mod_newsletter_renderer;
 use newsletter_section_list;
 use renderable;
@@ -38,9 +37,11 @@ use user_picture;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/mod/newsletter/renderable.php');
-require_once ($CFG->dirroot . '/mod/newsletter/CssToInlineStyles/CssToInlineStyles.php');
-require_once (dirname(__FILE__) . '/subscription/subscription_filter_form.php');
+require_once($CFG->dirroot . '/mod/newsletter/renderable.php');
+require_once($CFG->dirroot . '/mod/newsletter/CssToInlineStyles/CssToInlineStyles.php');
+require_once(dirname(__FILE__) . '/subscription/subscription_filter_form.php');
+require_once($CFG->dirroot . '/mod/newsletter/guest_signup_form.php');
+require_once($CFG->dirroot . '/mod/newsletter/resubscribe_form.php');
 
 
 class newsletter implements renderable {
@@ -50,9 +51,7 @@ class newsletter implements renderable {
 
     /**
      *
-     * @var context the context of the course module for this newsletter instance (or just the
-     *      course if we are
-     *      creating a new one)
+     * @var context the context of the course module for this newsletter instance (or just the course if we are creating a new one)
      */
     private $context = null;
 
@@ -100,8 +99,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * When not cached create the newsletter instance otherwise
-     * return it from the cache
+     * When not cached create the newsletter instance otherwise return it from the cache
      *
      * @param context_module $context
      * @param boolean $eagerload
@@ -117,10 +115,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * Constructor for the newsletter class.
-     * Always use get_newsletter_by_instance or get_newsletter_by_course_module
-     * to get a new instance
-     * Do not use $nl = new \newsletter($context)!!!
+     * Constructor for the newsletter class. Always use get_newsletter_by_instance or get_newsletter_by_course_module to get a new instance Do not use
+     * $nl = new \newsletter($context)!!!
      *
      * @param context_module $context
      * @param boolean $eagerload
@@ -223,8 +219,8 @@ class newsletter implements renderable {
      * @return mixed stdClass|null The module renderer
      */
     public function get_renderer() {
+        global $PAGE;
         if (!$this->renderer) {
-            global $PAGE;
             $this->renderer = $PAGE->get_renderer('mod_newsletter');
         }
         return $this->renderer;
@@ -249,8 +245,8 @@ class newsletter implements renderable {
      */
     public function get_subscriptions() {
         global $DB;
-        return $DB->get_records('newsletter_subscriptions', array(
-            'id' => $this->get_instance()->id));
+        return $DB->get_records('newsletter_subscriptions',
+                array('id' => $this->get_instance()->id));
     }
 
     /**
@@ -270,13 +266,10 @@ class newsletter implements renderable {
         $nlids = $DB->get_fieldset_sql($newsletterssql, $params);
         list($sql, $inparams) = $DB->get_in_or_equal($nlids);
 
-        $DB->delete_records_select('newsletter_subscriptions', "newsletterid $sql",
-                $inparams);
-        $DB->delete_records_select('newsletter_deliveries', "newsletterid $sql",
-                $inparams);
+        $DB->delete_records_select('newsletter_subscriptions', "newsletterid $sql", $inparams);
+        $DB->delete_records_select('newsletter_deliveries', "newsletterid $sql", $inparams);
         $status[] = array('component' => $componentstr,
-        'item' => get_string('delete_all_subscriptions','newsletter'),
-        'error' => false);
+            'item' => get_string('delete_all_subscriptions', 'newsletter'), 'error' => false);
         return $status;
     }
 
@@ -289,8 +282,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * returns an array of localised subscription status names with according
-     * key stored in database column "health"
+     * returns an array of localised subscription status names with according key stored in database column "health"
      *
      * @return array
      */
@@ -342,8 +334,7 @@ class newsletter implements renderable {
                 break;
             case NEWSLETTER_ACTION_SUBSCRIBE:
                 require_capability('mod/newsletter:manageownsubscription', $this->context);
-                if ($this->get_subscription_status($this->get_subid()) ==
-                        NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
+                if ($this->get_subscription_status($this->get_subid()) == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
                     $output = $this->display_resubscribe_form($params);
                 } else {
                     $this->subscribe();
@@ -365,8 +356,7 @@ class newsletter implements renderable {
                 break;
             default:
                 print_error(
-                        'Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' .
-                        $params[NEWSLETTER_PARAM_ACTION]);
+                        'Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' . $params[NEWSLETTER_PARAM_ACTION]);
                 break;
         }
 
@@ -374,8 +364,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * display a subscription form for guest users.
-     * requires email auth plugin to be enabled
+     * display a subscription form for guest users. requires email auth plugin to be enabled
      *
      * @param array $params url params passed as get variables
      * @return string html rendered guest subscription
@@ -389,9 +378,6 @@ class newsletter implements renderable {
         }
         $output = '';
         $renderer = $this->get_renderer();
-
-        require_once (dirname(__FILE__) . '/guest_signup_form.php');
-
         $output .= $renderer->render(
                 new \newsletter_header($this->get_instance(), $this->get_context(), false,
                         $this->get_course_module()->id));
@@ -414,8 +400,7 @@ class newsletter implements renderable {
             $output .= html_writer::link($url, get_string('continue'),
                     array('class' => 'btn mdl-align'));
             return $output;
-        } else if ($this->get_instance()->allowguestusersubscriptions &&
-                (!isloggedin() || isguestuser())) {
+        } else if ($this->get_instance()->allowguestusersubscriptions && (!isloggedin() || isguestuser())) {
             $output .= $renderer->render(new \newsletter_form($mform, null));
             $output .= $renderer->render_footer();
             return $output;
@@ -429,11 +414,11 @@ class newsletter implements renderable {
      * @return string html rendered resubscription
      */
     private function display_resubscribe_form(array $params) {
-        global $CFG, $PAGE;
+        global $PAGE;
         $PAGE->requires->js_module($this->get_js_module());
         $output = '';
         $renderer = $this->get_renderer();
-        require_once ($CFG->dirroot . '/mod/newsletter/resubscribe_form.php');
+
         $output .= $renderer->render(
                 new \newsletter_header($this->get_instance(), $this->get_context(), false,
                         $this->get_course_module()->id));
@@ -473,9 +458,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Display all newsletter issues in a view.
-     * Display action links
-     * according to capabilities
+     * Display all newsletter issues in a view. Display action links according to capabilities
      *
      * @param array $params
      * @return string html
@@ -495,8 +478,7 @@ class newsletter implements renderable {
                         has_capability('mod/newsletter:createissue', $this->context),
                         has_capability('mod/newsletter:managesubscriptions', $this->context)));
 
-        if (has_capability('mod/newsletter:manageownsubscription', $this->context) &&
-                $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             if (!$this->is_subscribed()) {
                 $url = new moodle_url('/mod/newsletter/view.php',
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
@@ -513,12 +495,11 @@ class newsletter implements renderable {
         } else {
 
             if (!empty($CFG->registerauth) and is_enabled_auth('email')) {
-                $guestsignup_possible = true;
+                $guestsignuppossible = true;
             } else {
-                $guestsignup_possible = false;
+                $guestsignuppossible = false;
             }
-            if ($this->get_instance()->allowguestusersubscriptions &&
-                    (!isloggedin() || isguestuser()) && $guestsignup_possible) {
+            if ($this->get_instance()->allowguestusersubscriptions && (!isloggedin() || isguestuser()) && $guestsignuppossible) {
                 $url = new moodle_url('/mod/newsletter/view.php',
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
@@ -546,8 +527,8 @@ class newsletter implements renderable {
      */
     private function view_read_issue_page(array $params) {
         global $CFG;
-        if (!(has_capability('mod/newsletter:editissue', $this->get_context())) &&
-                $this->get_issue($params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
+        if (!(has_capability('mod/newsletter:editissue', $this->get_context())) && $this->get_issue(
+                $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
             require_capability('mod/newsletter:editissue', $this->get_context());
         }
 
@@ -568,21 +549,20 @@ class newsletter implements renderable {
                             'btn btn-default'));
         }
 
-        $navigation_bar = new \newsletter_navigation_bar($currentissue,
+        $navigationbar = new \newsletter_navigation_bar($currentissue,
                 $this->get_first_issue($currentissue), $this->get_previous_issue($currentissue),
                 $this->get_next_issue($currentissue), $this->get_last_issue($currentissue));
-        $output .= $renderer->render($navigation_bar);
+        $output .= $renderer->render($navigationbar);
 
         // Generate table of content.
-        require_once $CFG->dirroot . "/mod/newsletter/classes/issue_parser.php";
-        $parsedhtml = new \mod_newsletter\mod_newsletter_issue_parser($currentissue);
+        $parsedhtml = new \mod_newsletter\issue_parser($currentissue);
         $currentissue->htmlcontent = $parsedhtml->get_parsed_html();
 
         // Render the html with inline css based on the used stylesheet.
         $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent,
                 'pluginfile.php', $this->get_context()->id, 'mod_newsletter',
                 NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],
-                mod_newsletter_issue_form::editor_options($this->get_context(),
+                \mod_newsletter\issue_form::editor_options($this->get_context(),
                         $params[NEWSLETTER_PARAM_ISSUE]));
         $currentissue->htmlcontent = $this->inline_css($currentissue->htmlcontent,
                 $currentissue->stylesheetid);
@@ -594,8 +574,7 @@ class newsletter implements renderable {
                 NEWSLETTER_FILE_AREA_ATTACHMENT, $currentissue->id, "", false);
         foreach ($files as $file) {
             $file->link = file_encode_url($CFG->wwwroot . '/pluginfile.php',
-                    '/' . $this->get_context()->id . '/mod_newsletter/attachment/' .
-                    $currentissue->id . '/' . $file->get_filename());
+                    '/' . $this->get_context()->id . '/mod_newsletter/attachment/' . $currentissue->id . '/' . $file->get_filename());
         }
 
         if (!empty($files)) {
@@ -608,7 +587,7 @@ class newsletter implements renderable {
                     new \newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'),
                             'btn btn-default'));
         }
-        $output .= $renderer->render($navigation_bar);
+        $output .= $renderer->render($navigationbar);
         $output .= $renderer->render_footer();
 
         $params = array('context' => $this->get_context(),
@@ -622,19 +601,17 @@ class newsletter implements renderable {
     }
 
     /**
-     * delete a single issue of a newsletter
-     * can only be done when not yet sent
+     * delete a single issue of a newsletter can only be done when not yet sent
      *
      * @param array $params
      * @return string rendered html
      */
     private function view_delete_issue_page(array $params) {
         global $OUTPUT;
-        if (!$params[NEWSLETTER_PARAM_ISSUE] ||
-                !$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
+        if (!$params[NEWSLETTER_PARAM_ISSUE] || !$this->check_issue_id(
+                $params[NEWSLETTER_PARAM_ISSUE])) {
             print_error(
-                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' .
-                    $params[NEWSLETTER_PARAM_ISSUE]);
+                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
         }
 
         if ($params[NEWSLETTER_PARAM_CONFIRM] != NEWSLETTER_CONFIRM_UNKNOWN) {
@@ -676,8 +653,7 @@ class newsletter implements renderable {
         global $CFG, $PAGE;
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             print_error(
-                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' .
-                    $params[NEWSLETTER_PARAM_ISSUE]);
+                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
         }
 
         $context = $this->get_context();
@@ -695,8 +671,7 @@ class newsletter implements renderable {
         }
         // Publishon can not be altered, if delivery has already started or been completed.
         $deliverystartedorcompleted = 'yes';
-        if ($issue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN ||
-                $issue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
+        if ($issue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN || $issue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
             $deliverystartedorcompleted = 'no';
         }
 
@@ -709,35 +684,32 @@ class newsletter implements renderable {
         $options = array();
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
         foreach ($files as $file) {
-            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" .
-                    NEWSLETTER_FILE_AREA_STYLESHEET;
-            $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' .
-                    $file->get_filename();
+            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
+            $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
         }
 
         $PAGE->requires->js_module($this->get_js_module());
         $PAGE->requires->js_init_call('M.mod_newsletter.init_editor',
                 array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
 
-        require_once ($CFG->dirroot . '/mod/newsletter/classes/issue_form.php');
-        $mform = new mod_newsletter_issue_form(null,
+        $mform = new \mod_newsletter\issue_form(null,
                 array('newsletter' => $this, 'issue' => $issue, 'context' => $context));
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');
         file_prepare_draft_area($draftitemid, $context->id, 'mod_newsletter',
                 NEWSLETTER_FILE_AREA_ATTACHMENT, empty($issue->id) ? null : $issue->id,
-                mod_newsletter_issue_form::attachment_options($newsletterconfig));
+                \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context()));
 
         $issueid = empty($issue->id) ? null : $issue->id;
-        $draftid_editor = file_get_submitted_draft_itemid('htmlcontent');
-        $currenttext = file_prepare_draft_area($draftid_editor, $context->id, 'mod_newsletter',
+        $draftideditor = file_get_submitted_draft_itemid('htmlcontent');
+        $currenttext = file_prepare_draft_area($draftideditor, $context->id, 'mod_newsletter',
                 NEWSLETTER_FILE_AREA_ISSUE, $issueid,
-                mod_newsletter_issue_form::editor_options($context, $issueid), $issue->htmlcontent);
+                \mod_newsletter\issue_form::editor_options($context, $issueid), $issue->htmlcontent);
         $mform->set_data(
                 array('attachments' => $draftitemid, 'title' => $issue->title,
                     'htmlcontent' => array('text' => $currenttext,
                         'format' => empty($issue->messageformat) ? editors_get_preferred_format() : $issue->messageformat,
-                        'itemid' => $draftid_editor), 'deliverystarted' => $deliverystartedorcompleted,
+                        'itemid' => $draftideditor), 'deliverystarted' => $deliverystartedorcompleted,
                     'toc' => $issue->toc, 'publishon' => $issue->publishon,
                     'stylesheetid' => $issue->stylesheetid));
 
@@ -769,8 +741,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Display a list of users with statusses and action links in order to manage single
-     * subscriptions
+     * Display a list of users with statusses and action links in order to manage single subscriptions
      *
      * @param array $params
      * @return string rendered html
@@ -816,7 +787,7 @@ class newsletter implements renderable {
         $newurl = $url;
         $newurl->params($params);
 
-        require_once (dirname(__FILE__) . '/subscription/subscriptions_admin_form.php');
+        require_once(dirname(__FILE__) . '/subscription/subscriptions_admin_form.php');
         $cohorts = \cohort_get_available_cohorts($this->get_context());
         if (!empty($cohorts)) {
             $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(null,
@@ -837,7 +808,7 @@ class newsletter implements renderable {
             }
         }
 
-        require_once (dirname(__FILE__) . '/subscription/newsletter_user_subscription.php');
+        require_once(dirname(__FILE__) . '/subscription/newsletter_user_subscription.php');
         $subscriberselector = new \mod_newsletter\subscription\mod_newsletter_potential_subscribers(
                 'subsribeusers',
                 array('courseid' => $this->get_course()->id,
@@ -879,14 +850,14 @@ class newsletter implements renderable {
             $subscribedusers->invalidate_selected_users();
         }
 
-        require_once (dirname(__FILE__) . '/subscription/subscriber_selector_form.php');
-        $subscriber_form = new \mod_newsletter\subscription\mod_newsletter_subscriber_selector_form(
+        require_once(dirname(__FILE__) . '/subscription/subscriber_selector_form.php');
+        $subscriberform = new \mod_newsletter\subscription\mod_newsletter_subscriber_selector_form(
                 null,
                 array('id' => $this->get_course_module()->id, 'course' => $this->get_course(),
                     'existing' => $subscribedusers, 'potential' => $subscriberselector,
                     'leftarrow' => $OUTPUT->larrow(), 'rightarrow' => $OUTPUT->rarrow()));
 
-        $output .= $renderer->render(new \newsletter_form($subscriber_form, null));
+        $output .= $renderer->render(new \newsletter_form($subscriberform, null));
         if (!empty($cohorts)) {
             $output .= $renderer->render(new \newsletter_form($mform, null));
         }
@@ -916,7 +887,7 @@ class newsletter implements renderable {
         global $DB;
         $subscription = $DB->get_record('newsletter_subscriptions',
                 array('id' => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
-        require_once (dirname(__FILE__) . '/subscription/subscription_form.php');
+        require_once(dirname(__FILE__) . '/subscription/subscription_form.php');
         $mform = new \mod_newsletter\subscription\mod_newsletter_subscription_form(null,
                 array('newsletter' => $this, 'subscription' => $subscription));
 
@@ -947,8 +918,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Display deletion dialogue for deleting a single subscription of a user
-     * and delete user upon confirmation
+     * Display deletion dialogue for deleting a single subscription of a user and delete user upon confirmation
      *
      * @param array $params
      * @return string rendered html
@@ -987,8 +957,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Display the overview of all newsletter issues as a list
-     * TODO: implement issue navigation from a point of time to a point of time
+     * Display the overview of all newsletter issues as a list TODO: implement issue navigation from a point of time to a point of time
      *
      * @param string $heading
      * @param string $groupby
@@ -1036,8 +1005,8 @@ class newsletter implements renderable {
                 }
             } else {
                 if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
-                    $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) .
-                            ' - ' . userdate(strtotime('yesterday', $to), $datefromto) . ')';
+                    $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(
+                            strtotime('yesterday', $to), $datefromto) . ')';
                 } else {
                     $heading = userdate($from, $dateformat);
                 }
@@ -1072,8 +1041,8 @@ class newsletter implements renderable {
         } // Foreach issue.
         if (!empty($currentissuelist->issues)) {
             if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
-                $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' .
-                        userdate(strtotime('yesterday', $to), $datefromto) . ')';
+                $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(
+                        strtotime('yesterday', $to), $datefromto) . ')';
             } else {
                 $heading = userdate($from, $dateformat);
             }
@@ -1083,15 +1052,13 @@ class newsletter implements renderable {
     }
 
     /**
-     * get first day of year (from) and the first day of the following year (to) of the issue's
-     * publication date
+     * get first day of year (from) and the first day of the following year (to) of the issue's publication date
      *
-     * @param number $publishon_ts issue's publication date
-     * @return array:number number |from to| from:first day of the year of the publication, to:
-     *         first day of the following year
+     * @param number $publishonts issue's publication date
+     * @return array:number number |from to| from:first day of the year of the publication, to: first day of the following year
      */
-    private function get_year_from_to_issuelist($publishon_ts) {
-        $year = date("Y", $publishon_ts);
+    private function get_year_from_to_issuelist($publishonts) {
+        $year = date("Y", $publishonts);
         $from = strtotime($year . "/01/01");
         $to = strtotime("+1 year", $from);
 
@@ -1151,7 +1118,7 @@ class newsletter implements renderable {
 
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
                 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,
-                mod_newsletter_issue_form::editor_options($context, $issue->id),
+                \mod_newsletter\issue_form::editor_options($context, $issue->id),
                 $data->htmlcontent['text']);
 
         $DB->set_field('newsletter_issues', 'htmlcontent', $issue->htmlcontent,
@@ -1184,8 +1151,7 @@ class newsletter implements renderable {
         $context = $this->get_context();
         $oldissue = $this->get_issue($data->issue);
         $deliverystartedorcompleted = true;
-        if ($oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN ||
-                $oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
+        if ($oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN || $oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
             $deliverystartedorcompleted = false;
         }
 
@@ -1195,7 +1161,7 @@ class newsletter implements renderable {
         $issue->newsletterid = $this->get_instance()->id;
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
                 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,
-                mod_newsletter_issue_form::editor_options($context, $issue->id),
+                \mod_newsletter\issue_form::editor_options($context, $issue->id),
                 $data->htmlcontent['text']);
 
         // The publishon on date must not be altered after newsletter was sent.
@@ -1227,27 +1193,26 @@ class newsletter implements renderable {
     }
 
     /**
-     * given the cohortid retrieve all userids of the cohort members
-     * and subscribe every single user of the cohort to the newsletter
-     * in a course only enrolled users who are members of the cohort will be subscribed
+     * given the cohortid retrieve all userids of the cohort members and subscribe every single user of the cohort to the newsletter in a course only
+     * enrolled users who are members of the cohort will be subscribed
      *
      * @param number $cohortid
-     * @param boolean $resubscribe_unsubscribed
+     * @param boolean $resubscribeunsubscribed
      */
-    function subscribe_cohort($cohortid, $resubscribe_unsubscribed = false) {
+    public function subscribe_cohort($cohortid, $resubscribeunsubscribed = false) {
         global $DB;
         $instanceid = $this->get_instance()->id;
-        list($enrolled_sql, $enrolled_params) = get_enrolled_sql($this->get_context());
+        list($enrolledsql, $enrolledparams) = get_enrolledsql($this->get_context());
         $sql = "SELECT cm.userid
                 FROM {cohort_members} cm
                 WHERE cm.cohortid = :cohortid
-                AND cm.userid IN ($enrolled_sql)";
+                AND cm.userid IN ($enrolledsql)";
         $params = array('cohortid' => $cohortid, 'newsletterid' => $instanceid);
-        $params = array_merge($params, $enrolled_params);
+        $params = array_merge($params, $enrolledparams);
         $users = $DB->get_fieldset_sql($sql, $params);
         foreach ($users as $userid) {
             $this->subscribe($userid, true, NEWSLETTER_SUBSCRIBER_STATUS_OK,
-                    $resubscribe_unsubscribed);
+                    $resubscribeunsubscribed);
         }
     }
 
@@ -1256,7 +1221,7 @@ class newsletter implements renderable {
      *
      * @param integer $cohortid
      */
-    function unsubscribe_cohort($cohortid) {
+    public function unsubscribe_cohort($cohortid) {
         global $DB;
         $newsletterid = $this->get_instance()->id;
         $sql = "SELECT ns.id, ns.userid
@@ -1272,8 +1237,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Get the database records of newsletterissues from a range of publishing dates.
-     * The range is specified as $from timestamp and $to timestamp
+     * Get the database records of newsletterissues from a range of publishing dates. The range is specified as $from timestamp and $to timestamp
      *
      * @param number $from UTC timestamp
      * @param number $to UTC timestamp
@@ -1295,8 +1259,7 @@ class newsletter implements renderable {
         foreach ($records as $record) {
             $record->cmid = $this->get_course_module()->id;
             $record->numsubscriptions = $total;
-            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED ||
-                    $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
+            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED || $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
                 $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries',
                         array('issueid' => $record->id, 'delivered' => 0));
                 $record->numdelivered = $DB->count_records('newsletter_deliveries',
@@ -1333,8 +1296,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * Given a stylesheet id return the file as array with id as key
-     * If no id is given, return all stylesheets available in the newsletter instance
+     * Given a stylesheet id return the file as array with id as key If no id is given, return all stylesheets available in the newsletter instance
      *
      * @param number $id
      * @return array of stored_file or empty array
@@ -1497,23 +1459,19 @@ class newsletter implements renderable {
     }
 
     /**
-     * subscribe a user to a newsletter and return the subscription id if successful
-     * When user status is unsubscribed and $resubscribed_unsubscribed is true, user will be
-     * subscribed as active again
-     * When user is already subscribed and status is other than unsubscribed, the subscription
-     * status remains unchanged
+     * subscribe a user to a newsletter and return the subscription id if successful When user status is unsubscribed and $resubscribed_unsubscribed
+     * is true, user will be subscribed as active again When user is already subscribed and status is other than unsubscribed, the subscription status
+     * remains unchanged
      *
      * @param number $userid
      * @param boolean $bulk set to true if multiple users are subscribed
      * @param string $status
-     * @param boolean $resubscribe_unsubscribed true to resubscribe unsubscribed users
+     * @param boolean $resubscribeunsubscribed true to resubscribe unsubscribed users
      * @param integer $instanceid only needed when newsletter instance is created
-     * @return boolean|number <boolean, number>
-     *         subscriptionid for new subscription
-     *         false when user is subscribed and status remains unchanged
-     *         true when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
+     * @return boolean|number <boolean, number> subscriptionid for new subscription false when user is subscribed and status remains unchanged true
+     *         when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
      */
-    public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK, $resubscribe_unsubscribed = false,
+    public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK, $resubscribeunsubscribed = false,
             $instanceid = 0) {
         global $DB, $USER;
         $now = time();
@@ -1526,8 +1484,7 @@ class newsletter implements renderable {
         }
         if ($sub = $DB->get_record("newsletter_subscriptions",
                 array("userid" => $userid, "newsletterid" => $instanceid))) {
-            if ($sub->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED &&
-                    $resubscribe_unsubscribed) {
+            if ($sub->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED && $resubscribeunsubscribed) {
                 $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
                 $sub->timestatuschanged = $now;
                 $sub->subscriberid = $USER->id;
@@ -1571,9 +1528,8 @@ class newsletter implements renderable {
     private function update_subscription(stdClass $data) {
         global $DB;
 
-        if ($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED &&
-                $this->get_subscription_status($data->subscription) !=
-                NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
+        if ($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED && $this->get_subscription_status(
+                $data->subscription) != NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
             $this->unsubscribe($data->subscription);
         } else {
             $subscription = new stdClass();
@@ -1593,8 +1549,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * given the id of newsletter_subscriptions deletes the subscription completely (including
-     * health status)
+     * given the id of newsletter_subscriptions deletes the subscription completely (including health status)
      *
      * @param integer $subid
      * @param integer $userid used only for log data
@@ -1608,8 +1563,8 @@ class newsletter implements renderable {
         $result = $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
 
         $params = array('context' => $this->get_context(), 'objectid' => $subid,
-            'relateduserid' => $userid, 'other' => array(
-                'newsletterid' => $this->get_instance()->id));
+            'relateduserid' => $userid,
+            'other' => array('newsletterid' => $this->get_instance()->id));
         $event = \mod_newsletter\event\subscription_deleted::create($params);
         $event->trigger();
 
@@ -1617,8 +1572,7 @@ class newsletter implements renderable {
     }
 
     /**
-     * set health status to "unsubscribed" for this instance
-     * of the newsletter
+     * set health status to "unsubscribed" for this instance of the newsletter
      *
      * @param number $subscriptionid
      * @param number $userid only used for log data
@@ -1640,8 +1594,8 @@ class newsletter implements renderable {
         $result = $DB->update_record('newsletter_subscriptions', $sub);
 
         $params = array('context' => $this->get_context(), 'objectid' => $subid,
-            'relateduserid' => $userid, 'other' => array(
-                'newsletterid' => $this->get_instance()->id));
+            'relateduserid' => $userid,
+            'other' => array('newsletterid' => $this->get_instance()->id));
         $event = \mod_newsletter\event\subscription_unsubscribed::create($params);
         $event->trigger();
 
@@ -1678,14 +1632,12 @@ class newsletter implements renderable {
 
     /**
      * return the e-mail address that receives bounce mails
-     *
-     * The bounce e-mail address is used to collect all bounces
-     * that will be fetched and processed by the bounce processor
+     * The bounce e-mail address is used to collect all bounces that will be fetched and processed by the bounce processor
      */
     public function get_bounceemail_address() {
         global $CFG;
-        if ($this->config->enablebounce == '1' &&
-                filter_var($this->config->bounceemail, FILTER_VALIDATE_EMAIL)) {
+        if ($this->config->enablebounce == '1' && filter_var($this->config->bounceemail,
+                FILTER_VALIDATE_EMAIL)) {
             return $this->config->bounceemail;
         } else {
             return $CFG->noreplyaddress;
@@ -1694,13 +1646,9 @@ class newsletter implements renderable {
 
     /**
      * Creates a new user and subscribes the user to the newsletter
-     *
-     * TODO there are unsufficient checks for creating the user
-     * TODO check if email already exists for another user if yes, then display message to login in
-     * order to subscribe
-     * TODO unsufficient checks if user is already subscribed and has status "unsubscribed", in this
-     * case
-     * e-mail confirmation should be required
+     * TODO there are unsufficient checks for creating the user TODO check if email already exists for another user if yes, then display message to
+     * login in order to subscribe TODO unsufficient checks if user is already subscribed and has status "unsubscribed", in this case e-mail
+     * confirmation should be required
      *
      * @param string $firstname
      * @param string $lastname
@@ -1709,8 +1657,8 @@ class newsletter implements renderable {
      */
     public function subscribe_guest($firstname, $lastname, $email) {
         global $DB, $CFG;
-        require_once ($CFG->dirroot . '/user/profile/lib.php');
-        require_once ($CFG->dirroot . '/user/lib.php');
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        require_once($CFG->dirroot . '/user/lib.php');
 
         if (empty($CFG->registerauth)) {
             print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
@@ -1823,11 +1771,8 @@ class newsletter implements renderable {
 
     /**
      * Saves a new instance of the newsletter into the database
-     *
-     * Given an object containing all the necessary data,
-     * (defined by the form in mod_form.php) this function
-     * will create a new instance and return the id number
-     * of the new instance.
+     * Given an object containing all the necessary data, (defined by the form in mod_form.php) this function will create a new instance and return
+     * the id number of the new instance.
      *
      * @param object $newsletter An object from the form in mod_form.php
      * @param \mod_newsletter_mod_form $mform
@@ -1850,8 +1795,7 @@ class newsletter implements renderable {
                     'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
         }
 
-        if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-                $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
                 $this->subscribe($user->id, true, NEWSLETTER_SUBSCRIBER_STATUS_OK, false,
@@ -1884,8 +1828,7 @@ class newsletter implements renderable {
                     'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $data->id, $fileoptions);
         }
 
-        if ($data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-                $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if ($data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
                         $this->subscribe($user->id, true);

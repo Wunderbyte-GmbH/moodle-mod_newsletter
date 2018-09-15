@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -8,19 +9,18 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 namespace mod_newsletter\bounce;
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/classes/bounce/bounceprocessor.php');
-require_once($CFG->libdir.'/adminlib.php');
+require_once (dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once (dirname(__FILE__) . '/classes/bounce/bounceprocessor.php');
+require_once ($CFG->libdir . '/adminlib.php');
 
-require_login(0,false);
+require_login(0, false);
 
 $context = \context_system::instance();
 $section = 'modsettingnewsletter';
@@ -37,11 +37,9 @@ $conf = get_config('mod_newsletter');
 
 echo $OUTPUT->header();
 
-
 $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($conf);
 $bounceprocessor->disable_delete = true;
 $bounceprocessor->test_mode = true;
-
 
 echo \html_writer::tag('h1', 'Testing a single message of the local emls testfolder');
 $bounceprocessor->open_mode = CWSMBH_OPEN_MODE_FILE;
@@ -50,10 +48,9 @@ if ($bounceprocessor->openFile($CFG->dirroot . '/mod/newsletter/emls/bounce_420_
 }
 
 echo \html_writer::tag('h1', 'Testing settings for the bounce mailbox');
-$bounceprocessor->open_mode        = CWSMBH_OPEN_MODE_IMAP;
+$bounceprocessor->open_mode = CWSMBH_OPEN_MODE_IMAP;
 if ($bounceprocessor->openImapRemote()) {
-	$bounceprocessor->testrun();
+    $bounceprocessor->testrun();
 }
 
 echo $OUTPUT->footer();
-?>

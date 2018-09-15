@@ -51,7 +51,7 @@ M.mod_newsletter.init_editor = function (Y, stylesheets, selected) {
         }
         Y.one('#id_stylesheetid').on('change', change_stylesheet);
     } else {
-        // TODO: this seems like an ugly hack - replace with an event handler if at all possible
+        // TODO: this seems like an ugly hack - replace with an event handler if at all possible.
         setTimeout(function(){M.mod_newsletter.init_editor(Y, stylesheets, selected);}, 100);
     }
 }

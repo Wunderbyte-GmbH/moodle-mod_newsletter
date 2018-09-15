@@ -25,9 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-////////////////////////////////////////////////////////////////////////////////
-// Newsletter internal constants                                              //
-////////////////////////////////////////////////////////////////////////////////
+// Newsletter internal constants.
 
 define('NEWSLETTER_CRON_TEMP_FILENAME', 'newsletter_cron.tmp');
 define('NEWSLETTER_LOCK_DIR', $CFG->dataroot . '/temp/mod/newsletter');
@@ -119,9 +117,7 @@ define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH', 'col_health');
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED', 'col_timesubscribed');
 define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS', 'col_actions');
 
-// //////////////////////////////////////////////////////////////////////////////
-// Moodle core API //
-// //////////////////////////////////////////////////////////////////////////////
+// Moodle core API.
 
 /**
  * Returns the information on whether the module supports a feature
@@ -363,9 +359,7 @@ function newsletter_get_extra_capabilities() {
     return array();
 }
 
-// //////////////////////////////////////////////////////////////////////////////
-// File API //
-// //////////////////////////////////////////////////////////////////////////////
+// File API.
 
 /**
  * Returns the lists of all browsable file areas within the given module context
@@ -422,12 +416,12 @@ function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $fil
     }
 
     if (is_null($itemid)) {
-        require_once ($CFG->dirroot . '/mod/forum/locallib.php');
+        require_once($CFG->dirroot . '/mod/forum/locallib.php');
         return new \forum_file_info_container($browser, $course, $cm, $context, $areas, $filearea);
     }
 
     static $cached = array();
-    // $cached will store last retrieved post, discussion and newsletter. To make sure that the
+    // Variable $cached will store last retrieved post, discussion and newsletter. To make sure that the
     // cache is cleared between unit tests we check if this is the same session.
     if (!isset($cached['sesskey']) || $cached['sesskey'] != sesskey()) {
         $cached = array('sesskey' => sesskey());
@@ -524,9 +518,7 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
     send_stored_file($file, 0, 0, true, $options);
 }
 
-// //////////////////////////////////////////////////////////////////////////////
-// Navigation API //
-// //////////////////////////////////////////////////////////////////////////////
+// Navigation API.
 
 /**
  * Extends the global navigation tree by adding newsletter nodes if there is a relevant content
@@ -640,9 +632,7 @@ function newsletter_get_email_message_id($postid, $usertoid, $hostname) {
     return '<' . hash('sha256', $postid . 'to' . $usertoid) . '@' . $hostname . '>';
 }
 
-// //////////////////////////////////////////////////////////////////////////////
-// Mail utility functions //
-// //////////////////////////////////////////////////////////////////////////////
+// Mail utility functions.
 
 /**
  * Send an email to a specified user
@@ -734,7 +724,7 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
     // wwwroot and modify the url to direct the user's browser to login at their
     // home site (identity provider - idp) before hitting the link itself.
     if (is_mnet_remote_user($user)) {
-        require_once ($CFG->dirroot . '/mnet/lib.php');
+        require_once($CFG->dirroot . '/mnet/lib.php');
 
         $jumpurl = mnet_get_idp_jump_url($user);
         $callback = partial('mnet_sso_apply_indirection', $jumpurl);
@@ -927,7 +917,7 @@ function newsletter_email_to_user($user, $from, $subject, $messagetext, $message
                         'Error in attachment.  User attempted to attach a filename with a unsafe name.',
                         'error.txt', '8bit', 'text/plain');
             } else {
-                require_once ($CFG->libdir . '/filelib.php');
+                require_once($CFG->libdir . '/filelib.php');
                 $mimetype = mimeinfo('type', $attachname);
 
                 $attachmentpath = $attachlocation;

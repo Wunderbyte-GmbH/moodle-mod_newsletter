@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,11 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $DB;
-
 $logs = array(
-    array('module'=>'newsletter', 'action'=>'add', 'mtable'=>'newsletter', 'field'=>'name'),
-    array('module'=>'newsletter', 'action'=>'update', 'mtable'=>'newsletter', 'field'=>'name'),
-    array('module'=>'newsletter', 'action'=>'view', 'mtable'=>'newsletter', 'field'=>'name'),
-    array('module'=>'newsletter', 'action'=>'view all', 'mtable'=>'newsletter', 'field'=>'name')
-);
+    array('module' => 'newsletter', 'action' => 'add', 'mtable' => 'newsletter', 'field' => 'name'),
+    array('module' => 'newsletter', 'action' => 'update', 'mtable' => 'newsletter', 'field' => 'name'),
+    array('module' => 'newsletter', 'action' => 'view', 'mtable' => 'newsletter', 'field' => 'name'),
+    array('module' => 'newsletter', 'action' => 'view all', 'mtable' => 'newsletter',
+        'field' => 'name'));

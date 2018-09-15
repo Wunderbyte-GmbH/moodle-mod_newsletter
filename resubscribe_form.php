@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/user/profile/lib.php');
-require_once $CFG->dirroot . '/mod/newsletter/lib.php';
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
 class mod_newsletter_resubscribe_form extends moodleform {
@@ -58,11 +58,11 @@ class mod_newsletter_resubscribe_form extends moodleform {
         $this->add_action_buttons(true, get_string('resubscribe_btn', 'mod_newsletter'));
     }
 
-    function definition_after_data() {
+    public function definition_after_data() {
         return true;
     }
 
-    function validation($usernew, $files) {
+    public function validation($usernew, $files) {
         return true;
     }
 }

@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once ($CFG->dirroot . '/mod/newsletter/lib.php');
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 $settings->add(
         new admin_setting_configcheckbox('mod_newsletter/debug',

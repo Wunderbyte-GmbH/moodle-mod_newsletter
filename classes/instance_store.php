@@ -1,4 +1,6 @@
 <?php
+
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -8,13 +10,16 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
+ *
  * @package mod_newsletter
  * @copyright 2016 David Bogner
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,10 +32,10 @@ class mod_newsletter_instance_store {
 
     /** @var array List of stored instances. */
     protected static $instances = array();
-     
+
     /**
      * Returns an instance from local store, null otherwise.
-     * 
+     *
      * @param int $newsletterid newsletter id
      * @param string $typename
      * @return mixed Instance object or null
@@ -48,7 +53,7 @@ class mod_newsletter_instance_store {
      * @param int newsletter id.
      * @param string Instance type name.
      * @param mixed Instance object.
-     * @return mod_newsletter_field_manager
+     * @return object $instance
      */
     public static function register($newsletterid, $typename, $instance) {
         if (empty(self::$instances[$newsletterid])) {
@@ -56,6 +61,7 @@ class mod_newsletter_instance_store {
         }
         self::$instances[$newsletterid][$typename] = $instance;
     }
+
     /**
      * Removes instance from local store.
      *

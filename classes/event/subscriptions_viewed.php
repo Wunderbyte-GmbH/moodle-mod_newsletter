@@ -26,13 +26,14 @@ namespace mod_newsletter\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
  * The mod_newsletter subscriptions viewed event class.
  *
- * @package    mod_newsletter
- * @since      Moodle 2.7
- * @copyright  2015 David Bogner <info@edulabs.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod_newsletter
+ * @since Moodle 2.7
+ * @copyright 2015 David Bogner <info@edulabs.org>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscriptions_viewed extends \core\event\base {
 
@@ -71,7 +72,9 @@ class subscriptions_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,NEWSLETTER_PARAM_ID => $this->contextinstanceid));
+        return new \moodle_url('/mod/newsletter/view.php',
+                array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,
+                    NEWSLETTER_PARAM_ID => $this->contextinstanceid));
     }
 
     /**
@@ -82,11 +85,10 @@ class subscriptions_viewed extends \core\event\base {
      */
     protected function validate_data() {
         parent::validate_data();
-        
+
         if ($this->contextlevel != CONTEXT_MODULE) {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
-
 }
 

@@ -26,21 +26,18 @@ namespace mod_newsletter\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
  * The mod_newsletter issue created event class.
  *
- * @property-read array $other {
- *      Extra information about the event.
- *
- *      - int newsletterid: The id of the newsletter the issue is in.
- * }
- *
- * @package    mod_newsletter
- * @since      Moodle 2.7
- * @copyright  2015 David Bogner <info@edulabs.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @property-read array $other { Extra information about the event. - int newsletterid: The id of the newsletter the issue is in. }
+ * @package mod_newsletter
+ * @since Moodle 2.7
+ * @copyright 2015 David Bogner <info@edulabs.org>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issue_created extends \core\event\base {
+
     /**
      * Init method.
      *
@@ -58,8 +55,7 @@ class issue_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created the newsletter issue with id '$this->objectid' " .
-            "with the course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' has created the newsletter issue with id '$this->objectid' " . "with the course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -77,7 +73,10 @@ class issue_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $this->contextinstanceid,  NEWSLETTER_PARAM_ACTION =>  NEWSLETTER_ACTION_READ_ISSUE, NEWSLETTER_PARAM_ISSUE => $this->objectid));
+        return new \moodle_url('/mod/newsletter/view.php',
+                array(NEWSLETTER_PARAM_ID => $this->contextinstanceid,
+                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE,
+                    NEWSLETTER_PARAM_ISSUE => $this->objectid));
     }
 
     /**

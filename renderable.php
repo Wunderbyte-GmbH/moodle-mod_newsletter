@@ -32,14 +32,14 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class newsletter_header implements renderable {
-    /** @var stdClass the newsletter record  */
-    var $newsletter = null;
-    /** @var mixed context|null the context record  */
-    var $context = null;
-    /** @var bool $showintro - show or hide the intro */
-    var $showintro = false;
-    /** @var int coursemoduleid - The course module id */
-    var $coursemoduleid = 0;
+    /** @public stdClass the newsletter record  */
+    public $newsletter = null;
+    /** @public mixed context|null the context record  */
+    public $context = null;
+    /** @public bool $showintro - show or hide the intro */
+    public $showintro = false;
+    /** @public int coursemoduleid - The course module id */
+    public $coursemoduleid = 0;
 
     /**
      * Constructor
@@ -64,14 +64,14 @@ class newsletter_header implements renderable {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class newsletter_form implements renderable {
-    /** @var moodleform $form is the edit submission form */
-    var $form = null;
-    /** @var string $title is the title to be displayed in the header */
-    var $title = '';
-    /** @var string $classname is the name of the class to assign to the container */
-    var $classname = '';
-    /** @var string $jsinitfunction is an optional js function to add to the page requires */
-    var $jsinitfunction = '';
+    /** @public moodleform $form is the edit submission form */
+    public $form = null;
+    /** @public string $title is the title to be displayed in the header */
+    public $title = '';
+    /** @public string $classname is the name of the class to assign to the container */
+    public $classname = '';
+    /** @public string $jsinitfunction is an optional js function to add to the page requires */
+    public $jsinitfunction = '';
 
     /**
      * Constructor
@@ -89,15 +89,15 @@ class newsletter_form implements renderable {
 
 class newsletter_issue implements renderable {
 
-    var $id;
-    var $cmid;
-    var $newsletterid;
-    var $title;
-    var $htmlcontent;
-    var $publishon;
-    var $numsubscriptions;
-    var $numdelivered;
-    var $numnotyetdelivered;
+    public $id;
+    public $cmid;
+    public $newsletterid;
+    public $title;
+    public $htmlcontent;
+    public $publishon;
+    public $numsubscriptions;
+    public $numdelivered;
+    public $numnotyetdelivered;
 
     /**
      * Constructor
@@ -116,8 +116,8 @@ class newsletter_issue implements renderable {
 }
 
 class newsletter_issue_summary extends newsletter_issue {
-    var $editissue;
-    var $deleteissue;
+    public $editissue;
+    public $deleteissue;
 
     public function __construct(stdClass $issue, $editissue = false, $deleteissue = false) {
         parent::__construct($issue);
@@ -127,9 +127,9 @@ class newsletter_issue_summary extends newsletter_issue {
 }
 
 class newsletter_subscription_list implements renderable {
-    var $cmid;
-    var $subscriptions;
-    var $columns;
+    public $cmid;
+    public $subscriptions;
+    public $columns;
     public function __construct($cmid, array $subscriptions, array $columns) {
         $this->cmid = $cmid;
         $this->subscriptions = $subscriptions;
@@ -139,7 +139,7 @@ class newsletter_subscription_list implements renderable {
 
 class newsletter_issue_summary_list implements renderable {
 
-    var $issues = array();
+    public $issues = array();
 
     /**
      * Constructor
@@ -155,8 +155,8 @@ class newsletter_issue_summary_list implements renderable {
 
 class newsletter_section_list implements renderable {
 
-    var $heading = '';
-    var $sections = array();
+    public $heading = '';
+    public $sections = array();
 
     /**
      * Constructor
@@ -173,8 +173,8 @@ class newsletter_section_list implements renderable {
 
 class newsletter_section implements renderable {
 
-    var $heading = '';
-    var $summary_list = array();
+    public $heading = '';
+    public $summary_list = array();
 
     /**
      * Constructor
@@ -186,11 +186,11 @@ class newsletter_section implements renderable {
 }
 
 class newsletter_navigation_bar implements renderable {
-    var $firstissue;
-    var $previousissue;
-    var $currentissue;
-    var $nextissue;
-    var $lastissue;
+    public $firstissue;
+    public $previousissue;
+    public $currentissue;
+    public $nextissue;
+    public $lastissue;
 
     public function __construct(stdClass $currentissue,
                                 stdClass $firstissue = null,
@@ -206,12 +206,12 @@ class newsletter_navigation_bar implements renderable {
 }
 
 class newsletter_pager implements renderable {
-    var $url;
-    var $from;
-    var $count;
-    var $pages;
-    var $totalentries;
-    var $totalfiltered;
+    public $url;
+    public $from;
+    public $count;
+    public $pages;
+    public $totalentries;
+    public $totalfiltered;
 
     public function __construct(moodle_url $url, $from, $count, array $pages, $totalentries, $totalfiltered) {
         $this->url = $url;
@@ -224,10 +224,10 @@ class newsletter_pager implements renderable {
 }
 
 class newsletter_main_toolbar implements renderable {
-    var $cmid;
-    var $groupby;
-    var $createissues;
-    var $managesubs;
+    public $cmid;
+    public $groupby;
+    public $createissues;
+    public $managesubs;
 
     public function __construct($cmid, $groupby, $createissues = false, $managesubs = false) {
         $this->cmid = $cmid;
@@ -238,8 +238,8 @@ class newsletter_main_toolbar implements renderable {
 }
 
 class newsletter_progressbar implements renderable {
-    var $tocomplete;
-    var $completed;
+    public $tocomplete;
+    public $completed;
 
     public function __construct($tocomplete, $completed) {
         $this->tocomplete = $tocomplete;
@@ -248,7 +248,7 @@ class newsletter_progressbar implements renderable {
 }
 
 class newsletter_attachment_list implements renderable {
-    var $files;
+    public $files;
 
     public function __construct(array $files) {
         $this->files = $files;
@@ -256,8 +256,8 @@ class newsletter_attachment_list implements renderable {
 }
 
 class newsletter_publish_countdown implements renderable {
-    var $now;
-    var $until;
+    public $now;
+    public $until;
 
     public function __construct($now, $until) {
         $this->now = $now;
@@ -266,10 +266,10 @@ class newsletter_publish_countdown implements renderable {
 }
 
 class newsletter_action_button implements renderable {
-    var $cmid;
-    var $issueid;
-    var $action;
-    var $label;
+    public $cmid;
+    public $issueid;
+    public $action;
+    public $label;
 
     public function __construct($cmid, $issueid, $action, $label) {
         $this->cmid = $cmid;
@@ -280,9 +280,9 @@ class newsletter_action_button implements renderable {
 }
 
 class newsletter_action_link implements renderable {
-    var $url;
-    var $text;
-    var $class;
+    public $url;
+    public $text;
+    public $class;
 
     public function __construct(moodle_url $url, $text = '', $class = 'mod_newsletter__action-link') {
         $this->url = $url;
