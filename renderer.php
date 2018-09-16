@@ -96,7 +96,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('h3');
         $output .= $section->heading;
         $output .= html_writer::end_tag('h3');
-        $output .= $this->render($section->summary_list);
+        $output .= $this->render($section->summarylist);
         $output .= html_writer::end_tag('div');
 
         return $output;
@@ -190,30 +190,26 @@ class mod_newsletter_renderer extends plugin_renderer_base {
      */
     public function render_newsletter_navigation_bar(newsletter_navigation_bar $navigationbar) {
         $url = new moodle_url('/mod/newsletter/view.php');
-        $firstissuelink = $navigationbar->firstissue ? html_writer::link(
-                new moodle_url($url,
-                        array('id' => $navigationbar->currentissue->cmid,
-                            'action' => NEWSLETTER_ACTION_READ_ISSUE,
-                            'issue' => $navigationbar->firstissue->id)), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--first')) : '';
-        $previousissuelink = $navigationbar->previousissue ? html_writer::link(
-                new moodle_url($url,
-                        array('id' => $navigationbar->currentissue->cmid,
-                            'action' => NEWSLETTER_ACTION_READ_ISSUE,
-                            'issue' => $navigationbar->previousissue->id)), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--previous')) : '';
-        $nextissuelink = $navigationbar->nextissue ? html_writer::link(
-                new moodle_url($url,
-                        array('id' => $navigationbar->currentissue->cmid,
-                            'action' => NEWSLETTER_ACTION_READ_ISSUE,
-                            'issue' => $navigationbar->nextissue->id)), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--next')) : '';
-        $lastissuelink = $navigationbar->lastissue ? html_writer::link(
-                new moodle_url($url,
-                        array('id' => $navigationbar->currentissue->cmid,
-                            'action' => NEWSLETTER_ACTION_READ_ISSUE,
-                            'issue' => $navigationbar->lastissue->id)), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--last')) : '';
+        $urlparams = array('id' => $navigationbar->currentissue->cmid,
+            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->firstissue->id);
+        $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                array('class' => 'mod-newsletter__navigation-bar__button--first'));
+        $firstissuelink = $navigationbar->firstissue ? $link : '';
+        $urlparams = array('id' => $navigationbar->currentissue->cmid,
+            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->previousissue->id);
+        $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                array('class' => 'mod-newsletter__navigation-bar__button--previous'));
+        $previousissuelink = $navigationbar->previousissue ? $link : '';
+        $urlparams = array('id' => $navigationbar->currentissue->cmid,
+            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->nextissue->id);
+        $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                array('class' => 'mod-newsletter__navigation-bar__button--next'));
+        $nextissuelink = $navigationbar->nextissue ? $link : '';
+        $urlparams = array('id' => $navigationbar->currentissue->cmid,
+            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->lastissue->id);
+        $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                array('class' => 'mod-newsletter__navigation-bar__button--last'));
+        $lastissuelink = $navigationbar->lastissue ? $link : '';
 
         $output = '';
         $output .= html_writer::start_tag('div',
@@ -276,17 +272,11 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                     array('type' => 'submit', 'value' => get_string('refresh')));
         }
         $output .= html_writer::end_tag('form');
-        /**
-         * if (has_capability('mod/newsletter:createissue', $this->context)) {
-         */
         if ($toolbar->createissues) {
             $output .= $this->render(
                     new newsletter_action_button($toolbar->cmid, 0, NEWSLETTER_ACTION_CREATE_ISSUE,
                             get_string('create_new_issue', 'mod_newsletter')));
         }
-        /**
-         * if (has_capability('mod/newsletter:managesubscriptions', $this->context)) {
-         */
         if ($toolbar->managesubs) {
             $output .= $this->render(
                     new newsletter_action_button($toolbar->cmid, 0,

@@ -96,10 +96,10 @@ if ($newsletter->is_subscribed($user->id)) {
             email_to_user($user, core_user::get_support_user(), $unsubsubj,
                     html_to_text($unsubtext), $unsubtext, '', '', false);
             echo $OUTPUT->header();
-            echo $OUTPUT->box(
-                    get_string('unsubscription_succesful', 'newsletter',
-                            array('name' => $newsletter->get_instance()->name,
-                                'email' => $user->email)), 'mdl-align');
+            $stringparams = array('name' => $newsletter->get_instance()->name,
+                'email' => $user->email);
+            echo $OUTPUT->box(get_string('unsubscription_succesful', 'newsletter', $stringparams),
+                    'mdl-align');
             echo $OUTPUT->continue_button(
                     new moodle_url('/mod/newsletter/view.php', array('id' => $id)));
             echo $OUTPUT->footer();
@@ -115,15 +115,14 @@ if ($newsletter->is_subscribed($user->id)) {
     require_capability('mod/newsletter:viewnewsletter', $context);
     if ($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
         echo $OUTPUT->header();
+        $urlparams = array(NEWSLETTER_PARAM_USER => $user->id,
+            NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES);
+        $urlparams2 = array(NEWSLETTER_PARAM_USER => $user->id,
+            NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO);
         echo $OUTPUT->confirm(
                 get_string('subscribe_question', 'newsletter',
                         array('name' => $newsletter->get_instance()->name, 'email' => $user->email)),
-                new moodle_url($url,
-                        array(NEWSLETTER_PARAM_USER => $user->id,
-                            NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
-                new moodle_url($url,
-                        array(NEWSLETTER_PARAM_USER => $user->id,
-                            NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+                new moodle_url($url, $urlparams), new moodle_url($url, $urlparams2));
         echo $OUTPUT->footer();
     } else if ($confirm == NEWSLETTER_CONFIRM_YES) {
         $newsletter->subscribe($user->id);

@@ -95,7 +95,7 @@ class send_newsletter extends \core\task\scheduled_task {
                     $sub->newsletterid = $issue->newsletterid;
                     $sub->delivered = 0;
                     $subscriptionobjects[] = $sub;
-                    if ($recipient->nounsublink){
+                    if ($recipient->nounsublink) {
                         // Who doesn't receive unsublink per issue.
                         $nounsublink[$issue->id][] = $userid;
                     }
@@ -225,7 +225,8 @@ class send_newsletter extends \core\task\scheduled_task {
 
                 $userfrom->customheaders = array( // Headers to make emails easier to track.
                 'Precedence: Bulk',
-                    'List-Id: "' . $newsletter->get_instance()->name . '" <newsletter' . $newsletter->get_course_module()->instance . '@' . $hostname . '>',
+                    'List-Id: "' . $newsletter->get_instance()->name . '" <newsletter' . $newsletter->get_course_module()->instance .
+                                '@' . $hostname . '>',
                     'List-Help: ' . $CFG->wwwroot . '/mod/newsletter/view.php?id=' . $newsletter->get_context()->instanceid,
                     'Message-ID: ' . newsletter_get_email_message_id($issue->id, $recipient->id,
                             $hostname), 'X-Course-Id: ' . $newsletter->get_instance()->course,

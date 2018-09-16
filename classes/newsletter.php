@@ -426,10 +426,10 @@ class newsletter implements renderable {
                     NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
 
         if ($mform->is_cancelled()) {
-            redirect(
-                    new moodle_url('view.php',
+            redirect(new moodle_url('view.php',
                             array('id' => $this->get_course_module()->id,
-                                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
+                                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER))
+                    );
             return;
         } else if ($data = $mform->get_data()) {
             if ($data->resubscribe_confirmation) {
@@ -891,7 +891,7 @@ class newsletter implements renderable {
                 array('newsletter' => $this, 'subscription' => $subscription));
 
         if ($mform->is_cancelled()) {
-            redirect(new moodle_url('view.php',array('id' => $this->get_course_module()->id,
+            redirect(new moodle_url('view.php', array('id' => $this->get_course_module()->id,
                 NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
             return;
         } else if ($data = $mform->get_data()) {
@@ -954,7 +954,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * Display the overview of all newsletter issues as a list TODO: implement issue navigation from a point of time to a point of time
+     * Display the overview of all newsletter issues as a list
+     * TODO: implement issue navigation from a point of time to a point of time
      *
      * @param string $heading
      * @param string $groupby
@@ -1052,7 +1053,7 @@ class newsletter implements renderable {
      * get first day of year (from) and the first day of the following year (to) of the issue's publication date
      *
      * @param number $publishonts issue's publication date
-     * @return array:number number |from to| from:first day of the year of the publication, to: first day of the following year
+     * @return array:number number |from to| from:first day of the year of publication, to: first day following year
      */
     private function get_year_from_to_issuelist($publishonts) {
         $year = date("Y", $publishonts);
@@ -1190,7 +1191,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * given the cohortid retrieve all userids of the cohort members and subscribe every single user of the cohort to the newsletter in a course only
+     * given the cohortid retrieve all userids of the cohort members
+     * and subscribe every single user of the cohort to the newsletter in a course only
      * enrolled users who are members of the cohort will be subscribed
      *
      * @param number $cohortid
@@ -1234,7 +1236,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * Get the database records of newsletterissues from a range of publishing dates. The range is specified as $from timestamp and $to timestamp
+     * Get the database records of newsletterissues from a range of publishing dates.
+     * The range is specified as $from timestamp and $to timestamp
      *
      * @param number $from UTC timestamp
      * @param number $to UTC timestamp
@@ -1293,7 +1296,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * Given a stylesheet id return the file as array with id as key If no id is given, return all stylesheets available in the newsletter instance
+     * Given a stylesheet id return the file as array with id as key
+     * If no id is given, return all stylesheets available in the newsletter instance
      *
      * @param number $id
      * @return array of stored_file or empty array
@@ -1456,8 +1460,10 @@ class newsletter implements renderable {
     }
 
     /**
-     * subscribe a user to a newsletter and return the subscription id if successful When user status is unsubscribed and $resubscribed_unsubscribed
-     * is true, user will be subscribed as active again When user is already subscribed and status is other than unsubscribed, the subscription status
+     * subscribe a user to a newsletter and return the subscription id if successful
+     * When user status is unsubscribed and $resubscribed_unsubscribed
+     * is true, user will be subscribed as active again
+     * When user is already subscribed and status is other than unsubscribed, the subscription status
      * remains unchanged
      *
      * @param number $userid
@@ -1643,8 +1649,10 @@ class newsletter implements renderable {
 
     /**
      * Creates a new user and subscribes the user to the newsletter
-     * TODO there are unsufficient checks for creating the user TODO check if email already exists for another user if yes, then display message to
-     * login in order to subscribe TODO unsufficient checks if user is already subscribed and has status "unsubscribed", in this case e-mail
+     * TODO there are unsufficient checks for creating the user
+     * TODO check if email already exists for another user if yes, then display message to
+     * login in order to subscribe
+     * TODO unsufficient checks if user is already subscribed and has status "unsubscribed", in this case e-mail
      * confirmation should be required
      *
      * @param string $firstname
@@ -1768,7 +1776,8 @@ class newsletter implements renderable {
 
     /**
      * Saves a new instance of the newsletter into the database
-     * Given an object containing all the necessary data, (defined by the form in mod_form.php) this function will create a new instance and return
+     * Given an object containing all the necessary data, (defined by the form in mod_form.php)
+     * this function will create a new instance and return
      * the id number of the new instance.
      *
      * @param object $newsletter An object from the form in mod_form.php
