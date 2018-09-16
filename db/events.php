@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 $observers = array(
     array('eventname' => '\core\event\user_created',
         'callback' => 'mod_newsletter_observer::user_created'),
@@ -22,5 +24,5 @@ $observers = array(
     array('eventname' => '\core\event\user_deleted',
         'callback' => 'mod_newsletter_observer::user_deleted'),
     array('eventname' => '\core\event\user_enrolment_deleted',
-        'callback' => 'mod_newsletter_observer::user_enrolment_deleted'))
-;
+        'callback' => 'mod_newsletter_observer::user_enrolment_deleted')
+    );

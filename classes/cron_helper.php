@@ -64,11 +64,11 @@ abstract class cron_helper {
     private static function is_running() {
         $uname = strtolower(php_uname());
         if (strpos($uname, "darwin") !== false || strpos($uname, "linux") !== false) {
-            $pids = explode(PHP_EOL, `ps -e | awk '{print $1}'`);
+            $pids = explode(PHP_EOL, shell_exec("ps -e | awk '{print $1}'"));
             return in_array(self::$pid, $pids);
         } else if (strpos($uname, "win") !== false) {
             $pid = self::$pid;
-            $output = `TASKLIST /FI "PID eq $pid" /V /NH`;
+            $output = shell_exec("TASKLIST /FI \"PID eq {$pid}\" /V /NH");
             return (strpos(self::$pid, $output[0]) !== false);
         }
         return false;
@@ -85,16 +85,14 @@ abstract class cron_helper {
         if (file_exists($lockfile)) {
             self::$pid = file_get_contents($lockfile);
             if (self::is_running()) {
-                // echo "==".self::$pid."== Already in progress...\n";
                 return false;
             } else {
-                \mtrace("==".self::$pid."== Previous job died abruptly...\n") ;
+                \mtrace("==".self::$pid."== Previous job died abruptly...\n");
             }
         }
 
         self::$pid = getmypid();
         file_put_contents($lockfile, self::$pid);
-        // echo "==".self::$pid."== Lock acquired, processing the job...\n";
         return self::$pid;
     }
 
@@ -105,8 +103,6 @@ abstract class cron_helper {
         if (file_exists($lockfile)) {
             unlink($lockfile);
         }
-
-        // echo "==".self::$pid."== Releasing lock...\n";
         return true;
     }
 }

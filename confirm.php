@@ -32,7 +32,9 @@ $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
 $newsletterid = clean_param($dataelements[2], PARAM_INT);
 if (count($dataelements) == 4) {
-    if ($dataelements[3] == "guest") $guestuser = 1;
+    if ($dataelements[3] == "guest") {
+        $guestuser = 1;
+    }
 }
 
 $cm = get_coursemodule_from_instance('newsletter', $newsletterid);

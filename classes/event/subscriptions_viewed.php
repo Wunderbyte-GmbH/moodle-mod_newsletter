@@ -54,7 +54,8 @@ class subscriptions_viewed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has viewed the subscriptions of the newsletter with id '$this->objectid' and course module id '$this->contextinstanceid'.";
+        return "The user with id {$this->userid} has viewed the subscriptions " .
+                "of the newsletter with id {$this->objectid} and course module id {$this->contextinstanceid}.";
     }
 
     /**

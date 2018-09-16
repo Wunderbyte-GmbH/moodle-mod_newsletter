@@ -30,7 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The mod_newsletter subscription deleted event class.
  *
- * @property-read array $other { Extra information about the event. - int newsletterid: The id of the newsletter which has been unsusbcribed from. }
+ * @property-read array $other { Extra information about the event. -
+ * int newsletterid: The id of the newsletter which has been unsusbcribed from. }
  * @package mod_newsletter
  * @since Moodle 2.7
  * @copyright 2015 David Bogner <info@edulabs.org>
@@ -55,7 +56,8 @@ class subscription_deleted extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' deleted the user with id '$this->relateduserid' from the newsletter with the " . "course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' deleted the user with id '$this->relateduserid' from the newsletter with the " .
+                "course module id '$this->contextinstanceid'.";
     }
 
     /**

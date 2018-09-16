@@ -45,11 +45,11 @@ class mod_newsletter_subscription_filter_form extends \moodleform {
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
         $mform->setType('action', PARAM_ALPHA);
 
-        // search for a specific user name
+        // Search for a specific user name.
         $mform->addElement('text', 'search', get_string('search'));
         $mform->setType('search', PARAM_RAW);
 
-        // Filter by subscription status
+        // Filter by subscription status.
         $options = array(10 => get_string('all'));
         $options += (array) $newsletter->get_subscription_statuslist();
         $mform->addElement('select', 'status', get_string('header_health', 'mod_newsletter'),

@@ -59,7 +59,6 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         if ($form->jsinitfunction) {
             $this->page->requires->js_init_call($form->jsinitfunction, array());
         }
-        // $output .= $this->output->heading($form->title);
         $output .= $this->output->box_start('boxaligncenter ' . $form->classname);
         $output .= $this->moodleform($form->form);
         $output .= $this->output->box_end();
@@ -277,13 +276,17 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                     array('type' => 'submit', 'value' => get_string('refresh')));
         }
         $output .= html_writer::end_tag('form');
-        // if (has_capability('mod/newsletter:createissue', $this->context)) {
+        /**
+         * if (has_capability('mod/newsletter:createissue', $this->context)) {
+         */
         if ($toolbar->createissues) {
             $output .= $this->render(
                     new newsletter_action_button($toolbar->cmid, 0, NEWSLETTER_ACTION_CREATE_ISSUE,
                             get_string('create_new_issue', 'mod_newsletter')));
         }
-        // if (has_capability('mod/newsletter:managesubscriptions', $this->context)) {
+        /**
+         * if (has_capability('mod/newsletter:managesubscriptions', $this->context)) {
+         */
         if ($toolbar->managesubs) {
             $output .= $this->render(
                     new newsletter_action_button($toolbar->cmid, 0,

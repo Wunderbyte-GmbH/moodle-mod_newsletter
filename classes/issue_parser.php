@@ -8,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Parsing newsletter issues for creating table of contents
@@ -33,25 +33,25 @@ class issue_parser {
      *
      * @var \DOMDocument to be parsed
      */
-    private $dom = NULL;
+    private $dom = null;
 
     /**
      *
      * @var string HTML table of contents
      */
-    private $toc_html = NULL;
+    private $tochtml = null;
 
     /**
      *
      * @var string HTML the altered HTML
      */
-    private $htmlcontent = NULL;
+    private $htmlcontent = null;
 
     /**
      *
      * @var number toc setting
      */
-    private $tocsetting = NULL;
+    private $tocsetting = null;
 
     /**
      *
@@ -112,10 +112,10 @@ class issue_parser {
         if ($this->tocsetting > 0) {
             $this->dom = new \DOMDocument();
             @$this->dom->loadHTML(mb_convert_encoding($this->htmlcontent, 'HTML-ENTITIES', 'UTF-8'));
-            if (is_null($this->toc_html)) {
+            if (is_null($this->tochtml)) {
                 $this->generate_toc();
             }
-            return $this->toc_html . $this->htmlcontent;
+            return $this->tochtml . $this->htmlcontent;
         } else {
             return $this->htmlcontent;
         }
@@ -131,8 +131,9 @@ class issue_parser {
     }
 
     /**
-     * Generate the table of content for the newsletter issue The resulting HTML is saved as the TOC HTML and the modified HTML of the newsletter
-     * issue is saved as @var string htmlcontent $this->toc_html $this->htmlcontent
+     * Generate the table of content for the newsletter issue
+     * The resulting HTML is saved as the TOC HTML and the modified HTML of the newsletter
+     * issue is saved as @var string htmlcontent $this->tochtml $this->htmlcontent
      */
     private function generate_toc() {
         $toc = new \DOMDocument();
@@ -145,7 +146,7 @@ class issue_parser {
         $headlines = array();
         $highestlevel = 7;
         $lowestlevel = 0;
-        $levels_to_display = $this->tocsetting;
+        $levelstodisplay = $this->tocsetting;
         $count = 0;
         $previouslevel = null;
         foreach ($xpath->query(
@@ -169,10 +170,10 @@ class issue_parser {
         }
 
         foreach ($headlines as $headlinenode) {
-            if ($headlinenode->level < $highestlevel + $levels_to_display) {
+            if ($headlinenode->level < $highestlevel + $levelstodisplay) {
                 $this->apply_anchors($headlinenode);
 
-                // @var toclevel: starts from 0 as the most important headline and 1 as the next important and so on.
+                // Variable @var toclevel: starts from 0 as the most important headline and 1 as the next important and so on.
                 $toclevel = $headlinenode->level - $highestlevel;
 
                 if ($previouslevel == $toclevel || (is_null($previouslevel) && $toclevel == 0)) {
@@ -222,12 +223,13 @@ class issue_parser {
         $toccontainer->setAttribute('id', 'newsletter-toc');
         $container = $toc->appendChild($toccontainer);
         $container->appendChild($rootnode);
-        $this->toc_html = $toc->saveHTML();
+        $this->tochtml = $toc->saveHTML();
         $this->htmlcontent = $this->dom->saveHTML();
     }
 
     /**
-     * Apply the anchors referenced in the table of content to the original HTML of the newsletter issue. Save the modified issue HTML in $htmlcontent
+     * Apply the anchors referenced in the table of content to the original HTML of the newsletter issue.
+     * Save the modified issue HTML in $htmlcontent
      */
     private function apply_anchors($headlinenode) {
         // Add anchor to headline.
@@ -248,11 +250,6 @@ class issue_parser {
         if (false === strpos($content, 'news://')) {
             return false;
         }
-
-        /*
-         * if ( tag_exists( $tag ) ) { preg_match_all( '/' . get_tag_regex() . '/', $content, $matches, PREG_SET_ORDER ); if ( empty( $matches ) ){
-         * return false; } foreach ( $matches as $tag ) { if ( $tag === $tag[1] ) { return true; } } }
-         */
         return true;
     }
 
@@ -267,7 +264,8 @@ class issue_parser {
     }
 
     /**
-     * Search content for tags and filter tags through their hooks. If there are no tag tags defined, then the content will be returned without any
+     * Search content for tags and filter tags through their hooks.
+     * If there are no tag tags defined, then the content will be returned without any
      * filtering.
      *
      * @param object $issue to search for tags.
@@ -332,7 +330,6 @@ class issue_parser {
             $callable = "\mod_newsletter\issue_parser::" . "replace_" . $m[1];
         }
         if (!is_callable($callable)) {
-            // Old code: $message = sprintf( __( 'Attempting to parse a tag without a valid callback: %s' ), $this->tag[$m[1]] );
             $this->tags[$m[1]];
             return $m[0];
         }

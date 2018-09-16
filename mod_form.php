@@ -95,7 +95,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
         parent::set_data($entry);
     }
 
-    function make_subscription_option_list() {
+    public function make_subscription_option_list() {
         $options = array();
         $options[NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN] = get_string('sub_mode_opt_in',
                 'mod_newsletter');
@@ -106,7 +106,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
         return $options;
     }
 
-    function make_cohort_option_list() {
+    public function make_cohort_option_list() {
         $cohorts = cohort_get_cohorts($this->context->id);
         $options = array();
         foreach ($cohorts as $cohortid => $cohort) {

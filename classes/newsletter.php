@@ -115,7 +115,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * Constructor for the newsletter class. Always use get_newsletter_by_instance or get_newsletter_by_course_module to get a new instance Do not use
+     * Constructor for the newsletter class. Always use get_newsletter_by_instance
+     * or get_newsletter_by_course_module to get a new instance Do not use
      * $nl = new \newsletter($context)!!!
      *
      * @param context_module $context
@@ -364,7 +365,8 @@ class newsletter implements renderable {
     }
 
     /**
-     * display a subscription form for guest users. requires email auth plugin to be enabled
+     * display a subscription form for guest users.
+     * requires email auth plugin to be enabled
      *
      * @param array $params url params passed as get variables
      * @return string html rendered guest subscription
@@ -384,12 +386,9 @@ class newsletter implements renderable {
         $mform = new \mod_newsletter_guest_signup_form(null,
                 array('id' => $this->get_course_module()->id,
                     NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
-
         if ($mform->is_cancelled()) {
-            redirect(
-                    new moodle_url('view.php',
-                            array('id' => $this->get_course_module()->id,
-                                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
+            redirect(new moodle_url('view.php', array('id' => $this->get_course_module()->id,
+                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
             return;
         } else if ($data = $mform->get_data()) {
             $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
@@ -478,7 +477,8 @@ class newsletter implements renderable {
                         has_capability('mod/newsletter:createissue', $this->context),
                         has_capability('mod/newsletter:managesubscriptions', $this->context)));
 
-        if (has_capability('mod/newsletter:manageownsubscription', $this->context) && $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if (has_capability('mod/newsletter:manageownsubscription', $this->context) &&
+                $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             if (!$this->is_subscribed()) {
                 $url = new moodle_url('/mod/newsletter/view.php',
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
@@ -493,7 +493,6 @@ class newsletter implements renderable {
                 $output .= html_writer::link($url, $text);
             }
         } else {
-
             if (!empty($CFG->registerauth) and is_enabled_auth('email')) {
                 $guestsignuppossible = true;
             } else {
@@ -892,10 +891,8 @@ class newsletter implements renderable {
                 array('newsletter' => $this, 'subscription' => $subscription));
 
         if ($mform->is_cancelled()) {
-            redirect(
-                    new moodle_url('view.php',
-                            array('id' => $this->get_course_module()->id,
-                                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
+            redirect(new moodle_url('view.php',array('id' => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
             return;
         } else if ($data = $mform->get_data()) {
             $this->update_subscription($data);
@@ -1778,7 +1775,7 @@ class newsletter implements renderable {
      * @param \mod_newsletter_mod_form $mform
      * @return int The id of the newly inserted newsletter record
      */
-    function add_instance(stdClass $newsletter, \mod_newsletter_mod_form $mform = null) {
+    public function add_instance(stdClass $newsletter, \mod_newsletter_mod_form $mform = null) {
         global $DB;
         $now = time();
         $newsletter->timecreated = $now;
@@ -1828,12 +1825,13 @@ class newsletter implements renderable {
                     'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $data->id, $fileoptions);
         }
 
-        if ($data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if ($data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+                $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
-                        $this->subscribe($user->id, true);
-                    }
-                }
-                return $DB->update_record('newsletter', $data);
+                $this->subscribe($user->id, true);
+            }
+        }
+        return $DB->update_record('newsletter', $data);
     }
 }

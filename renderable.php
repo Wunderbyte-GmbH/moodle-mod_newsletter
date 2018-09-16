@@ -45,7 +45,8 @@ class newsletter_header implements renderable {
      * Constructor
      *
      * @param stdClass $newsletter - the newsletter database record
-     * @param mixed $context context|null - the course module context (or the course context if the coursemodule has not been created yet)
+     * @param mixed $context context|null - the course module context
+     * (or the course context if the coursemodule has not been created yet)
      * @param bool $showintro - show or hide the intro
      * @param int $coursemoduleid - the course module id
      */
@@ -109,9 +110,9 @@ class newsletter_issue implements renderable {
         $this->title = $issue->title;
         $this->publishon = $issue->publishon;
         $this->htmlcontent = $issue->htmlcontent;
-        $this->numsubscriptions = isset($issue->numsubscriptions) ? $issue->numsubscriptions: 0;
-        $this->numdelivered = isset($issue->numdelivered) ? $issue->numdelivered: 0;
-        $this->numnotyetdelivered = isset($issue->numnotyetdelivered) ? $issue->numnotyetdelivered: $this->numsubscriptions;
+        $this->numsubscriptions = isset($issue->numsubscriptions) ? $issue->numsubscriptions : 0;
+        $this->numdelivered = isset($issue->numdelivered) ? $issue->numdelivered : 0;
+        $this->numnotyetdelivered = isset($issue->numnotyetdelivered) ? $issue->numnotyetdelivered : $this->numsubscriptions;
     }
 }
 
@@ -174,14 +175,14 @@ class newsletter_section_list implements renderable {
 class newsletter_section implements renderable {
 
     public $heading = '';
-    public $summary_list = array();
+    public $summarylist = array();
 
     /**
      * Constructor
      */
-    public function __construct($heading, newsletter_issue_summary_list $summary_list) {
+    public function __construct($heading, newsletter_issue_summary_list $summarylist) {
         $this->heading = $heading;
-        $this->summary_list = $summary_list;
+        $this->summarylist = $summarylist;
     }
 }
 

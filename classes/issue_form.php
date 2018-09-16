@@ -117,12 +117,12 @@ class issue_form extends moodleform {
         $mform->addHelpButton('attachments', 'attachments', 'mod_newsletter');
 
         $mform->addElement('header', 'toc_header', get_string('toc_header', 'mod_newsletter'));
-        $toc_types = array(0 => get_string('toc_no', 'mod_newsletter'),
+        $toctypes = array(0 => get_string('toc_no', 'mod_newsletter'),
             1 => get_string('toc_yes', 'mod_newsletter', 1),
             2 => get_string('toc_yes', 'mod_newsletter', 2),
             3 => get_string('toc_yes', 'mod_newsletter', 3),
             4 => get_string('toc_yes', 'mod_newsletter', 4));
-        $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toc_types);
+        $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toctypes);
         $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
 
         $mform->addElement('header', 'header_publish',
@@ -146,7 +146,7 @@ class issue_form extends moodleform {
      * @param array $files files uploaded.
      * @return array of errors.
      */
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if (empty($data['htmlcontent']['text'])) {
             $errors['htmlcontent'] = get_string('erroremptymessage', 'forum');

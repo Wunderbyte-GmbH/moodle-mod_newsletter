@@ -93,8 +93,8 @@ if ($newsletter->is_subscribed($user->id)) {
             $unsubsubj = get_string('unsubscribe_mail_subj', 'newsletter');
             $unsubtext = get_string('unsubscribe_mail_text', 'newsletter', $a); // TODO: Make this
                                                                                 // prettier.
-            email_to_user($user, core_user::get_support_user(), $unsubsubj, html_to_text(
-                    $unsubtext), $unsubtext, '', '', false);
+            email_to_user($user, core_user::get_support_user(), $unsubsubj,
+                    html_to_text($unsubtext), $unsubtext, '', '', false);
             echo $OUTPUT->header();
             echo $OUTPUT->box(
                     get_string('unsubscription_succesful', 'newsletter',

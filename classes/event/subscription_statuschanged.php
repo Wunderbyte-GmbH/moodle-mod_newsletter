@@ -30,7 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The mod_newsletter subscription unsubscribed event class.
  *
- * @property-read array $other { Extra information about the event. - int newsletterid: The id of the newsletter which has been unsusbcribed from. }
+ * @property-read array $other { Extra information about the event. -
+ * int newsletterid: The id of the newsletter which has been unsusbcribed from. }
  * @package mod_newsletter
  * @since Moodle 2.7
  * @copyright 2015 David Bogner <info@edulabs.org>
@@ -56,7 +57,8 @@ class subscription_statuschanged extends \core\event\base {
      */
     public function get_description() {
         $status = get_string('health_' . $this->other['status'], 'mod_newsletter');
-        return "The user with id '$this->userid' changed the subscription status of the user with id '$this->relateduserid' from the newsletter with the " . "course module id '$this->contextinstanceid' to $status";
+        return "The user with id '$this->userid' changed the subscription status of the user with id '$this->relateduserid' from the newsletter with the " .
+                "course module id '$this->contextinstanceid' to $status";
     }
 
     /**

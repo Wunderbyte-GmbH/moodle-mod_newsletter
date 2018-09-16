@@ -30,7 +30,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The mod_newsletter subscription created event class.
  *
- * @property-read array $other { Extra information about the event. - int newsletterid: The id of the newsletter which has been subscribed to. }
+ * @property-read array $other { Extra information about the event. -
+ * int newsletterid: The id of the newsletter which has been subscribed to. }
  * @package mod_newsletter
  * @since Moodle 2.7
  * @copyright 2015 David Bogner <info@edulabs.org>
@@ -55,7 +56,8 @@ class subscription_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' subscribed the user with id '$this->relateduserid' to the newsletter with the " . "course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' subscribed the user with id '$this->relateduserid' to the newsletter with the " .
+                "course module id '$this->contextinstanceid'.";
     }
 
     /**

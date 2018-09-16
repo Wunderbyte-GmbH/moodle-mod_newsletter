@@ -55,7 +55,8 @@ class issue_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created the newsletter issue with id '$this->objectid' " . "with the course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' has created the newsletter issue with id '$this->objectid' " .
+                "with the course module id '$this->contextinstanceid'.";
     }
 
     /**

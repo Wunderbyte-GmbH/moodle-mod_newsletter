@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -30,7 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * The mod_newsletter subscription unsubscribed event class.
  *
- * @property-read array $other { Extra information about the event. - int newsletterid: The id of the newsletter which has been unsusbcribed from. }
+ * @property-read array $other { Extra information about the event. -
+ * int newsletterid: The id of the newsletter which has been unsusbcribed from. }
  * @package mod_newsletter
  * @since Moodle 2.7
  * @copyright 2015 David Bogner <info@edulabs.org>
@@ -55,7 +55,8 @@ class subscription_resubscribed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' resubscribed to the newsletter with the " . "course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' resubscribed to the newsletter with the " .
+                "course module id '$this->contextinstanceid'.";
     }
 
     /**

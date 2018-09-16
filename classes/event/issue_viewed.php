@@ -54,7 +54,8 @@ class issue_viewed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has viewed the issue with id '$this->objectid' in the newsletter " . "with the course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' has viewed the issue with id '$this->objectid' in the newsletter " .
+                "with the course module id '$this->contextinstanceid'.";
     }
 
     /**

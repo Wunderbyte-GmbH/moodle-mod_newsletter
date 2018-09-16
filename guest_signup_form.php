@@ -66,14 +66,14 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $this->add_action_buttons(true, get_string('subscribe', 'mod_newsletter'));
     }
 
-    function definition_after_data() {
+    public function definition_after_data() {
         $mform = $this->_form;
         $mform->applyFilter('firstname', 'trim');
         $mform->applyFilter('lastname', 'trim');
         $mform->applyFilter('email', 'trim');
     }
 
-    function validation($usernew, $files) {
+    public function validation($usernew, $files) {
         global $CFG, $DB;
         $err = array();
         $usernew = (object) $usernew;

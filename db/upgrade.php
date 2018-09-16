@@ -131,7 +131,7 @@ function xmldb_newsletter_upgrade($oldversion) {
         // Add field.
         $table = new xmldb_table('newsletter_subscriptions');
 
-        // Conditionally add field
+        // Conditionally add field.
         $field = new xmldb_field('sentnewsletters', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'unsubscriberid');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -145,7 +145,7 @@ function xmldb_newsletter_upgrade($oldversion) {
         // Add field.
         $table = new xmldb_table('newsletter_issues');
 
-        // Conditionally add field
+        // Conditionally add field.
         $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, 'big', null, null, null, null, 'publishon');
         if ($dbman->field_exists($table, $field)) {
             $dbman->drop_field($table, $field);
@@ -234,7 +234,7 @@ function xmldb_newsletter_upgrade($oldversion) {
 
         $table = new xmldb_table('newsletter');
 
-        // new field allowguestusersubscriptions in newsletter.
+        // New field allowguestusersubscriptions in newsletter.
         $field = new xmldb_field('allowguestusersubscriptions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'subscriptionmode');
 
         // Add new field.
@@ -257,9 +257,8 @@ function xmldb_newsletter_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-
         $config = get_config('mod_newsletter');
-        if($config->allow_guest_user_subscriptions==1) {
+        if ($config->allow_guest_user_subscriptions == 1) {
             $sql = 'UPDATE {newsletter} SET allowguestusersubscriptions = 1 where 1';
             $DB->execute($sql);
         }

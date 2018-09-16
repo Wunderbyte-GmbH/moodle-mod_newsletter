@@ -95,9 +95,10 @@ class send_newsletter extends \core\task\scheduled_task {
                     $sub->newsletterid = $issue->newsletterid;
                     $sub->delivered = 0;
                     $subscriptionobjects[] = $sub;
-                    if ($recipient->nounsublink)
-                    // Who doesn't receive unsublink per issue.
-                    $nounsublink[$issue->id][] = $userid;
+                    if ($recipient->nounsublink){
+                        // Who doesn't receive unsublink per issue.
+                        $nounsublink[$issue->id][] = $userid;
+                    }
                 }
                 $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
                 $DB->set_field('newsletter_issues', 'delivered',
@@ -133,8 +134,6 @@ class send_newsletter extends \core\task\scheduled_task {
             foreach ($files as $file) {
                 $attachment[$file->get_filename()] = $file->copy_content_to_temp();
             }
-
-            // #30 Unsubscribe link.
             // To ensure this link is clicked by the user we add a secret from userid and firstaccess.
             if (isset($unsublinks[$newsletter->get_instance()->id])) {
                 $url = $unsublinks[$newsletter->get_instance()->id];
@@ -181,7 +180,7 @@ class send_newsletter extends \core\task\scheduled_task {
                 $htmluser = $htmltmp;
                 $plaintextuser = $plaintexttmp;
 
-                // #31 Remove unsub link.
+                // Remove unsub link.
                 if (isset($nounsublink[$issueid]) && in_array($delivery->userid,
                         $nounsublink[$issueid])) {
                     if ($debugoutput) {
@@ -216,7 +215,7 @@ class send_newsletter extends \core\task\scheduled_task {
                 $toreplace['replacewithuserid'] = 'replacewithuserid';
                 $replacement['replacewithuserid'] = $delivery->userid;
 
-                // #30 Unsubscribe link.
+                // Unsubscribe link.
                 $toreplace['replacewithsecret'] = 'replacewithsecret';
                 $replacement['replacewithsecret'] = md5(
                         $recipient->id . "+" . $recipient->firstaccess);
