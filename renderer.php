@@ -190,25 +190,37 @@ class mod_newsletter_renderer extends plugin_renderer_base {
      */
     public function render_newsletter_navigation_bar(newsletter_navigation_bar $navigationbar) {
         $url = new moodle_url('/mod/newsletter/view.php');
-        $urlparams = array('id' => $navigationbar->currentissue->cmid,
-            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->firstissue->id);
-        $link = html_writer::link(new moodle_url($url, $urlparams), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--first'));
+        if (!empty($navigationbar->firstissue)) {
+            $urlparams = array('id' => $navigationbar->currentissue->cmid,
+                'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->firstissue->id);
+            $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                    array('class' => 'mod-newsletter__navigation-bar__button--first'));
+        }
+
         $firstissuelink = $navigationbar->firstissue ? $link : '';
-        $urlparams = array('id' => $navigationbar->currentissue->cmid,
-            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->previousissue->id);
-        $link = html_writer::link(new moodle_url($url, $urlparams), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--previous'));
+        if (!empty($navigationbar->previousissue)) {
+            $urlparams = array('id' => $navigationbar->currentissue->cmid,
+                'action' => NEWSLETTER_ACTION_READ_ISSUE,
+                'issue' => $navigationbar->previousissue->id);
+            $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                    array('class' => 'mod-newsletter__navigation-bar__button--previous'));
+        }
+
         $previousissuelink = $navigationbar->previousissue ? $link : '';
-        $urlparams = array('id' => $navigationbar->currentissue->cmid,
-            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->nextissue->id);
-        $link = html_writer::link(new moodle_url($url, $urlparams), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--next'));
+        if (!empty($navigationbar->nextissue)) {
+            $urlparams = array('id' => $navigationbar->currentissue->cmid,
+                'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->nextissue->id);
+            $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                    array('class' => 'mod-newsletter__navigation-bar__button--next'));
+        }
+
         $nextissuelink = $navigationbar->nextissue ? $link : '';
-        $urlparams = array('id' => $navigationbar->currentissue->cmid,
-            'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->lastissue->id);
-        $link = html_writer::link(new moodle_url($url, $urlparams), '',
-                array('class' => 'mod-newsletter__navigation-bar__button--last'));
+        if (!empty($navigationbar->lastissue)) {
+            $urlparams = array('id' => $navigationbar->currentissue->cmid,
+                'action' => NEWSLETTER_ACTION_READ_ISSUE, 'issue' => $navigationbar->lastissue->id);
+            $link = html_writer::link(new moodle_url($url, $urlparams), '',
+                    array('class' => 'mod-newsletter__navigation-bar__button--last'));
+        }
         $lastissuelink = $navigationbar->lastissue ? $link : '';
 
         $output = '';

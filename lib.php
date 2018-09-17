@@ -33,8 +33,8 @@ define('NEWSLETTER_LOCK_SUFFIX', 'lock');
 define('NEWSLETTER_TEMP_DIR', NEWSLETTER_LOCK_DIR);
 define('NEWSLETTER_BASE_STYLESHEET_PATH', 'reset.css');
 
-define('NEWSLETTER_FILE_AREA_STYLESHEET', 'stylesheet');
-define('NEWSLETTER_FILE_AREA_ATTACHMENT', 'attachment');
+define('NEWSLETTER_FILE_AREA_STYLESHEET', 'stylesheets');
+define('NEWSLETTER_FILE_AREA_ATTACHMENT', 'attachments');
 define('NEWSLETTER_FILE_AREA_ISSUE', 'issue');
 
 define('NEWSLETTER_FILE_OPTIONS_SUBDIRS', 0);
@@ -129,6 +129,8 @@ define('NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS', 'col_actions');
 function newsletter_supports($feature) {
     switch ($feature) {
         case FEATURE_MOD_INTRO:
+            return true;
+        case FEATURE_BACKUP_MOODLE2:
             return true;
         default:
             return null;

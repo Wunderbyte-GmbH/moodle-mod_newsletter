@@ -15,17 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version of newsletter
- *
  * @package    mod_newsletter
- * @copyright  2015 David Bogner <info@edulabs.org>
+ * @subpackage backup-moodle2
+ * @copyright  2018 onwards David Bogner {@link http://www.edulabs.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2018091700;        // If version == 0 then module will not be installed
-$plugin->requires  = 2017111300;        // Requires this Moodle version
-$plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.5 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique
-$plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place
+ // This activity has not particular settings but the inherited from the generic
+ // backup_activity_task so here there isn't any class definition, like the ones
+ // existing in /backup/moodle2/backup_settingslib.php (activities section)

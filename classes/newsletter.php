@@ -573,7 +573,7 @@ class newsletter implements renderable {
                 NEWSLETTER_FILE_AREA_ATTACHMENT, $currentissue->id, "", false);
         foreach ($files as $file) {
             $file->link = file_encode_url($CFG->wwwroot . '/pluginfile.php',
-                    '/' . $this->get_context()->id . '/mod_newsletter/attachment/' . $currentissue->id . '/' . $file->get_filename());
+                    '/' . $this->get_context()->id . '/mod_newsletter/attachments/' . $currentissue->id . '/' . $file->get_filename());
         }
 
         if (!empty($files)) {
