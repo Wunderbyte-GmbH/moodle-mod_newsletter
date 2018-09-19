@@ -340,6 +340,7 @@ function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $mo
 function newsletter_get_all_valid_recipients($newsletterid) {
     global $DB;
     $validstatuses = array(NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC);
+    $guestuserid = guest_user()->id;
     list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAMS_NAMED);
     $params['newsletterid'] = $newsletterid;
     $sql = "SELECT *
@@ -347,7 +348,8 @@ function newsletter_get_all_valid_recipients($newsletterid) {
         INNER JOIN {user} u ON ns.userid = u.id
              WHERE ns.newsletterid = :newsletterid
                AND u.confirmed = 1
-               AND ns.health $insql";
+               AND ns.health $insql
+               AND u.id <> $guestuserid";
     return $DB->get_records_sql($sql, $params);
 }
 

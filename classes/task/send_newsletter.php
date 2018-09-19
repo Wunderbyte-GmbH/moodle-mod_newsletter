@@ -32,6 +32,8 @@ use stdClass;
 use mod_newsletter\newsletter;
 use moodle_url;
 
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
+
 defined('MOODLE_INTERNAL') || die();
 
 class send_newsletter extends \core\task\scheduled_task {
