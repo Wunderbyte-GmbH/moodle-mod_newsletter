@@ -26,13 +26,14 @@ namespace mod_newsletter\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
  * The mod_newsletter issue viewed event class.
  *
- * @package    mod_newsletter
- * @since      Moodle 2.7
- * @copyright  2015 David Bogner <info@edulabs.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package mod_newsletter
+ * @since Moodle 2.7
+ * @copyright 2015 David Bogner <info@edulabs.org>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issue_viewed extends \core\event\base {
 
@@ -54,7 +55,7 @@ class issue_viewed extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' has viewed the issue with id '$this->objectid' in the newsletter " .
-            "with the course module id '$this->contextinstanceid'.";
+                "with the course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -72,7 +73,10 @@ class issue_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE, NEWSLETTER_PARAM_ID => $this->contextinstanceid, NEWSLETTER_PARAM_ISSUE => $this->objectid));
+        return new \moodle_url('/mod/newsletter/view.php',
+                array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE,
+                    NEWSLETTER_PARAM_ID => $this->contextinstanceid,
+                    NEWSLETTER_PARAM_ISSUE => $this->objectid));
     }
 
     /**
@@ -85,13 +89,11 @@ class issue_viewed extends \core\event\base {
         parent::validate_data();
 
         if (!isset($this->other['newsletterid'])) {
-        	throw new \coding_exception('The \'newsletterid\' value must be set in other.');
+            throw new \coding_exception('The \'newsletterid\' value must be set in other.');
         }
-        
+
         if ($this->contextlevel != CONTEXT_MODULE) {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
-
 }
-

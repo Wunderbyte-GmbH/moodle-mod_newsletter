@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * cronHelper - Utility script to avoid cron job overlap
  *
@@ -39,6 +53,9 @@
  * @copyright Abhinav Singh
  * @link http://abhinavsingh.com/blog/2009/12/how-to-use-locks-in-php-cron-jobs-to-avoid-cron-overlaps/
  */
+namespace mod_newsletter;
+
+defined('MOODLE_INTERNAL') || die();
 
 abstract class cron_helper {
 
@@ -47,11 +64,11 @@ abstract class cron_helper {
     private static function is_running() {
         $uname = strtolower(php_uname());
         if (strpos($uname, "darwin") !== false || strpos($uname, "linux") !== false) {
-            $pids = explode(PHP_EOL, `ps -e | awk '{print $1}'`);
+            $pids = explode(PHP_EOL, shell_exec("ps -e | awk '{print $1}'"));
             return in_array(self::$pid, $pids);
         } else if (strpos($uname, "win") !== false) {
             $pid = self::$pid;
-            $output = `TASKLIST /FI "PID eq $pid" /V /NH`;
+            $output = shell_exec("TASKLIST /FI \"PID eq {$pid}\" /V /NH");
             return (strpos(self::$pid, $output[0]) !== false);
         }
         return false;
@@ -63,33 +80,29 @@ abstract class cron_helper {
             mkdir(NEWSLETTER_LOCK_DIR, 0777, true);
         }
 
-        $lock_file = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
+        $lockfile = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
 
-        if (file_exists($lock_file)) {
-            self::$pid = file_get_contents($lock_file);
+        if (file_exists($lockfile)) {
+            self::$pid = file_get_contents($lockfile);
             if (self::is_running()) {
-                // echo "==".self::$pid."== Already in progress...\n";
                 return false;
             } else {
-                // echo "==".self::$pid."== Previous job died abruptly...\n";
+                \mtrace("==".self::$pid."== Previous job died abruptly...\n");
             }
         }
 
         self::$pid = getmypid();
-        file_put_contents($lock_file, self::$pid);
-        // echo "==".self::$pid."== Lock acquired, processing the job...\n";
+        file_put_contents($lockfile, self::$pid);
         return self::$pid;
     }
 
     public static function unlock() {
 
-        $lock_file = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
+        $lockfile = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;
 
-        if (file_exists($lock_file)) {
-            unlink($lock_file);
+        if (file_exists($lockfile)) {
+            unlink($lockfile);
         }
-
-        // echo "==".self::$pid."== Releasing lock...\n";
         return true;
     }
 }

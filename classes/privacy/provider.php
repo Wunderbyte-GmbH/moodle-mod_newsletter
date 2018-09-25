@@ -23,6 +23,7 @@
  */
 
 namespace mod_newsletter\privacy;
+defined('MOODLE_INTERNAL') || die();
 
 // TODO: Which are needed?
 use core_privacy\local\metadata\collection;

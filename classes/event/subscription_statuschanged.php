@@ -26,21 +26,19 @@ namespace mod_newsletter\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+
 /**
  * The mod_newsletter subscription unsubscribed event class.
  *
- * @property-read array $other {
- *      Extra information about the event.
- *
- *      - int newsletterid: The id of the newsletter which has been unsusbcribed from.
- * }
- *
- * @package    mod_newsletter
- * @since      Moodle 2.7
- * @copyright  2015 David Bogner <info@edulabs.org>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @property-read array $other { Extra information about the event. -
+ * int newsletterid: The id of the newsletter which has been unsusbcribed from. }
+ * @package mod_newsletter
+ * @since Moodle 2.7
+ * @copyright 2015 David Bogner <info@edulabs.org>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscription_statuschanged extends \core\event\base {
+
     /**
      * Init method.
      *
@@ -58,9 +56,9 @@ class subscription_statuschanged extends \core\event\base {
      * @return string
      */
     public function get_description() {
-    	$status = get_string('health_' . $this->other['status'],'mod_newsletter');
+        $status = get_string('health_' . $this->other['status'], 'mod_newsletter');
         return "The user with id '$this->userid' changed the subscription status of the user with id '$this->relateduserid' from the newsletter with the " .
-            "course module id '$this->contextinstanceid' to $status";
+                "course module id '$this->contextinstanceid' to $status";
     }
 
     /**
@@ -78,7 +76,9 @@ class subscription_statuschanged extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS, NEWSLETTER_PARAM_ID => $this->contextinstanceid));
+        return new \moodle_url('/mod/newsletter/view.php',
+                array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,
+                    NEWSLETTER_PARAM_ID => $this->contextinstanceid));
     }
 
     /**
