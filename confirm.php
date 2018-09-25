@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,15 +24,17 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once $CFG->dirroot . '/mod/newsletter/lib.php';
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
-$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_RAW);  // Formatted as:  secret-userid
+$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_RAW); // Formatted as: secret-userid.
 $dataelements = explode('-', $data, 4);
 $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
 $newsletterid = clean_param($dataelements[2], PARAM_INT);
-if(count($dataelements)==4) {
-	if($dataelements[3]=="guest") $guestuser = 1;
+if (count($dataelements) == 4) {
+    if ($dataelements[3] == "guest") {
+        $guestuser = 1;
+    }
 }
 
 $cm = get_coursemodule_from_instance('newsletter', $newsletterid);
@@ -45,24 +46,29 @@ if ($secret && $userid) {
         print_error("Cannot find user!");
     }
     if ($user->confirmed) {
-        redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)), "You are already registered and subscribed!", 5);
-        // TODO: user/editadvanced.php?id=2
+        redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)),
+                "You are already registered and subscribed!", 5);
+        // TODO: user/editadvanced.php?id=2.
     } else {
         if ($secret == $user->secret) {
             global $DB;
             $DB->set_field('user', 'confirmed', 1, array('id' => $user->id));
             complete_user_login($user);
-			if(!isset($guestuser)) {
-				if(!$welcomemessage = $DB->get_field('newsletter', 'welcomemessage', array('id' => $newsletterid))) {
-					$welcomemessage = get_string('welcometonewsletter','mod_newsletter');
-				}
-			} else {			
-				if(!$welcomemessage = $DB->get_field('newsletter', 'welcomemessageguestuser', array('id' => $newsletterid))) {
-					$welcomemessage = get_string('welcometonewsletter_guestsubscription','mod_newsletter');
-				}
-			}
-            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)), $welcomemessage, 15);
-            // TODO: user/editadvanced.php?id=2
+            if (!isset($guestuser)) {
+                if (!$welcomemessage = $DB->get_field('newsletter', 'welcomemessage',
+                        array('id' => $newsletterid))) {
+                    $welcomemessage = get_string('welcometonewsletter', 'mod_newsletter');
+                }
+            } else {
+                if (!$welcomemessage = $DB->get_field('newsletter', 'welcomemessageguestuser',
+                        array('id' => $newsletterid))) {
+                    $welcomemessage = get_string('welcometonewsletter_guestsubscription',
+                            'mod_newsletter');
+                }
+            }
+            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)),
+                    $welcomemessage, 15);
+            // TODO: user/editadvanced.php?id=2.
         } else {
             print_error('The link you followed is invalid.');
         }

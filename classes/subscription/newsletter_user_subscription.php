@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -9,11 +8,11 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * class used by newsletter subscriber selection controls
@@ -22,11 +21,13 @@
  * @copyright 2015 David Bogner
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_newsletter\subscription;
 use user_selector_base;
+defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot . '/user/selector/lib.php');
-require_once ($CFG->dirroot . '/mod/newsletter/lib.php');
+require_once($CFG->dirroot . '/user/selector/lib.php');
+require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
 class mod_newsletter_potential_subscribers extends user_selector_base {
@@ -37,6 +38,10 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
      */
     protected $newsletterid;
 
+    /**
+     *
+     * @var integer
+     */
     protected $courseid;
 
     /**
@@ -83,7 +88,8 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 						LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = u.id AND ns.newsletterid = :newsletterid)
 						WHERE $wherecondition
 						AND ns.id IS NULL";
-        } else { // only enrolled users selectable
+        } else { // Only enrolled users selectable.
+            $eparams = array();
             $eparams['courseid'] = $this->courseid;
             $eparams['now1'] = $eparams['now2'] = strtotime("now");
             $enrolsql = "	SELECT DISTINCT u.id FROM {user} u

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -164,7 +163,6 @@ $string['filteredusers'] = 'Filtered users: ';
 $string['groupby'] = 'Group issues by:';
 
 $string['unsubscribe_link_text'] = 'Click here to unsubscribe';
-$string['unsubscribe_link'] = '<hr /><p><a href="{$a->link}">{$a->text}</a></p>';
 
 $string['publish_in'] = 'To be published in {$a->days} days, {$a->hours} hrs, {$a->minutes} min, {$a->seconds} sec.';
 $string['already_published'] = 'This issue has been published.';
@@ -204,6 +202,8 @@ $string['guestsubscriptionsuccess'] = 'Your email was successfully registered. <
 $string['resubscriptionsuccess'] = 'You was successfully re-subscribed.';
 
 $string['readonline'] = 'View web version';
+$string['send_newsletter'] = 'Send newsletter';
+$string['process_bounces'] = 'Process bounced e-mails';
 $string['subscribercandidatesmatching'] = 'Matching users for ({$a})';
 $string['subscribercandidates'] = 'Potential subscribers';
 $string['subscribedusersmatching'] = 'Subscribed users matching ({$a})';

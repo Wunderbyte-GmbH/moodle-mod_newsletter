@@ -15,23 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Definition of mod_newsletter tasks.
- *
  * @package    mod_newsletter
- * @copyright  2018 michael pollak <moodle@michaelpollak.org>
+ * @subpackage backup-moodle2
+ * @copyright  2018 onwards David Bogner {@link http://www.edulabs.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$tasks = array(
-    array(
-        'classname' => 'mod_newsletter\task\remove_delivered',
-        'blocking' => 0,
-        'minute' => '30',
-        'hour' => '17',
-        'day' => '6',
-        'dayofweek' => '0',
-        'month' => '*'
-    )
-);
+ // This activity has not particular settings but the inherited from the generic
+ // backup_activity_task so here there isn't any class definition, like the ones
+ // existing in /backup/moodle2/backup_settingslib.php (activities section)

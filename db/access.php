@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,153 +24,64 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-
 $capabilities = array(
-    'mod/newsletter:addinstance' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
+    'mod/newsletter:addinstance' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
         'riskbitmask' => RISK_SPAM | RISK_XSS,
-        'legacy' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-    ),
+        'legacy' => array('editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:viewnewsletter' => array(
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'guest' => CAP_ALLOW,
-            'student' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        	'user' => CAP_ALLOW,
-        	'frontpage' => CAP_ALLOW,
-        )
-    ),
+    'mod/newsletter:viewnewsletter' => array('captype' => 'read', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('guest' => CAP_ALLOW, 'student' => CAP_ALLOW, 'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW, 'user' => CAP_ALLOW,
+            'frontpage' => CAP_ALLOW)),
 
-    'mod/newsletter:readissue' => array(
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'guest' => CAP_ALLOW,
-            'student' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        	'user' => CAP_ALLOW,
-        	'frontpage' => CAP_ALLOW,
-        )
-    ),
+    'mod/newsletter:readissue' => array('captype' => 'read', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('guest' => CAP_ALLOW, 'student' => CAP_ALLOW, 'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW, 'user' => CAP_ALLOW,
+            'frontpage' => CAP_ALLOW)),
 
-    'mod/newsletter:createissue' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:createissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:editissue' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:editissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:deleteissue' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:deleteissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:publishissue' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:publishissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:subscribeuser' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:subscribeuser' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:managesubscriptions' => array(
-        'captype' => 'write',
+    'mod/newsletter:managesubscriptions' => array('captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:manageownsubscription' => array(
-        'captype' => 'read',
+    'mod/newsletter:manageownsubscription' => array('captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'student' => CAP_ALLOW,
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-       		'frontpage' => CAP_ALLOW,
-       		'user' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => array('student' => CAP_ALLOW, 'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW, 'frontpage' => CAP_ALLOW,
+            'user' => CAP_ALLOW)),
 
-    'mod/newsletter:editsubscription' => array(
-        'captype' => 'write',
+    'mod/newsletter:editsubscription' => array('captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:deletesubscription' => array(
-        'captype' => 'write',
+    'mod/newsletter:deletesubscription' => array('captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:subscribecohort' => array(
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+    'mod/newsletter:subscribecohort' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)),
 
-    'mod/newsletter:unsubscribecohort' => array(
-        'captype' => 'write',
+    'mod/newsletter:unsubscribecohort' => array('captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
-);
+        'archetypes' => array('editingteacher' => CAP_ALLOW, 'manager' => CAP_ALLOW)));
 
