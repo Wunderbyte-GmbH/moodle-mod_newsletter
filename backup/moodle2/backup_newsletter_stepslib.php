@@ -105,10 +105,9 @@ class backup_newsletter_activity_structure_step extends backup_activity_structur
         $subscription->annotate_ids('user', 'unsubscriberid');
 
         // Define file annotations.
-        $newsletter->annotate_files('mod_newsletter', 'intro', null); // This file area hasn't
-                                                                      // itemid.
-        $newsletter->annotate_files('mod_newsletter', 'stylesheets', 'id', backup::VAR_CONTEXTID);
-        $issue->annotate_files('mod_newsletter', 'attachments', 'id', backup::VAR_CONTEXTID);
+        $newsletter->annotate_files('mod_newsletter', 'intro', null); // This file area has no itemid.
+        $newsletter->annotate_files('mod_newsletter', 'stylesheets', 'id');
+        $issue->annotate_files('mod_newsletter', 'attachments', 'id');
 
         // Return the root element (newsletter), wrapped into standard activity structure.
         return $this->prepare_activity_structure($newsletter);

@@ -66,10 +66,11 @@ class restore_newsletter_activity_structure_step extends restore_activity_struct
 
         $data = (object) $data;
         $oldid = $data->id;
+        // TODO: I don't know how but stylesheetid needs to be updated somehow.
 
         $data->newsletterid = $this->get_new_parentid('newsletter');
         $newitemid = $DB->insert_record('newsletter_issues', $data);
-        $this->set_mapping('newsletter_issue', $oldid, $newitemid);
+        $this->set_mapping('newsletter_issue', $oldid, $newitemid, true); // Fourth parameter is restorefiles.
     }
 
     protected function process_newsletter_subscription($data) {
