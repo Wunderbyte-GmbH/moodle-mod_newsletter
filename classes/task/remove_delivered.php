@@ -43,9 +43,9 @@ class remove_delivered extends \core\task\scheduled_task {
             GROUP BY issueid";
         $issues = $DB->get_records_sql($sql);
         $now = strtotime('now');
-        foreach($issues as $issue) {
+        foreach ($issues as $issue) {
             // Check if they are old enough that nobody cares.
-            if($now > strtotime('+1 month',$issue->publishon)) {
+            if ($now > strtotime('+1 month', $issue->publishon)) {
                 $DB->delete_records('newsletter_deliveries', array ('issueid' => $issue->issueid));
             }
         }
