@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018091900;        // If version == 0 then module will not be installed
+$plugin->version   = 2018111600;        // If version == 0 then module will not be installed
 $plugin->requires  = 2017111300;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
-$plugin->release   = '1.5 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique
+$plugin->release   = '1.6 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique
 $plugin->component = 'mod_newsletter';  // To check on upgrade, that module sits in correct place
