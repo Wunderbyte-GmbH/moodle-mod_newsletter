@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>Handler.php</location>
+        <name>Handler</name>
+        <version>1.14.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>CwsDebug.php</location>
+        <name>CwsDebug</name>
+        <version>1</version>
+        <license>LGPL</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>CwsDump.php</location>
+        <name>CwsDump</name>
+        <version>1</version>
+        <license>LGPL</license>
+        <licenseversion></licenseversion>
+    </library>
+    <library>
+        <location>Models/</location>
+        <name>Models</name>
+        <version>1.14.1</version>
+        <license>MIT</license>
+        <licenseversion></licenseversion>
+    </library>
+</libraries>

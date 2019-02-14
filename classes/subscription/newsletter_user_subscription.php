@@ -72,7 +72,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
      * Candidate users
      *
      * @param string $search
-     * @return array
+     * @return array of available users
      */
     public function find_users($search) {
         global $DB;

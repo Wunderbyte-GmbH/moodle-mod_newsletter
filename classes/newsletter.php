@@ -49,10 +49,7 @@ class newsletter implements renderable {
     /** @var stdClass the newsletter record that contains the settings for this newsletter instance */
     private $instance = null;
 
-    /**
-     *
-     * @var context the context of the course module for this newsletter instance (or just the course if we are creating a new one)
-     */
+    /** @var context of the course module for this newsletter instance (or just the course if we are creating a new one) */
     private $context = null;
 
     /** @var stdClass the course this newsletter instance belongs to */
@@ -1201,7 +1198,7 @@ class newsletter implements renderable {
     public function subscribe_cohort($cohortid, $resubscribeunsubscribed = false) {
         global $DB;
         $instanceid = $this->get_instance()->id;
-        list($enrolledsql, $enrolledparams) = get_enrolledsql($this->get_context());
+        list($enrolledsql, $enrolledparams) = get_enrolled_sql($this->get_context());
         $sql = "SELECT cm.userid
                 FROM {cohort_members} cm
                 WHERE cm.cohortid = :cohortid

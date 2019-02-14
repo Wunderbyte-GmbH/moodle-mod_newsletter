@@ -37,7 +37,6 @@ class process_bounces extends \core\task\scheduled_task {
         $config = get_config('mod_newsletter');
         if ($config->enablebounce == 1) {
             $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($config);
-            $bounceprocessor->open_mode = CWSMBH_OPEN_MODE_IMAP;
             if ($bounceprocessor->openImapRemote()) {
                 $bounceprocessor->process_bounces();
                 $bounceprocessor->update_health();
