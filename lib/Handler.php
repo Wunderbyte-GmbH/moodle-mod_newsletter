@@ -441,7 +441,7 @@ class Handler
         // process mails
         foreach ($cwsMbhResult->getMails() as $cwsMbhMail) {
             /* @var $cwsMbhMail Mail */
-            if ($cwsMbhMail->isProcessed()) {
+            if ($cwsMbhMail->isProcessed() || $cwsMbhMail->getType() != 'bounce') {
                 $cwsMbhResult->getCounter()->incrProcessed();
                 if ($this->enableMove && $this->isMoveProcessMode()) {
                     $this->processMailMove($cwsMbhMail);
@@ -462,11 +462,7 @@ class Handler
         $this->cwsDebug->titleH2('Ending processMails', CwsDebug::VERBOSE_SIMPLE);
         if ($this->isMailboxOpenMode()) {
             $this->cwsDebug->simple('Closing mailbox, and purging messages', CwsDebug::VERBOSE_SIMPLE);
-            if($this->isDeleteProcessMode()) {
-                @imap_close($this->mailboxHandler, CL_EXPUNGE);
-            } else {
-                @imap_close($this->mailboxHandler);
-            }
+            @imap_close($this->mailboxHandler, CL_EXPUNGE);
         }
 
         $this->cwsDebug->dump('Counter result', $cwsMbhResult->getCounter(), CwsDebug::VERBOSE_SIMPLE);

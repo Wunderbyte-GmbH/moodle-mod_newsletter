@@ -83,7 +83,7 @@ class bounceprocessor extends Handler {
         $cwsDebug = new CwsDebug();
         parent::__construct($cwsDebug);
         $this->setDeleteProcessMode();
-        $this->setMaxMessages(100);
+        $this->setMaxMessages(300);
         $this->timecreated = time();
 
         if (isset($conf->host)) {
@@ -186,16 +186,13 @@ class bounceprocessor extends Handler {
                         $bouncedata->issueid = $issueid;
                         $this->bounces[] = $bouncedata;
                     }
-                    /**
-                    $this->processMailMove($mail);
-                    $this->processMailDelete($mail);
-                    $this->result->getCounter()->incrDeleted();
-                    */
                 }
             }
         }
         if (!empty($this->bounces)){
-            $DB->insert_records('newsletter_bounces', $this->bounces);
+            foreach ($this->bounces as $bounce){
+                $DB->insert_record('newsletter_bounces', $bounce, false, true);
+            }
         }
     }
 
