@@ -1049,7 +1049,8 @@ class Handler
             $pregSubject .= 'spam eater|returned mail|undeliverable|returned mail|delivery errors|mail status report|mail system error|';
             $pregSubject .= 'failure delivery|delivery notification|delivery has failed|undelivered mail|returned email|returning message to sender|';
             $pregSubject .= 'returned to sender|message delayed|mdaemon notification|mailserver notification|mail delivery system|nondeliverable mail|';
-            $pregSubject .= 'mail transaction failed)|auto.{0,20}reply|vacation|(out|away|on holiday';
+            $pregSubject .= 'mail transaction failed)|auto.{0,20}reply|vacation|(out|away|on holiday|Unzustellbar|Email konnte nicht zugestellt werden|';
+            $pregSubject .= 'nicht zustellbar|rejected|';
 
             if (isset($arHeader['Subject'])
                     && preg_match('#('.$pregSubject.').*office#i', $arHeader['Subject'])) {
