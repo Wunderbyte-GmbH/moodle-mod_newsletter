@@ -83,7 +83,7 @@ class bounceprocessor extends Handler {
         $cwsDebug = new CwsDebug();
         parent::__construct($cwsDebug);
         $this->setDeleteProcessMode();
-        $this->setMaxMessages(10);
+        $this->setMaxMessages(2);
         $this->timecreated = time();
 
         if (isset($conf->host)) {
@@ -166,7 +166,7 @@ class bounceprocessor extends Handler {
                         $bouncedata->userid = $userid;
                         $bouncedata->statuscode = $recipient->getStatus();
                         // Not used anymore. Same as timecreated. TODO: Remove.
-                        $bouncedata->timereceived = $this->timecreated;
+                        $bouncedata->timereceived = $mail->getDate();
                         // Guesss the issue id the last guess is the latest issue.
                         if (!empty($this->issues)) {
                             foreach ($this->issues as $key => $value) {

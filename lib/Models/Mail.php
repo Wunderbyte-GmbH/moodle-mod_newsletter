@@ -56,6 +56,13 @@ class Mail
     private $type;
 
     /**
+     * Date received according to header
+     *
+     * @var int
+     */
+    private $date;
+
+    /**
      * List of recipients,.
      *
      * @see Recipient
@@ -131,6 +138,16 @@ class Mail
     public function setType($type)
     {
         $this->type = $type;
+    }
+
+    public function setDate($date)
+    {
+        $this->date = $date;
+    }
+
+    public function getDate()
+    {
+        return $this->date;
     }
 
     public function getRecipients()

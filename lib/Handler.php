@@ -504,6 +504,9 @@ class Handler
         // parse header
         $header = self::parseHeader($header);
 
+        // get date
+        $cwsMbhMail->setDate(self::getReceivedDate($header));
+
         // parse body sections
         $bodySections = self::parseBodySections($header, $body);
 
@@ -1069,6 +1072,24 @@ class Handler
         }
 
         return false;
+    }
+
+    /**
+     * Function to fetch the date of the bounce
+     *
+     * @param array $arHeader : the array headers
+     *
+     * @return int unix timestamp
+     */
+    private static function getReceivedDate($arHeader)
+    {
+        $date = time();
+        if (!empty($arHeader)) {
+            if(isset($arHeader['Date'])){
+                $date = strtotime($arHeader['Date']);
+            }
+        }
+        return $date;
     }
 
     /**
