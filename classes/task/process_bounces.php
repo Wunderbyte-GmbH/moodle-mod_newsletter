@@ -33,6 +33,10 @@ class process_bounces extends \core\task\scheduled_task {
         return get_string('process_bounces', 'mod_newsletter');
     }
 
+    /**
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     public function execute() {
         $config = get_config('mod_newsletter');
         if ($config->enablebounce == 1) {

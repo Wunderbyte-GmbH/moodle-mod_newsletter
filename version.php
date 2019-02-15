@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2019021400;        // If version == 0 then module will not be installed
+$plugin->version   = 2019021500;        // If version == 0 then module will not be installed
 $plugin->requires  = 2017111300;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
 $plugin->release   = '1.7 Washington Post';  // Already used names: Der Standard, Le Monde Diplomatique

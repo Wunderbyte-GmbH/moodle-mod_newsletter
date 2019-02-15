@@ -38,8 +38,8 @@ $tasks = array(
     array(
         'classname' => 'mod_newsletter\task\process_bounces',
         'blocking' => 0,
-        'minute' => '0',
-        'hour' => '23',
+        'minute' => '*/5',
+        'hour' => '*',
         'day' => '*',
         'month' => '*',
         'dayofweek' => '*'
