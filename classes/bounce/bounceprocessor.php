@@ -83,7 +83,7 @@ class bounceprocessor extends Handler {
         $cwsDebug = new CwsDebug();
         parent::__construct($cwsDebug);
         $this->setDeleteProcessMode();
-        $this->setMaxMessages(300);
+        $this->setMaxMessages(10);
         $this->timecreated = time();
 
         if (isset($conf->host)) {

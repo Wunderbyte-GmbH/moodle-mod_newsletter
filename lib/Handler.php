@@ -44,7 +44,7 @@ class Handler
     const MAILBOX_CERT_NOVALIDATE = 'novalidate-cert'; // do not validate certificates from TLS/SSL server.
     const MAILBOX_CERT_VALIDATE = 'validate-cert'; // validate certificates from TLS/SSL server.
 
-    const SUFFIX_BOUNCES_MOVE = 'bounces'; // suffix of mailbox or folder to move bounces to.
+    const SUFFIX_BOUNCES_MOVE = 'Trash'; // suffix of mailbox or folder to move bounces to.
 
     const TYPE_BOUNCE = 'bounce'; // message is a bounce
     const TYPE_FBL = 'fbl'; // message is a feedback loop
@@ -441,7 +441,7 @@ class Handler
         // process mails
         foreach ($cwsMbhResult->getMails() as $cwsMbhMail) {
             /* @var $cwsMbhMail Mail */
-            if ($cwsMbhMail->isProcessed() || $cwsMbhMail->getType() != 'bounce') {
+            if ($cwsMbhMail->isProcessed()) {
                 $cwsMbhResult->getCounter()->incrProcessed();
                 if ($this->enableMove && $this->isMoveProcessMode()) {
                     $this->processMailMove($cwsMbhMail);
@@ -455,6 +455,10 @@ class Handler
                 if ($this->purge && $this->isDeleteProcessMode()) {
                     $this->processMailDelete($cwsMbhMail);
                     $cwsMbhResult->getCounter()->incrDeleted();
+                } else {
+                    // Move mails to trash. This is a must, otherwise mailbox gets full.
+                    $this->processMailMove($cwsMbhMail);
+                    $cwsMbhResult->getCounter()->incrMoved();
                 }
             }
         }
@@ -1049,17 +1053,17 @@ class Handler
             $pregSubject .= 'spam eater|returned mail|undeliverable|returned mail|delivery errors|mail status report|mail system error|';
             $pregSubject .= 'failure delivery|delivery notification|delivery has failed|undelivered mail|returned email|returning message to sender|';
             $pregSubject .= 'returned to sender|message delayed|mdaemon notification|mailserver notification|mail delivery system|nondeliverable mail|';
-            $pregSubject .= 'mail transaction failed)|auto.{0,20}reply|vacation|(out|away|on holiday|Unzustellbar|Email konnte nicht zugestellt werden|';
-            $pregSubject .= 'nicht zustellbar|rejected|';
+            $pregSubject .= 'mail transaction failed|auto.{0,20}reply|vacation|out|away|on holiday|unzustellbar|email konnte nicht zugestellt werden|';
+            $pregSubject .= 'nicht zustellbar|rejected|nicht|abwesenheit|mail delayed|delayed mail';
 
             if (isset($arHeader['Subject'])
-                    && preg_match('#('.$pregSubject.').*office#i', $arHeader['Subject'])) {
+                    && preg_match("/({$pregSubject})/i", $arHeader['Subject'])) {
                 return true;
             } elseif (isset($arHeader['Precedence'])
-                    && preg_match('#auto_reply#', $arHeader['Precedence'])) {
+                    && preg_match('/auto_reply/i', $arHeader['Precedence'])) {
                 return true;
             } elseif (isset($arHeader['From'])
-                    && preg_match('#auto_reply#', $arHeader['From'])) {
+                    && preg_match('/auto_reply|subsystem|postmaster|mailer|daemon|mail delivery/i', $arHeader['From'])) {
                 return true;
             }
         }
