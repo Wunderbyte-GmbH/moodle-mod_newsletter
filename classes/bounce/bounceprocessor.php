@@ -26,7 +26,7 @@ namespace mod_newsletter\bounce;
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once ('../../lib.php');
+require_once ("$CFG->dirroot/mod/newsletter/lib.php");
 require_once ("$CFG->dirroot/mod/newsletter/lib/Handler.php");
 require_once ("$CFG->dirroot/mod/newsletter/lib/CwsDebug.php");
 use MailBounceHandler\Handler;
