@@ -38,17 +38,12 @@ $conf = get_config('mod_newsletter');
 echo $OUTPUT->header();
 
 $bounceprocessor = new \mod_newsletter\bounce\bounceprocessor($conf);
-$bounceprocessor->disable_delete = true;
-$bounceprocessor->test_mode = true;
-
 echo \html_writer::tag('h1', 'Testing a single message of the local emls testfolder');
-$bounceprocessor->open_mode = CWSMBH_OPEN_MODE_FILE;
-if ($bounceprocessor->openFile($CFG->dirroot . '/mod/newsletter/emls/bounce_420_001.eml')) {
+if ($bounceprocessor->openEmlFolder($CFG->dirroot . '/mod/newsletter/emls')) {
     $bounceprocessor->testrun();
 }
 
 echo \html_writer::tag('h1', 'Testing settings for the bounce mailbox');
-$bounceprocessor->open_mode = CWSMBH_OPEN_MODE_IMAP;
 if ($bounceprocessor->openImapRemote()) {
     $bounceprocessor->testrun();
 }

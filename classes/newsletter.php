@@ -766,6 +766,7 @@ class newsletter implements renderable {
 
         $columns = array(NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME, NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH,
+            NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS);
 
@@ -871,6 +872,20 @@ class newsletter implements renderable {
         $event->trigger();
 
         return $output;
+    }
+
+    /**
+     * Get number of delivered issues
+     *
+     * @param $userid
+     * @param $issueid
+     * @return int
+     * @throws \dml_exception
+     */
+    public static function get_delivered_issues($userid) {
+        global $DB;
+        $delivered = $DB->count_records('newsletter_deliveries', array('userid' => $userid));
+        return $delivered;
     }
 
     /**
@@ -1090,6 +1105,14 @@ class newsletter implements renderable {
         return $pages;
     }
 
+    /**
+     * Check if issueid exists
+     *
+     * @param $issueid
+     * @return bool
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     private function check_issue_id($issueid) {
         global $DB;
 
@@ -1097,6 +1120,14 @@ class newsletter implements renderable {
                 array('id' => $issueid, 'newsletterid' => $this->get_instance()->id));
     }
 
+    /**
+     * Add newsletter issue
+     *
+     * @param stdClass $data
+     * @return bool|int
+     * @throws \coding_exception
+     * @throws \dml_exception
+     */
     private function add_issue(stdClass $data) {
         global $DB;
         $context = $this->get_context();
@@ -1243,7 +1274,7 @@ class newsletter implements renderable {
     private function get_issues($from = 0, $to = 0) {
         global $DB;
         $total = $DB->count_records_select('newsletter_subscriptions',
-                'newsletterid = ' . $this->get_instance()->id . ' AND health < 2');
+            'newsletterid = ' . $this->get_instance()->id . ' AND health < 2');
 
         $query = "SELECT i.*
                     FROM {newsletter_issues} i
@@ -1256,11 +1287,12 @@ class newsletter implements renderable {
         foreach ($records as $record) {
             $record->cmid = $this->get_course_module()->id;
             $record->numsubscriptions = $total;
-            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED || $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
+            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED ||
+                $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
                 $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries',
-                        array('issueid' => $record->id, 'delivered' => 0));
-                $record->numdelivered = $DB->count_records('newsletter_deliveries',
-                        array('issueid' => $record->id, 'delivered' => 1));
+                    array('issueid' => $record->id, 'delivered' => 0));
+                $record->numdelivered = $DB->count_records_select('newsletter_deliveries', 'issueid = :issueid 
+                                AND delivered > 0', array('issueid' => $record->id));
             } else {
                 $record->numdelivered = 0;
             }

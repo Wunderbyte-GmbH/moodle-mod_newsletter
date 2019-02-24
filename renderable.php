@@ -88,6 +88,9 @@ class newsletter_form implements renderable {
     }
 }
 
+/**
+ * Data for rendering newsletter issue.
+ */
 class newsletter_issue implements renderable {
 
     public $id;

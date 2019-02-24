@@ -282,5 +282,22 @@ function xmldb_newsletter_upgrade($oldversion) {
         // Newsletter savepoint reached.
         upgrade_mod_savepoint(true, 2018082706, 'newsletter');
     }
+
+    // Change delivered field in order to save timestamp instead of bool.
+    if ($oldversion < 2019022300) {
+        // Define field nounsublink to be added to newsletter_subscriptions.
+        $table = new xmldb_table('newsletter_deliveries');
+        $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'newsletterid');
+
+        // Conditionally launch field precision change.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_precision($table, $field);
+        }
+        $sql = "UPDATE {newsletter_deliveries} nd
+                SET nd.delivered = (SELECT ni.publishon FROM {newsletter_issues} ni WHERE ni.id = nd.issueid)";
+        $DB->execute($sql);
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2019022300, 'newsletter');
+    }
     return true;
 }

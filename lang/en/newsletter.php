@@ -97,7 +97,8 @@ $string['default_stylesheet'] = 'Default stylesheet';
 
 $string['header_email'] = 'E-Mail';
 $string['header_name'] = 'Name';
-$string['header_health'] = 'Status (Bounces)';
+$string['header_health'] = 'Status (Delivered / Bounces)';
+$string['header_bounceratio'] = 'Bounce ratio';
 $string['header_actions'] = 'Actions';
 $string['header_timesubscribed'] = 'Subscription date';
 $string['header_timestatuschanged'] = 'Last status change';
@@ -250,4 +251,4 @@ $string['privacy:metadata:newsletter_deliveries'] = 'Represent newsletters we ha
 $string['privacy:metadata:newsletter_deliveries:userid'] = 'User who received the newsletter';
 $string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID of the issue we sent';
 $string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID of the newsletter we sent';
-$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Toggle if it was delivered';
+$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Timestamp of newsletter delivery';

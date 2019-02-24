@@ -697,7 +697,7 @@ class Handler
             if ($this->isImapMailboxExists($moveFolder)) {
                 return imap_mail_move($this->mailboxHandler, $cwsMbhMail->getToken(), $moveFolder);
             }
-        } elseif ($this->isFileOpenMode()) {
+        } elseif ($this->isFileOpenMode() && !$this->isNeutralProcessMode()) {
             $moveFolder = $this->emlFolder.'/'.self::SUFFIX_BOUNCES_MOVE;
             if (!is_dir($moveFolder)) {
                 mkdir($moveFolder);

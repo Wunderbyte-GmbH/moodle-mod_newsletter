@@ -369,6 +369,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
                     $content = get_string('header_health', 'mod_newsletter');
                     break;
+                case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO:
+                    $content = get_string('header_bounceratio', 'mod_newsletter');
+                    break;
                 case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
                     $content = get_string('header_timesubscribed', 'mod_newsletter');
                     break;
@@ -401,9 +404,14 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                         $content = html_writer::link($profileurl, $name);
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
+
+                        $deliveries = mod_newsletter\newsletter::get_delivered_issues($subscription->userid);
                         $content = get_string("health_{$subscription->health}", 'newsletter');
-                        $content .= " (" . $this->newsletter_count_bounces(
+                        $content .= " ($deliveries / " . $this->newsletter_count_bounces(
                                 $subscription->newsletterid, $subscription->userid) . ")";
+                        break;
+                    case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO:
+                        $content = mod_newsletter\bounce\bounceprocessor::calculate_bounceratio($subscription->userid);
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
                         $content = userdate($subscription->timesubscribed,
@@ -453,6 +461,13 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         return html_writer::table($table);
     }
 
+    /**
+     * Render publish countdown
+     *
+     * @param newsletter_publish_countdown $countdown
+     * @return string
+     * @throws coding_exception
+     */
     public function render_newsletter_publish_countdown(newsletter_publish_countdown $countdown) {
         $output = '';
         $output .= html_writer::start_tag('span');
@@ -480,10 +495,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     private function newsletter_count_bounces($newsletterid, $userid) {
         global $DB;
 
-        $bounces = 0;
         $sql = "SELECT count(*)
-		        FROM {newsletter_issues} ni
-				INNER JOIN {newsletter_bounces} nb on ni.id = nb.issueid
+		        FROM {newsletter_bounces} nb
+				INNER JOIN {newsletter_issues} ni on ni.id = nb.issueid
 		        WHERE ni.newsletterid = :newsletterid
 		        AND nb.userid = :userid";
         $params = array('newsletterid' => $newsletterid, 'userid' => $userid);

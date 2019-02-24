@@ -110,8 +110,8 @@ class bounceprocessor extends Handler {
     }
 
     /**
-     * Process mails and show results in the browser does not save or delete anything. just for information This can be used to test the imap/pop3
-     * settings.
+     * Process mails and show results in the browser does not save or delete anything. just for information This can be used to
+     * test the imap/pop3 settings.
      */
     public function testrun() {
         $cwsDebug = new CwsDebug();
@@ -134,7 +134,7 @@ class bounceprocessor extends Handler {
         // TODO: threshhold should be a reasonable time between publishing date and a date where no bounces are expected anymore.
         $threshold = $this->timecreated - 5 * 86400;
         $this->issues = $DB->get_records_select('newsletter_issues', 'publishon > :threshold',
-                array('threshold' => $threshold), 'id', 'id, title');
+            array('threshold' => $threshold), 'id', 'id, title');
         $this->issueids = array_keys($this->issues);
         $this->result = $this->processMails();
 
@@ -180,8 +180,8 @@ class bounceprocessor extends Handler {
                             }
                         } else {
                             $issueid = $DB->get_field_sql(
-                                    'SELECT id, MAX(publishon) FROM {newsletter_issues} WHERE publishon < :time',
-                                    array('time' => $this->timecreated));
+                                'SELECT id, MAX(publishon) FROM {newsletter_issues} WHERE publishon < :time',
+                                array('time' => $this->timecreated));
                         }
                         $bouncedata->issueid = $issueid;
                         $this->bounces[] = $bouncedata;
@@ -189,14 +189,12 @@ class bounceprocessor extends Handler {
                 }
             }
         }
-        if (!empty($this->bounces)){
-            foreach ($this->bounces as $bounce){
+        if (!empty($this->bounces)) {
+            foreach ($this->bounces as $bounce) {
                 $DB->insert_record('newsletter_bounces', $bounce, false, true);
             }
         }
     }
-
-
 
     /**
      * Update the health satus of the subscribers. Always take into account the ten last mails sent. If a person receives
@@ -206,30 +204,8 @@ class bounceprocessor extends Handler {
     public function update_health() {
         global $DB;
         foreach ($this->bounces as $bounce) {
-            // Number of latest newsletters to take into account.
-            $newsletternumber = 15;
-            // Go one year back for the bounces.
-            $since = time() - 31556926;
-            $bounces = $DB->count_records_select('newsletter_bounces', 'userid = :userid AND timecreated > :since',
-                    array('userid' => $bounce->userid, 'since' => $since));
-            $hardbounces = $DB->count_records_select('newsletter_bounces',
-                    'userid = :userid AND type = :hardbounces AND timecreated > :since',
-                    array('userid' => $bounce->userid, 'hardbounces' => NEWSLETTER_BOUNCE_HARD, 'since' => $since));
-            $sent = $DB->get_record_sql(
-                    'SELECT SUM(sentnewsletters) as sent FROM {newsletter_subscriptions} WHERE userid = :userid',
-                    array('userid' => $bounce->userid));
-            // Start with $newsletternumber to have a bounce ratio for the first mails sent under the delete threshold.
-            if($sent->sent < $newsletternumber) {
-                $sent->sent = $newsletternumber;
-            }
 
-            if ($bounces > 0) {
-                // Hardbounces have more weight in calculation of bounce ratio. So adding to all bounces the hardbounces again.
-                $bounceratio = ($hardbounces + $bounces) / $sent->sent;
-            } else {
-                $bounceratio = 0;
-            }
-
+            $bounceratio = $this->calculate_bounceratio($bounce->userid);
             switch ($bounceratio) {
                 case $bounceratio > 0.3:
                     $health = NEWSLETTER_SUBSCRIBER_STATUS_BLACKLISTED;
@@ -245,15 +221,50 @@ class bounceprocessor extends Handler {
             }
 
             $subscriptions = $DB->get_records_select('newsletter_subscriptions',
-                    'userid = :userid AND ( health = :ok OR health = :problematic )',
-                    array('userid' => $bounce->userid, 'ok' => NEWSLETTER_SUBSCRIBER_STATUS_OK,
-                        'problematic' => NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC));
+                'userid = :userid AND ( health = :ok OR health = :problematic )',
+                array('userid' => $bounce->userid, 'ok' => NEWSLETTER_SUBSCRIBER_STATUS_OK,
+                    'problematic' => NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC));
             foreach ($subscriptions as $subcription) {
                 if ($subcription->health != $health) {
                     $DB->set_field('newsletter_subscriptions', 'health', $health,
-                            array('id' => $subcription->id));
+                        array('id' => $subcription->id));
                 }
             }
         }
+    }
+
+    /**
+     * Calculate the bounceratio for a user by providing the userid
+     *
+     * @param int $userid
+     * @return float|int
+     */
+    public static function calculate_bounceratio($userid) {
+        global $DB;
+        // Number of latest newsletters to take into account.
+        $newsletternumber = 15;
+        // Go one year back for the bounces.
+        $since = time() - 31556926;
+        $bounces = $DB->count_records_select('newsletter_bounces', 'userid = :userid AND timecreated > :since',
+            array('userid' => $userid, 'since' => $since));
+        $hardbounces = $DB->count_records_select('newsletter_bounces',
+            'userid = :userid AND type = :hardbounces AND timecreated > :since',
+            array('userid' => $userid, 'hardbounces' => NEWSLETTER_BOUNCE_HARD, 'since' => $since));
+        $sent = $DB->count_records_select('newsletter_deliveries', ' userid = :userid AND delivered > :since',
+            array('userid' => $userid, 'since' => $since));
+        // Start with $newsletternumber to have a bounce ratio for the first mails sent under the delete threshold.
+        if ($sent < $newsletternumber) {
+            $sent = $newsletternumber;
+        } else if ($sent > 2 * $newsletternumber) {
+            $sent = 2 * $newsletternumber;
+        }
+
+        if ($bounces > 0) {
+            // Hardbounces have more weight in calculation of bounce ratio. So adding to all bounces the hardbounces again.
+            $bounceratio = ($hardbounces + $bounces) / $sent;
+        } else {
+            $bounceratio = 0;
+        }
+        return $bounceratio;
     }
 }

@@ -238,7 +238,7 @@ class send_newsletter extends \core\task\scheduled_task {
                 if ($debugoutput) {
                     echo ($result ? "OK" : "FAILED") . "!\n";
                 }
-                $DB->set_field('newsletter_deliveries', 'delivered', 1, array('id' => $deliveryid));
+                $DB->set_field('newsletter_deliveries', 'delivered', time(), array('id' => $deliveryid));
                 $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";
                 $params = array('newsletterid' => $issue->newsletterid,
