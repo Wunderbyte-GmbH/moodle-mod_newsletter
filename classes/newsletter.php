@@ -1291,8 +1291,8 @@ class newsletter implements renderable {
                 $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
                 $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries',
                     array('issueid' => $record->id, 'delivered' => 0));
-                $record->numdelivered = $DB->count_records_select('newsletter_deliveries', 'issueid = :issueid 
-                                AND delivered > 0', array('issueid' => $record->id));
+                $record->numdelivered = $DB->count_records_select('newsletter_deliveries',
+                    'issueid = :issueid AND delivered > 0', array('issueid' => $record->id));
             } else {
                 $record->numdelivered = 0;
             }
@@ -1778,9 +1778,10 @@ class newsletter implements renderable {
             INNER JOIN {user} u ON ns.userid = u.id
             WHERE ns.newsletterid = :newsletterid AND ";
         } else {
-            $sql = "SELECT ns.*, $allnamefields
+            $sql = "SELECT DISTINCT ns.*, {$allnamefields}, COUNT(DISTINCT nb.id) AS bounces
             FROM {newsletter_subscriptions} ns
             INNER JOIN {user} u ON ns.userid = u.id
+            LEFT JOIN {newsletter_bounces} nb ON nb.userid = u.id
             WHERE ns.newsletterid = :newsletterid AND ";
         }
 
@@ -1795,6 +1796,9 @@ class newsletter implements renderable {
         if ($getparams['status'] != 10) {
             $sql .= " AND ns.health = :status";
             $params += array('status' => $getparams['status']);
+        }
+        if (!$count) {
+            $sql .= " GROUP BY u.id ";
         }
         if ($getparams['orderby'] != '') {
             $sql .= " ORDER BY u." . $getparams['orderby'];

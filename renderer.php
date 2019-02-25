@@ -404,11 +404,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                         $content = html_writer::link($profileurl, $name);
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH:
-
-                        $deliveries = mod_newsletter\newsletter::get_delivered_issues($subscription->userid);
                         $content = get_string("health_{$subscription->health}", 'newsletter');
-                        $content .= " ($deliveries / " . $this->newsletter_count_bounces(
-                                $subscription->newsletterid, $subscription->userid) . ")";
+                        $content .= " ($subscription->sentnewsletters / $subscription->bounces)";
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO:
                         $content = mod_newsletter\bounce\bounceprocessor::calculate_bounceratio($subscription->userid);

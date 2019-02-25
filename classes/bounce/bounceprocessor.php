@@ -158,7 +158,7 @@ class bounceprocessor extends Handler {
                         $bouncedata = new \stdClass();
                         $bouncedata->timecreated = $this->timecreated;
                         $bouncetype = $recipient->getBounceType();
-                        if ($bouncetype == 'failed' || $bouncetype == 'hard') {
+                        if ($bouncetype == 'blocked' || $bouncetype == 'hard') {
                             $bouncedata->type = NEWSLETTER_BOUNCE_HARD;
                         } else {
                             $bouncedata->type = NEWSLETTER_BOUNCE_SOFT;
