@@ -89,7 +89,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         }
         $output .= html_writer::end_tag('ul');
 
-        if ($numberofpages > 1) {
+        if ((count($data) / $nbelemperpage) > 1) {
             $output .= html_writer::start_tag('ul', array('class' => 'pagination'));
             $url = new moodle_url('view.php', array(
                     'id' => $courseid,
