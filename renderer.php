@@ -81,6 +81,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $courseid = $_GET['id'];
         $page = isset($_GET['page']) ? intval($_GET['page'] - 1) : 0;
         $data = (array)$sectionlist->sections;
+        $numberofpagespt = count($data) / $nbelemperpage + 1;
         $numberofpages = intval(count($data) / $nbelemperpage) + 1;
         foreach (array_slice($data, $page * $nbelemperpage, $nbelemperpage) as $section) {
             $output .= html_writer::start_tag('li');
@@ -90,6 +91,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $output .= html_writer::end_tag('ul');
 
         if ((count($data) / $nbelemperpage) > 1) {
+
             $output .= html_writer::start_tag('ul', array('class' => 'pagination'));
             $url = new moodle_url('view.php', array(
                     'id' => $courseid,
@@ -98,15 +100,20 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $output .= "<li class='page-item'><a href=". $url ." class='page-link'>" .
                     get_string('page_previous', 'newsletter') . "</a></li>";
             for ($i = 1; $i <= $numberofpages; $i++) {
-                $url = new moodle_url('view.php', array(
-                        'id' => $courseid,
-                        'page' => $i
-                ));
-                $output .= "<li class='page-item'><a href=". $url ." class='page-link'>$i</a></li>";
+                if((($numberofpagespt / $numberofpages) == 1 ) && ($i == $numberofpages)) {
+                    break;
+                }
+                else {
+                    $url = new moodle_url('view.php', array(
+                            'id' => $courseid,
+                            'page' => $i
+                    ));
+                    $output .= "<li class='page-item'><a href=" . $url . " class='page-link'>$i</a></li>";
+                }
             }
             $url = new moodle_url('view.php', array(
                     'id' => $courseid,
-                    'page' => min($page + 2, $numberofpages )
+                    'page' => min($page + 2, $numberofpages - 1 )
             ));
             $output .= "<li class='page-item'><a href=". $url ." class='page-link'>" .
                     get_string('page_next', 'newsletter') . "</a></li>";
