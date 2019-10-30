@@ -86,7 +86,7 @@
 
 /* line 2, sass/partials/components/_issue-list.scss */
 .mod_newsletter__issue-list ul {
-  list-style: none;
+  list-style: none !important;
   margin: 0;
   padding: 0;
 }
@@ -122,11 +122,15 @@
   padding: 0;
 }
 /* line 38, sass/partials/components/_issue-list.scss */
-.mod_newsletter__section-list ul li {
+.mod_newsletter__section-list ul:not(.pagination) li {
   margin: 0.25em;
   padding: 0.5em;
 }
 
+.pagination {
+  margin: 0.5em !important;
+  padding: 0.5em !important;
+}
 /* line 45, sass/partials/components/_issue-list.scss */
 .mod_newsletter__section {
   border: 1px solid lightgray;
