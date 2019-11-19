@@ -364,6 +364,32 @@ function newsletter_get_extra_capabilities() {
     return array();
 }
 
+// Find the base url from $_GET variables, for print_paging_bar.
+function newsletter_get_baseurl() {
+    $getcopy  = $_GET;
+
+    unset($getcopy['blogpage']);
+
+    if (!empty($getcopy)) {
+        $first = false;
+        $querystring = '';
+
+        foreach ($getcopy as $var => $val) {
+            if (!$first) {
+                $first = true;
+                $querystring .= "?$var=$val";
+            } else {
+                $querystring .= '&amp;'.$var.'='.$val;
+                $hasparam = true;
+            }
+        }
+    } else {
+        $querystring = '?';
+    }
+
+    return strip_querystring(qualified_me()) . $querystring;
+
+}
 // File API.
 
 /**
