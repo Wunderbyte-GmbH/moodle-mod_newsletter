@@ -88,7 +88,7 @@ if ($newsletter->is_subscribed($user->id)) {
             $a = new stdClass();
             $a->firstname = $user->firstname;
             $a->lastname = $user->lastname;
-            $a->newsletterurl = $newsletter->get_url()->out();
+            $a->newsletterurl = $newsletter->get_subsribe_url()->out();
             $a->newslettertitle = $newsletter->get_instance()->name;
             $unsubsubj = get_string('unsubscribe_mail_subj', 'newsletter');
             $unsubtext = get_string('unsubscribe_mail_text', 'newsletter', $a); // TODO: Make this

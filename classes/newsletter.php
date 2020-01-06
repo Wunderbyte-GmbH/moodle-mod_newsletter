@@ -336,16 +336,14 @@ class newsletter implements renderable {
                     $output = $this->display_resubscribe_form($params);
                 } else {
                     $this->subscribe();
-                    $url = new moodle_url('/mod/newsletter/view.php',
-                            array('id' => $this->get_course_module()->id));
+                    $url = $this->get_url();
                     redirect($url);
                 }
                 break;
             case NEWSLETTER_ACTION_UNSUBSCRIBE:
                 require_capability('mod/newsletter:manageownsubscription', $this->context);
                 $this->unsubscribe($this->get_subid());
-                $url = new moodle_url('/mod/newsletter/view.php',
-                        array('id' => $this->get_course_module()->id));
+                $url = $this->get_url();
                 redirect($url);
                 break;
             case NEWSLETTER_ACTION_GUESTSUBSCRIBE:
@@ -391,8 +389,7 @@ class newsletter implements renderable {
             $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
             $a = $data->email;
             $output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter', $a));
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array('id' => $this->get_course_module()->id));
+            $url = $this->get_url();
             $output .= html_writer::link($url, get_string('continue'),
                     array('class' => 'btn mdl-align'));
             return $output;
@@ -434,8 +431,7 @@ class newsletter implements renderable {
                 $output .= html_writer::div('&nbsp;');
                 $output .= html_writer::div(get_string('resubscriptionsuccess', 'mod_newsletter'));
                 $output .= html_writer::div('&nbsp;');
-                $url = new moodle_url('/mod/newsletter/view.php',
-                        array('id' => $this->get_course_module()->id));
+                $url = $this->get_url();
                 $output .= html_writer::link($url, get_string('continue'),
                         array('class' => 'btn mdl-align'));
                 $output .= $renderer->render_footer();
@@ -477,9 +473,7 @@ class newsletter implements renderable {
         if (has_capability('mod/newsletter:manageownsubscription', $this->context) &&
                 $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             if (!$this->is_subscribed()) {
-                $url = new moodle_url('/mod/newsletter/view.php',
-                        array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                            NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
+                $url = $this->get_subsribe_url();
                 $text = get_string('subscribe', 'mod_newsletter');
                 $output .= html_writer::link($url, $text);
             } else {
@@ -611,8 +605,7 @@ class newsletter implements renderable {
         }
 
         if ($params[NEWSLETTER_PARAM_CONFIRM] != NEWSLETTER_CONFIRM_UNKNOWN) {
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id));
+            $url = $this->get_url();
             if ($params[NEWSLETTER_PARAM_CONFIRM] == NEWSLETTER_CONFIRM_YES) {
                 $this->delete_issue($params[NEWSLETTER_PARAM_ISSUE]);
                 redirect($url);
@@ -715,9 +708,7 @@ class newsletter implements renderable {
             } else {
                 $this->update_issue($data);
             }
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array('id' => $this->get_course_module()->id));
-            redirect($url);
+            redirect($this->get_url());
         }
 
         $output = '';
@@ -1481,10 +1472,21 @@ class newsletter implements renderable {
      * Returns the base url for the newsletter instance
      *
      * @return moodle_url
+     * @throws \moodle_exception
      */
     public function get_url() {
-        $url = new moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->cmid));
+        return new moodle_url('/mod/newsletter/view.php',
+                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id));
+    }
+
+    /**
+     * Returns the url for the subscribing to the newsletter
+     *
+     * @return moodle_url
+     */
+    public function get_subsribe_url() {
+        $url = $this->get_url();
+        $url->param(NEWSLETTER_PARAM_ACTION,NEWSLETTER_ACTION_SUBSCRIBE);
         return $url;
     }
 
