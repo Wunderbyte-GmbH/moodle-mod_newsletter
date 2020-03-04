@@ -423,7 +423,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                         $content .= " ($subscription->sentnewsletters / $subscription->bounces)";
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO:
-                    // TODO: Improve bounce ratio. mod_newsletter\bounce\bounceprocessor::calculate_bounceratio($subscription->userid.
+                        // TODO: Improve bounce ratio. mod_newsletter\bounce\bounceprocessor::calculate_bounceratio($subscription->userid.
                         $content = 0;
                         break;
                     case NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED:
