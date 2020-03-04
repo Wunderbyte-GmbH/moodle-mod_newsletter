@@ -92,6 +92,8 @@ $string['config_service_option'] = 'The service options (none, tls, notls, ssl)'
 $string['config_port'] = 'The port to access your mailbox ; default 143, other common choices are 110 (pop3), 995 (gmail)';
 $string['config_bounce_enable'] = 'Enable bounce processing for the newsletter module';
 $string['config_bounce_email'] = 'E-Mail address that should receive the bounces. Make sure, that this address is only used for handling bounce mails.';
+$string['config_sendinglimit'] = 'Limit E-Mails per execution';
+$string['config_sendinglimit_desc'] = 'Limits how many E-Mails are sent every time cron runs to avoid spam.';
 
 $string['default_stylesheet'] = 'Default stylesheet';
 

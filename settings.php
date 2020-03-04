@@ -36,6 +36,21 @@ $settings->add(
                 get_string('config_send_notifications_desc', 'mod_newsletter'), 0));
 
 $options = array();
+for ($i = 10; $i <= 100; $i = $i + 10) {
+    $options[$i] = $i;
+}
+$options[150] = 150;
+$options[200] = 200;
+$options[300] = 300;
+$options[500] = 500;
+$options[1000] = 1000;
+
+$settings->add(
+        new admin_setting_configselect('mod_newsletter/sendinglimit',
+                get_string('config_sendinglimit', 'mod_newsletter'), get_string('config_sendinglimit_desc', 'mod_newsletter'), 50,
+                $options));
+
+$options = array();
 $day = 60 * 60 * 24;
 for ($i = 1; $i < 8; $i++) {
     $options[$day * $i] = $i;

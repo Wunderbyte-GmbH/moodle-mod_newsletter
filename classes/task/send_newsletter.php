@@ -81,6 +81,12 @@ class send_newsletter extends \core\task\scheduled_task {
             mtrace("Collecting data...\n");
         }
 
+        // We add this variable and just count down to 0.
+        $sendinglimit = 50;
+        if (isset($config->sendinglimit)) {
+            $sendinglimit = $config->sendinglimit;
+        }
+
         $nounsublink = array(); // Store userids that don't receive unsublinks in an array.
         $issues = $DB->get_records('newsletter_issues',
                 array('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN));
@@ -248,6 +254,12 @@ class send_newsletter extends \core\task\scheduled_task {
                         array('issueid' => $issue->id, 'delivered' => 0))) {
                     $DB->set_field('newsletter_issues', 'delivered',
                             NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+                }
+
+                // Count how many mails we sent here.
+                $sendinglimit--;
+                if ($sendinglimit <= 0) {
+                    break 2; // Break delivery and issues loops.
                 }
             }
         }
