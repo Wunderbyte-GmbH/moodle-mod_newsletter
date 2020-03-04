@@ -26,7 +26,6 @@ env:
 # PHP 5.4, one build will be created using PHP 5.4 and pgsql.  In addition, another
 # build will be created using PHP 5.4 and mysqli.
  matrix:
-  - DB=pgsql
   - DB=mysqli
 
 # This section defines who's going to receive the notifications!
