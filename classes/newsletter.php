@@ -1486,7 +1486,7 @@ class newsletter implements renderable {
      */
     public function get_subsribe_url() {
         $url = $this->get_url();
-        $url->param(NEWSLETTER_PARAM_ACTION,NEWSLETTER_ACTION_SUBSCRIBE);
+        $url->param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_SUBSCRIBE);
         return $url;
     }
 
@@ -1502,11 +1502,11 @@ class newsletter implements renderable {
      * @param string $status
      * @param boolean $resubscribeunsubscribed true to resubscribe unsubscribed users
      * @param integer $instanceid only needed when newsletter instance is created
-     * @return boolean|number <boolean, number> subscriptionid for new subscription false when user is subscribed and status remains unchanged true
-     *         when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
+     * @return boolean|number <boolean, number> subscriptionid for new subscription false when user is subscribed
+     *  and status remains unchanged true when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
      */
-    public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK, $resubscribeunsubscribed = false,
-            $instanceid = 0) {
+    public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK,
+        $resubscribeunsubscribed = false, $instanceid = 0) {
         global $DB, $USER;
         $now = time();
 
@@ -1836,7 +1836,8 @@ class newsletter implements renderable {
                     'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
         }
 
-        if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
                 $this->subscribe($user->id, true, NEWSLETTER_SUBSCRIBER_STATUS_OK, false,
