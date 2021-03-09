@@ -95,6 +95,8 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="userid-delivered" UNIQUE="false" FIELDS="userid, delivered"/>
+        <INDEX NAME="issueid-delivered" UNIQUE="false" FIELDS="issueid, delivered"/>
       </INDEXES>
     </TABLE>
   </TABLES>

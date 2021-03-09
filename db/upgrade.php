@@ -299,5 +299,17 @@ function xmldb_newsletter_upgrade($oldversion) {
         // Newsletter savepoint reached.
         upgrade_mod_savepoint(true, 2019022300, 'newsletter');
     }
+
+    if ($oldversion < 2021030900) {
+
+        $table = new xmldb_table('newsletter_deliveries');
+        // Conditionally add index.
+        $table->add_index('userid-delivered', XMLDB_INDEX_NOTUNIQUE, ['userid', 'delivered']);
+        $table->add_index('issueid-delivered', XMLDB_INDEX_NOTUNIQUE, ['issueid', 'delivered']);
+
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2021030900, 'newsletter');
+    }
+
     return true;
 }

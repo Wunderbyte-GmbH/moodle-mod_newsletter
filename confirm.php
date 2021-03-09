@@ -23,10 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__, 3) .'/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
-$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_RAW); // Formatted as: secret-userid.
+$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_ALPHANUMEXT); // Formatted as: secret-userid.
 $dataelements = explode('-', $data, 4);
 $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
@@ -50,7 +50,7 @@ if ($secret && $userid) {
                 "You are already registered and subscribed!", 5);
         // TODO: user/editadvanced.php?id=2.
     } else {
-        if ($secret == $user->secret) {
+        if ($secret === $user->secret) {
             global $DB;
             $DB->set_field('user', 'confirmed', 1, array('id' => $user->id));
             complete_user_login($user);
