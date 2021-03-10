@@ -92,9 +92,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $paginbarhtml = $this->render($pagingbar);
 
         $start = $page * $perpage;
-        $output .= html_writer::start_tag('ul');
+        $output .= html_writer::start_tag('ul', ['class' => 'list-group']);
         foreach (array_slice($data, $start, $perpage) as $section) {
-            $output .= html_writer::start_tag('li');
+            $output .= html_writer::start_tag('li', ['class' => 'list-group-item']);
             $output .= $this->render($section);
             $output .= html_writer::end_tag('li');
         }
