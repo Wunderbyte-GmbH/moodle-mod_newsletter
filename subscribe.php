@@ -14,8 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__, 3) .'/config.php');
+require_once(__DIR__ . '/lib.php');
 $id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 $user = optional_param(NEWSLETTER_PARAM_USER, 0, PARAM_INT);
 $confirm = optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN, PARAM_INT);
@@ -29,7 +29,7 @@ if ($user) {
     $sub = $DB->record_exists_select('newsletter_subscriptions', $select);
     $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
     // If the passed secret matches the secret connected to the user it is a guest subscription.
-    if ($sub && $secret && $secret == $user->secret) {
+    if ($sub && $secret && $secret === $user->secret) {
         if ($confirm == NEWSLETTER_CONFIRM_YES) {
             $DB->set_field('user', 'confirmed', 1, array('id' => $user));
             redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)),
@@ -62,7 +62,7 @@ if ($newsletter->is_subscribed($user->id)) {
     if ($confirm == NEWSLETTER_CONFIRM_UNKNOWN) {
         echo $OUTPUT->header();
         // Post the secret to the confirm step.
-        if ($secret == md5($user->id . "+" . $user->firstaccess)) {
+        if ($secret === md5($user->id . "+" . $user->firstaccess)) {
             echo $OUTPUT->confirm(
                     get_string('unsubscribe_question', 'newsletter',
                             array('name' => $newsletter->get_instance()->name,
@@ -81,7 +81,7 @@ if ($newsletter->is_subscribed($user->id)) {
     } else if ($confirm == NEWSLETTER_CONFIRM_YES) {
         // Check if secret value is correct.
         // NOTE: this makes all older unsub links invalid.
-        if ($secret == md5($user->id . "+" . $user->firstaccess)) {
+        if ($secret === md5($user->id . "+" . $user->firstaccess)) {
             $subscriptionid = $newsletter->get_subid($user->id);
             $newsletter->unsubscribe($subscriptionid);
             // Send mail to user just to be sure.
