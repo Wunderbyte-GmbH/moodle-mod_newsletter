@@ -499,6 +499,7 @@ class newsletter implements renderable {
         }
 
         $issuelist = $this->prepare_issue_list('', $params[NEWSLETTER_PARAM_GROUP_BY]);
+        $output .= $this->get_course_module()->intro;
         if ($issuelist) {
             $output .= $renderer->render($issuelist);
         } else {

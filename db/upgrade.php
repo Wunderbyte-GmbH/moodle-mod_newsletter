@@ -311,5 +311,26 @@ function xmldb_newsletter_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021030900, 'newsletter');
     }
 
+    if ($oldversion < 2021052600) {
+        $table = new xmldb_table('newsletter_deliveries');
+        // Conditionally rename field.
+        $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'newsletterid');
+        // Conditionally add field.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, "deliverytime");
+        }
+
+        $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'newsletterid');
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $sql = "UPDATE {newsletter_deliveries} SET delivered = 1 WHERE deliverytime > 0";
+        $DB->execute($sql);
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2021052600, 'newsletter');
+    }
+
     return true;
 }

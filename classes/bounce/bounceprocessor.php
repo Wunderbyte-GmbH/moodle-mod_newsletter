@@ -250,7 +250,7 @@ class bounceprocessor extends Handler {
         $hardbounces = $DB->count_records_select('newsletter_bounces',
             'userid = :userid AND type = :hardbounces AND timecreated > :since',
             array('userid' => $userid, 'hardbounces' => NEWSLETTER_BOUNCE_HARD, 'since' => $since));
-        $sent = $DB->count_records_select('newsletter_deliveries', ' userid = :userid AND delivered > :since',
+        $sent = $DB->count_records_select('newsletter_deliveries', ' userid = :userid AND deliverytime > :since',
             array('userid' => $userid, 'since' => $since));
         // Start with $newsletternumber to have a bounce ratio for the first mails sent under the delete threshold.
         if ($sent < $newsletternumber) {

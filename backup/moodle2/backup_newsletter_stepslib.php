@@ -58,7 +58,7 @@ class backup_newsletter_activity_structure_step extends backup_activity_structur
 
         $deliveries = new backup_nested_element('deliveries');
         $delivery = new backup_nested_element('delivery', array('id'),
-                array('userid', 'delivered'));
+                array('userid', 'deliverytime', 'delivered'));
 
         // Build the tree.
 
