@@ -528,22 +528,29 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
         return false;
     }
 
-    $issueid = (int) array_shift($args);
+    $itemid = (int) array_shift($args);
 
-    $fs = get_file_storage();
-    $relativepath = implode('/', $args);
-    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEET) {
-        if ($newsletter->id != $issueid) {
-            return false;
-        }
-        $fullpath = "/$context->id/mod_newsletter/$filearea/$issueid/$relativepath";
+    $filename = array_pop($args); // The last item in the $args array.
+    if (!$args) {
+        $filepath = '/'; // $args is empty => the path is '/'
     } else {
-        $fullpath = "/$context->id/mod_newsletter/$filearea/$issueid/$relativepath";
+        $filepath = '/'.implode('/', $args).'/'; // $args contains elements of the filepath
     }
 
-    $file = $fs->get_file_by_hash(sha1($fullpath));
-    if (!$file || $file->is_directory()) {
-        return false;
+    $relativepath = implode('/', $args);
+    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEET) {
+        if ($newsletter->id != $itemid) {
+            return false;
+        }
+        $filepath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
+    } else {
+        $filepath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'mod_newsletter', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false; // The file does not exist.
     }
 
     send_stored_file($file, 0, 0, true, $options);

@@ -463,7 +463,9 @@ class newsletter implements renderable {
         $output .= $renderer->render(
                 new \newsletter_header($this->get_instance(), $this->get_context(), false,
                         $this->get_course_module()->id));
-        $output .= format_text($this->get_instance()->intro, $this->get_instance()->introformat);
+        $str = file_rewrite_pluginfile_urls($this->get_instance()->intro, 'pluginfile.php',
+            $this->get_context()->id, 'mod_newsletter', 'intro', null);
+        $output .= format_text($str, $this->get_instance()->introformat);
         $output .= $renderer->render(
                 new \newsletter_main_toolbar($this->get_course_module()->id,
                         $params[NEWSLETTER_PARAM_GROUP_BY],
