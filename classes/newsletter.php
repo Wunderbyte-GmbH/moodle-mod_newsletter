@@ -494,7 +494,7 @@ class newsletter implements renderable {
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary'));
+                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary btn-lg w-100 mt-3'));
             }
         }
 
