@@ -537,22 +537,11 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
         $filepath = '/'.implode('/', $args).'/'; // $args contains elements of the filepath
     }
 
-    $relativepath = implode('/', $args);
-    if ($filearea == NEWSLETTER_FILE_AREA_STYLESHEET) {
-        if ($newsletter->id != $itemid) {
-            return false;
-        }
-        $filepath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
-    } else {
-        $filepath = "/$context->id/mod_newsletter/$filearea/$itemid/$relativepath";
-    }
-
     $fs = get_file_storage();
     $file = $fs->get_file($context->id, 'mod_newsletter', $filearea, $itemid, $filepath, $filename);
     if (!$file) {
         return false; // The file does not exist.
     }
-
     send_stored_file($file, 0, 0, true, $options);
 }
 
