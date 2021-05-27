@@ -494,12 +494,12 @@ class newsletter implements renderable {
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, array('class' => 'btn btn-default'));
+                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary'));
             }
         }
 
         $issuelist = $this->prepare_issue_list('', $params[NEWSLETTER_PARAM_GROUP_BY]);
-        $output .= $this->get_course_module()->intro;
+        $output .= $this->get_instance()->intro;
         if ($issuelist) {
             $output .= $renderer->render($issuelist);
         } else {
