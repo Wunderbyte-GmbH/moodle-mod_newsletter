@@ -121,7 +121,7 @@ $string['page_previous'] = 'Previous';
 $string['page_next'] = 'Next';
 $string['page_last'] = 'Last';
 
-$string['subscribe'] = 'Subscribe';
+$string['subscribe'] = 'Subscribe now';
 $string['guestsubscribe'] = 'Subscribe now!';
 $string['resubscribe'] = 'Confirm re-subscription';
 $string['resubscribe_text'] = 'You have been unsubscribed from this newsletter. Do you really want to resubscribe?';

@@ -463,7 +463,7 @@ class newsletter implements renderable {
         $output .= $renderer->render(
                 new \newsletter_header($this->get_instance(), $this->get_context(), false,
                         $this->get_course_module()->id));
-
+        $output .= format_text($this->get_instance()->intro, $this->get_instance()->introformat);
         $output .= $renderer->render(
                 new \newsletter_main_toolbar($this->get_course_module()->id,
                         $params[NEWSLETTER_PARAM_GROUP_BY],
@@ -475,13 +475,13 @@ class newsletter implements renderable {
             if (!$this->is_subscribed()) {
                 $url = $this->get_subsribe_url();
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text);
+                $output .= html_writer::link($url, $text, ['class', 'btn btn-primary']);
             } else {
                 $url = new moodle_url('/mod/newsletter/view.php',
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
                 $text = get_string('unsubscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text);
+                $output .= html_writer::link($url, $text, ['class', 'btn btn-secondary']);
             }
         } else {
             if (!empty($CFG->registerauth) and is_enabled_auth('email')) {
@@ -494,12 +494,11 @@ class newsletter implements renderable {
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary btn-lg w-100 mt-3'));
+                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary btn-lg mt-3'));
             }
         }
 
         $issuelist = $this->prepare_issue_list('', $params[NEWSLETTER_PARAM_GROUP_BY]);
-        $output .= $this->get_instance()->intro;
         if ($issuelist) {
             $output .= $renderer->render($issuelist);
         } else {
