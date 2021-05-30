@@ -162,8 +162,7 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                     'issue' => $issue->id));
 
         $now = time();
-        $output = '';
-        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary'));
+        $output = html_writer::start_tag('div', array('class' => 'mod_newsletter__issue--summary'));
         $output .= html_writer::start_tag('div',
                 array('class' => 'mod_newsletter__issue--summary__link-read'));
         $output .= html_writer::link($url, $link);
@@ -352,9 +351,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $completed = '';
         }
 
-        $output .= html_writer::start_tag('div', array('class' => 'mod_newsletter_progress'));
+        $output .= html_writer::start_tag('div', array('class' => 'progress'));
         $output .= html_writer::div($completed, '',
-                array('class' => 'mod_newsletter_progress-bar', 'role' => 'progressbar',
+                array('class' => 'progress-bar', 'role' => 'progressbar',
                     'aria-valuenow' => $value, 'aria-valuemin' => '0', 'aria-valuemax' => '100',
                     'style' => 'width:' . $value . '%'));
         $output .= html_writer::end_tag('div');
