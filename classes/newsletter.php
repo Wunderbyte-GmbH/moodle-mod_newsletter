@@ -477,13 +477,13 @@ class newsletter implements renderable {
             if (!$this->is_subscribed()) {
                 $url = $this->get_subsribe_url();
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, ['class', 'btn btn-primary']);
+                $output .= html_writer::link($url, $text, ['class', 'btn btn-primary m-2']);
             } else {
                 $url = new moodle_url('/mod/newsletter/view.php',
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
                 $text = get_string('unsubscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, ['class', 'btn btn-secondary']);
+                $output .= html_writer::link($url, $text, ['class' => 'btn btn-primary m-2']);
             }
         } else {
             if (!empty($CFG->registerauth) and is_enabled_auth('email')) {
@@ -496,7 +496,7 @@ class newsletter implements renderable {
                         array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
                             NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
                 $text = get_string('subscribe', 'mod_newsletter');
-                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary btn-lg mt-3'));
+                $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary m-2'));
             }
         }
 

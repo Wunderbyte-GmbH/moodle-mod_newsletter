@@ -269,9 +269,8 @@ class mod_newsletter_renderer extends plugin_renderer_base {
             $url = new moodle_url('/mod/newsletter/view.php',
                     array('id' => $button->cmid, 'action' => $button->action));
         }
-        $output = '';
-        $output .= html_writer::start_tag('div', array('class' => 'mod-newsletter__action-link'));
-        $output .= html_writer::link($url, $button->label);
+        $output = html_writer::start_tag('div', array('class' => 'mod-newsletter__action-link'));
+        $output .= html_writer::link($url, $button->label, ['class' => 'btn btn-primary m-2']);
         $output .= html_writer::end_tag('div');
         return $output;
     }
@@ -279,26 +278,21 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     public function render_newsletter_main_toolbar(newsletter_main_toolbar $toolbar) {
         global $CFG;
 
-        $output = '';
-        $output .= html_writer::start_tag('div');
-        $output .= html_writer::tag('span', get_string('groupby', 'mod_newsletter'));
+        $output = html_writer::start_tag('div', ['class' => 'newsletter-toolbar']);
+        $output .= html_writer::tag('div', get_string('groupby', 'mod_newsletter'));
         $options = array(NEWSLETTER_GROUP_ISSUES_BY_YEAR => get_string('year'),
             NEWSLETTER_GROUP_ISSUES_BY_MONTH => get_string('month'),
             NEWSLETTER_GROUP_ISSUES_BY_WEEK => get_string('week'));
+        $output .= html_writer::start_div('newsletter-toolbar');
         $output .= html_writer::start_tag('form',
                 array('method' => 'GET', 'action' => new moodle_url('/mod/newsletter/view.php')));
         $output .= html_writer::empty_tag('input',
                 array('type' => 'hidden', 'name' => 'id', 'value' => $toolbar->cmid));
         $output .= html_writer::select($options, NEWSLETTER_PARAM_GROUP_BY, $toolbar->groupby, false);
-        if ($CFG->branch >= 33) {
-            $output .= html_writer::empty_tag('input',
-                    array('type' => 'submit', 'value' => get_string('refresh'),
-                        'class' => 'btn btn-secondary', 'style' => 'margin-left:5px;'));
-        } else {
-            $output .= html_writer::empty_tag('input',
-                    array('type' => 'submit', 'value' => get_string('refresh')));
-        }
+        $output .= html_writer::empty_tag('input',
+                    array('type' => 'submit', 'value' => get_string('refresh'), 'class' => 'btn btn-secondary m-2'));
         $output .= html_writer::end_tag('form');
+        $output .= html_writer::end_div();
         if ($toolbar->createissues) {
             $output .= $this->render(
                     new newsletter_action_button($toolbar->cmid, 0, NEWSLETTER_ACTION_CREATE_ISSUE,
