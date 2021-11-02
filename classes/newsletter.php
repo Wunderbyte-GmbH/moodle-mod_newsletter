@@ -753,8 +753,12 @@ class newsletter implements renderable {
         $sqlparams = array('newsletterid' => $this->get_instance()->id);
         $total = $DB->count_records('newsletter_subscriptions', $sqlparams);
         list($countsql, $countparams) = $this->get_filter_sql($params, true);
-        $totalfiltered = $DB->count_records_sql($countsql, $countparams);
-
+        if ($countsql > 0) {
+        	$totalfiltered = $DB->count_records_sql($countsql, $countparams);
+	    }
+	    else {
+		    $totalfiltered = 0;
+	    }
         $pages = $this->calculate_pages($totalfiltered, $from, $count);
 
         $columns = array(NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
@@ -1803,6 +1807,9 @@ class newsletter implements renderable {
         }
         if (!$count) {
             $sql .= " GROUP BY u.id, ns.id ";
+        }
+        if ($count && $getparams['orderby'] != '') {
+            $sql .= " GROUP BY u." . $getparams['orderby'];
         }
         if ($getparams['orderby'] != '') {
             $sql .= " ORDER BY u." . $getparams['orderby'];
