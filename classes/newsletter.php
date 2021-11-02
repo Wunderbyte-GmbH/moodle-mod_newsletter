@@ -1802,7 +1802,7 @@ class newsletter implements renderable {
             $params += array('status' => $getparams['status']);
         }
         if (!$count) {
-            $sql .= " GROUP BY u.id ";
+            $sql .= " GROUP BY u.id, ns.id ";
         }
         if ($getparams['orderby'] != '') {
             $sql .= " ORDER BY u." . $getparams['orderby'];
