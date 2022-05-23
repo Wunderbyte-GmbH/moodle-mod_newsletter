@@ -175,6 +175,14 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                             NEWSLETTER_ACTION_EDIT_ISSUE, get_string('edit_issue', 'mod_newsletter')));
             $output .= html_writer::end_tag('div');
         }
+        if ($issue->duplicateissue) {
+            $output .= html_writer::start_tag('div',
+                    array('class' => 'mod_newsletter__issue--summary__link-edit'));
+            $output .= $this->render(
+                    new newsletter_action_button($issue->cmid, $issue->id,
+                            NEWSLETTER_ACTION_DUPLICATE_ISSUE, get_string('duplicate_issue', 'mod_newsletter')));
+            $output .= html_writer::end_tag('div');
+        }
         if ($now < $issue->publishon && $issue->deleteissue) {
             $output .= html_writer::start_tag('div',
                     array('class' => 'mod_newsletter__issue--summary__link-edit'));
@@ -189,6 +197,11 @@ class mod_newsletter_renderer extends plugin_renderer_base {
                 $output .= $this->render(
                         new newsletter_progressbar($issue->numnotyetdelivered, $issue->numdelivered));
             }
+           
+            if ($issue->duplicateissue) {
+                    $output .= $this->render(
+                            new newsletter_progressbar($issue->numnotyetdelivered, $issue->numdelivered));
+                }    
         } else {
             $output .= $this->render(new newsletter_publish_countdown($now, $issue->publishon));
         }

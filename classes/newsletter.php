@@ -306,6 +306,11 @@ class newsletter implements renderable {
                 require_capability('mod/newsletter:createissue', $this->context);
                 $output = $this->view_edit_issue_page($params);
                 break;
+            case NEWSLETTER_ACTION_DUPLICATE_ISSUE:
+                require_capability('mod/newsletter:createissue', $this->context);
+                $this->duplicate_issue($params['issue']);
+                $output = $this->view_newsletter($params);
+                break;    
             case NEWSLETTER_ACTION_EDIT_ISSUE:
                 require_capability('mod/newsletter:editissue', $this->context);
                 $output = $this->view_edit_issue_page($params);
@@ -523,7 +528,10 @@ class newsletter implements renderable {
                 $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
             require_capability('mod/newsletter:editissue', $this->get_context());
         }
-
+        if (!(has_capability('mod/newsletter:createissue', $this->get_context())) && $this->get_issue(
+            $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
+        require_capability('mod/newsletter:createissue', $this->get_context());
+    }  
         $renderer = $this->get_renderer();
 
         $output = $renderer->render(
@@ -1888,4 +1896,16 @@ class newsletter implements renderable {
         }
         return $DB->update_record('newsletter', $data);
     }
+    private function duplicate_issue(int $issueid) {
+        global $DB;
+        $record = $DB->get_record('newsletter_issues', array('id'=> $issueid));
+        unset($record->id);
+        $now = time();
+        $newtime = strtotime("+2 days", $now);
+        $record->publishon = $newtime; 
+        $insertrecord =  $DB->insert_record('newsletter_issues',$record);
+        
+        return $insertrecord;
+    }
+        
 }

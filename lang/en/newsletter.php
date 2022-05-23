@@ -47,8 +47,10 @@ $string['eventsubscriptionresubscribed'] = 'Re-subscription to newsletter';
 
 $string['edit_issue'] = 'Edit this issue';
 $string['delete_issue'] = 'Delete this issue';
+$string['duplicate_issue'] = 'Duplicate this issue';
 
 $string['edit_issue_title'] = 'Edit newsletter issue';
+$string['duplicate_issue_title'] = 'Duplicate newsletter issue';
 $string['issue_title'] = 'Issue title';
 $string['issue_title_help'] = 'Type in the title of this issue. Required.';
 
@@ -187,6 +189,7 @@ $string['welcomemessageguestuser_help'] = 'This text will be displayed to a new 
 $string['newsletter:viewnewsletter'] = 'View newsletter';
 $string['newsletter:addinstance'] = 'Add a newsletter';
 $string['newsletter:createissue'] = 'Create a newsletter issue';
+$string['newsletter:duplicateissue'] = 'Duplicate a newsletter issue';
 $string['newsletter:deleteissue'] = 'Delete a newsletter issue';
 $string['newsletter:deletesubscription'] = 'Delete newsletter subscriptions';
 $string['newsletter:editissue'] = 'Edit a newsletter issue';

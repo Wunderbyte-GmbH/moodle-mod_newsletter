@@ -51,6 +51,7 @@ define('NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED', 4);
 
 define('NEWSLETTER_ACTION_VIEW_NEWSLETTER', 'view');
 define('NEWSLETTER_ACTION_CREATE_ISSUE', 'createissue');
+define('NEWSLETTER_ACTION_DUPLICATE_ISSUE', 'duplicateissue');
 define('NEWSLETTER_ACTION_EDIT_ISSUE', 'editissue');
 define('NEWSLETTER_ACTION_READ_ISSUE', 'readissue');
 define('NEWSLETTER_ACTION_DELETE_ISSUE', 'deleteissue');
@@ -577,6 +578,13 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
             $issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
             break;
+        case NEWSLETTER_ACTION_DUPLICATE_ISSUE:
+            require_capability('mod/newsletter:createissue', $context);
+            $url = new moodle_url('/mod/newsletter/view.php',
+                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE));
+            $issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
+            $issuenode->make_active();
+            break;    
         case NEWSLETTER_ACTION_EDIT_ISSUE:
             require_capability('mod/newsletter:editissue', $context);
             $issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);

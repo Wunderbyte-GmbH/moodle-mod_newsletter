@@ -122,11 +122,14 @@ class newsletter_issue implements renderable {
 class newsletter_issue_summary extends newsletter_issue {
     public $editissue;
     public $deleteissue;
+    public $duplicateissue;
 
-    public function __construct(stdClass $issue, $editissue = false, $deleteissue = false) {
+
+    public function __construct(stdClass $issue, $editissue = false, $deleteissue = false, $duplicateissue = true) {
         parent::__construct($issue);
         $this->editissue = $editissue;
         $this->deleteissue = $deleteissue;
+        $this->duplicateissue = $duplicateissue;
     }
 }
 
