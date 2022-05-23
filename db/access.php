@@ -43,6 +43,10 @@ $capabilities = array(
         'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW)),
 
+    'mod/newsletter:duplicateissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW)),        
+
     'mod/newsletter:editissue' => array('captype' => 'write', 'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array('teacher' => CAP_ALLOW, 'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW)),
