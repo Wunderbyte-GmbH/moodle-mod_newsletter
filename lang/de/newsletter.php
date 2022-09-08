@@ -196,6 +196,23 @@ $string['welcomemessageguestuser_help'] = 'Geben Sie hier die Nachricht an, die 
 $string['welcometonewsletter'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.';
 $string['welcometonewsletter_guestsubscription'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.<br />Sie können sich von diesem Newsletter wieder abmelden, wenn Sie den Link "Dieses Newsletter-Abonnement kündigen" nach dem Login anklicken oder mittels Klick auf den "Abmelden"-Link in jeder Ausgabe dieses Newsletters.';
 
+// Issue_form.
+$string['header_filteruser'] = 'Filter User';
+$string['header_filteruserinfo'] = 'Der Empfängerkreis kann durch die Definition eines Profilfeldes der NutzerInnen eingeschränkt werden. Nur NutzerInnen mit diesem Feld erhalten den Newsletter.';
+$string['userprofilefield_field'] = "NutzerInnen Profilfeld";
+$string['userprofilefield_operator'] = "Verknüpfung";
+$string['userprofilefield_value'] = "Vergleichswert";
+
+$string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
+$string['contains'] = 'beinhaltet (Text)';
+$string['lowerthan'] = 'ist kleiner als (Zahl)';
+$string['biggerthan'] = 'ist größer als (Zahl)';
+$string['equalsnot'] = 'hat nicht genau diesen Wert (Text oder Zahl)';
+$string['containsnot'] = 'beinhaltet nicht (Text)';
+$string['inarray'] = 'TeilnehmerIn hat einen dieser Werte (Komma getrennt)';
+$string['notinarray'] = 'TeilnehmerIn hat keinen dieser Werte (Komma getrennt)';
+$string['isempty'] = 'TeilnehmerIn hat keinen Wert gesetzt';
+$string['isnotempty'] = 'TeilnehmerIn hat einen Wert gesetzt';
 
 // Privacy API.
 $string['privacy:metadata:newsletter_subscriptions'] = 'Newsletter-Abo anzeigen';
