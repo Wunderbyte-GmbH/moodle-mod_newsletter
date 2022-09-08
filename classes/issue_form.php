@@ -125,6 +125,13 @@ class issue_form extends moodleform {
         $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toctypes);
         $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
 
+        $mform->addElement('header', 'header_filteruser',
+                get_string('header_filteruser', 'mod_newsletter'));
+        $mform->addElement('static', 'filteruserinfo', '',
+                get_string('header_filteruserinfo', 'mod_newsletter'));
+
+        self::add_userprofilefield_select_form_element($mform);
+
         $mform->addElement('header', 'header_publish',
                 get_string('header_publish', 'mod_newsletter'));
         $mform->addElement('static', 'publishinfo', '',
@@ -155,5 +162,72 @@ class issue_form extends moodleform {
             $errors['title'] = get_string('erroremptysubject', 'forum');
         }
         return $errors;
+    }
+
+    /**
+     * Add a select element with normal user profile fields and custom user profile fields.
+     *
+     * @param [type] $mform
+     * @return void
+     */
+    private function add_userprofilefield_select_form_element(&$mform) {
+        global $DB;
+
+        $userprofilefieldsarray = [];
+
+        // Choose the user profile field which is used to store each user's price category.
+        $customuserprofilefields = $DB->get_records('user_info_field', null, '', 'id, name, shortname');
+
+        if (!empty($customuserprofilefields)) {
+
+                // Create an array of key => value pairs for the dropdown.
+                foreach ($customuserprofilefields as $customuserprofilefield) {
+                    $userprofilefieldsarray[$customuserprofilefield->shortname] = $customuserprofilefield->name;
+                }
+        }
+
+        $stringmanager = get_string_manager();
+
+        // Choose the user profile field which is used to store each user's price category.
+        $userprofilefields = $DB->get_columns('user', true);
+        // Create an array of key => value pairs for the dropdown.
+        foreach ($userprofilefields as $key => $value) {
+
+                if (in_array($key, ['password', 'id'])) {
+                        continue;
+                }
+
+                if ($stringmanager->string_exists($key, 'core')) {
+                        $userprofilefieldsarray[$key] = get_string($key);
+                } else {
+                        $userprofilefieldsarray[$key] = $key;
+                }
+        }
+
+        asort($userprofilefieldsarray);
+
+        $mform->addElement('select', 'userprofilefield_field',
+        get_string('userprofilefield_field', 'mod_newsletter'), $userprofilefieldsarray);
+
+        $operators = [
+                '=' => get_string('equals', 'mod_newsletter'),
+                '!=' => get_string('equalsnot', 'mod_newsletter'),
+                '<' => get_string('lowerthan', 'mod_newsletter'),
+                '>' => get_string('biggerthan', 'mod_newsletter'),
+                '~' => get_string('contains', 'mod_newsletter'),
+                '!~' => get_string('containsnot', 'mod_newsletter'),
+                '[]' => get_string('inarray', 'mod_newsletter'),
+                '[!]' => get_string('notinarray', 'mod_newsletter'),
+                '()' => get_string('isempty', 'mod_newsletter'),
+                '(!)' => get_string('isnotempty', 'mod_newsletter')
+                ];
+        $mform->addElement('select', 'userprofilefield_operator',
+        get_string('userprofilefield_operator', 'mod_newsletter'), $operators);
+        $mform->hideIf('userprofilefield_operator', 'userprofilefield_field', 'eq', 0);
+
+        $mform->addElement('text', 'userprofilefield_value',
+                get_string('userprofilefield_value', 'mod_newsletter'));
+        $mform->setType('userprofilefield_value', PARAM_RAW);
+
     }
 }

@@ -235,6 +235,24 @@ You were successfully unsubscribed from the newsletter {$a->newslettertitle}. If
 $string['unsubscribe_nounsub_text'] = 'Don\'t send an unsubscribe link.';
 $string['unsubscribe_nounsub'] = 'Distributor';
 
+// Issue_form.
+$string['header_filteruser'] = 'Filter User';
+$string['header_filteruserinfo'] = 'You can restrict the users who will receive this newsletter by defining a user profile field, which has to has a specific value. Only users with this value will receive the newsletter.';
+$string['userprofilefield_field'] = "User profile field";
+$string['userprofilefield_operator'] = "Operator";
+$string['userprofilefield_value'] = "Value";
+
+$string['equals'] = 'has exactly this value (text or number)';
+$string['contains'] = 'contains (text)';
+$string['lowerthan'] = 'is lower than (number)';
+$string['biggerthan'] = 'is bigger than (number)';
+$string['equalsnot'] = 'has not exactly this value (text or number)';
+$string['containsnot'] = 'does not contain (text)';
+$string['inarray'] = 'user has one of these comma separated values';
+$string['notinarray'] = 'user has none of these comma separated values';
+$string['isempty'] = 'field is empty';
+$string['isnotempty'] = 'field is not empty';
+
 // Privacy API.
 $string['privacy:metadata:newsletter_subscriptions'] = 'Represent a subscription to a newsletter.';
 $string['privacy:metadata:newsletter_subscriptions:userid'] = 'User who created the record';
