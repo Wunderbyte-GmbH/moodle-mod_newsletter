@@ -241,6 +241,9 @@ $string['header_filteruserinfo'] = 'You can restrict the users who will receive 
 $string['userprofilefield_field'] = "User profile field";
 $string['userprofilefield_operator'] = "Operator";
 $string['userprofilefield_value'] = "Value";
+$string['userprofilefield_addcondition'] = "Add another condition";
+$string['AND'] = "And";
+$string['OR'] = "Or";
 
 $string['equals'] = 'has exactly this value (text or number)';
 $string['contains'] = 'contains (text)';

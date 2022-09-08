@@ -202,6 +202,9 @@ $string['header_filteruserinfo'] = 'Der Empfängerkreis kann durch die Definitio
 $string['userprofilefield_field'] = "NutzerInnen Profilfeld";
 $string['userprofilefield_operator'] = "Verknüpfung";
 $string['userprofilefield_value'] = "Vergleichswert";
+$string['userprofilefield_addcondition'] = "Eine weitere Bedingung hinzufügen";
+$string['AND'] = "Und";
+$string['OR'] = "Oder";
 
 $string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
 $string['contains'] = 'beinhaltet (Text)';
