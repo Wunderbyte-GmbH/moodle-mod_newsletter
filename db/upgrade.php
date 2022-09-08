@@ -332,5 +332,20 @@ function xmldb_newsletter_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021052600, 'newsletter');
     }
 
+    if ($oldversion < 2022090800) {
+
+        // Define field userfilter to be added to newsletter_issues.
+        $table = new xmldb_table('newsletter_issues');
+        $field = new xmldb_field('userfilter', XMLDB_TYPE_TEXT, null, null, null, null, null, 'toc');
+
+        // Conditionally launch add field userfilter.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2022090800, 'newsletter');
+    }
+
     return true;
 }
