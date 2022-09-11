@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_newsletter\userfilter;
+
 defined('MOODLE_INTERNAL') || die();
 
 // Newsletter internal constants.
@@ -333,25 +335,34 @@ function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $mo
 }
 
 /**
- * given the id of the newsletter, returns all recipients who have an
+ * Given the id of the newsletter, returns all recipients who have an
  * acceptable health status
+ * Also applies the new user filter and only returns filtered recipients.
  *
  * @param integer $newsletterid
+ * @param string $userfilter // the new filter conditions as json string.
  * @return array of objects indexed by userid
  */
-function newsletter_get_all_valid_recipients($newsletterid) {
+function newsletter_get_all_valid_recipients($newsletterid, $userfilter = null) {
     global $DB;
     $validstatuses = array(NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC);
     $guestuserid = guest_user()->id;
+
     list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAMS_NAMED);
     $params['newsletterid'] = $newsletterid;
-    $sql = "SELECT *
-              FROM {newsletter_subscriptions} ns
-        INNER JOIN {user} u ON ns.userid = u.id
-             WHERE ns.newsletterid = :newsletterid
+    $select = "SELECT ns.* ";
+    $from = " FROM {newsletter_subscriptions} ns
+        INNER JOIN {user} u ON ns.userid = u.id ";
+
+    $where = "WHERE ns.newsletterid = :newsletterid
                AND u.confirmed = 1
                AND ns.health $insql
-               AND u.id <> $guestuserid";
+               AND u.id <> $guestuserid ";
+
+    // Depending on the filter, we add the right sql code.
+    userfilter::add_sql($select, $from, $where, $params, $userfilter);
+
+    $sql = $select . $from . $where;
     return $DB->get_records_sql($sql, $params);
 }
 
@@ -584,7 +595,7 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
                     array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE));
             $issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
-            break;    
+            break;
         case NEWSLETTER_ACTION_EDIT_ISSUE:
             require_capability('mod/newsletter:editissue', $context);
             $issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);

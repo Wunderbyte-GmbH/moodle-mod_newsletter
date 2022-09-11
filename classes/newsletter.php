@@ -310,7 +310,7 @@ class newsletter implements renderable {
                 require_capability('mod/newsletter:createissue', $this->context);
                 $this->duplicate_issue($params['issue']);
                 $output = $this->view_newsletter($params);
-                break;    
+                break;
             case NEWSLETTER_ACTION_EDIT_ISSUE:
                 require_capability('mod/newsletter:editissue', $this->context);
                 $output = $this->view_edit_issue_page($params);
@@ -531,7 +531,7 @@ class newsletter implements renderable {
         if (!(has_capability('mod/newsletter:createissue', $this->get_context())) && $this->get_issue(
             $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
         require_capability('mod/newsletter:createissue', $this->get_context());
-    }  
+    }
         $renderer = $this->get_renderer();
 
         $output = $renderer->render(
@@ -704,13 +704,14 @@ class newsletter implements renderable {
         $currenttext = file_prepare_draft_area($draftideditor, $context->id, 'mod_newsletter',
                 NEWSLETTER_FILE_AREA_ISSUE, $issueid,
                 \mod_newsletter\issue_form::editor_options($context, $issueid), $issue->htmlcontent);
-        $mform->set_data(
-                array('attachments' => $draftitemid, 'title' => $issue->title,
-                    'htmlcontent' => array('text' => $currenttext,
-                        'format' => empty($issue->messageformat) ? editors_get_preferred_format() : $issue->messageformat,
-                        'itemid' => $draftideditor), 'deliverystarted' => $deliverystartedorcompleted,
-                    'toc' => $issue->toc, 'publishon' => $issue->publishon,
-                    'stylesheetid' => $issue->stylesheetid));
+        $setarray = array('attachments' => $draftitemid, 'title' => $issue->title,
+        'htmlcontent' => array('text' => $currenttext,
+            'format' => empty($issue->messageformat) ? editors_get_preferred_format() : $issue->messageformat,
+            'itemid' => $draftideditor), 'deliverystarted' => $deliverystartedorcompleted,
+        'toc' => $issue->toc, 'publishon' => $issue->publishon,
+        'stylesheetid' => $issue->stylesheetid);
+        userfilter::set_form_values($issue, $setarray);
+        $mform->set_data($setarray);
 
         if ($data = $mform->get_data()) {
             if (!$data->issue) {
@@ -1145,6 +1146,7 @@ class newsletter implements renderable {
         $issue->publishon = $data->publishon;
         $issue->stylesheetid = $data->stylesheetid;
         $issue->toc = $data->toc;
+        $issue->userfilter = userfilter::return_json_from_form($data);
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
 
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
@@ -1209,6 +1211,8 @@ class newsletter implements renderable {
             file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter',
                     NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
         }
+
+        $issue->userfilter = userfilter::return_json_from_form($data);
 
         $DB->update_record('newsletter_issues', $issue);
     }
@@ -1902,10 +1906,10 @@ class newsletter implements renderable {
         unset($record->id);
         $now = time();
         $newtime = strtotime("+2 days", $now);
-        $record->publishon = $newtime; 
+        $record->publishon = $newtime;
         $insertrecord =  $DB->insert_record('newsletter_issues',$record);
-        
+
         return $insertrecord;
     }
-        
+
 }
