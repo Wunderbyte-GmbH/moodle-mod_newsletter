@@ -144,6 +144,7 @@ class userfilter {
         );
         $mform->setType('userprofilefield2_value', PARAM_RAW);
         $mform->hideIf('userprofilefield2_value', 'userprofilefield2_addcondition', 'eq', 0);
+
     }
 
     /**
@@ -232,6 +233,8 @@ class userfilter {
                 }
             }
 
+            $operator = $filterobject->operator;
+
             // Decide wether its a userfield or customuserfield
 
             if (isset($filterobject->pf)) {
@@ -239,10 +242,12 @@ class userfilter {
                 $fieldname = $filterobject->pf;
                 $value = $filterobject->value;
 
-                $params['parampfa'. $counter] = $value;
-
                 // Add the sql for comparioson.
-                $addwhere .= " u.$fieldname = :parampfa$counter ";
+                $addwhere .= self::return_where("u.$fieldname",
+                    $value,
+                    $operator,
+                    $counter,
+                    $params);
 
             } else if (isset($filterobject->cpf)) {
 
@@ -253,7 +258,6 @@ class userfilter {
 
                 $params['paramcpfa'. $counter] = $shortname;
                 $params['paramcpfb' . $counter] = $shortname;
-                $params['paramcpfc' . $counter] = $value;
 
                 $addselect .= " , s$counter.data as :paramcpfa$counter ";
                 $addfrom .= " LEFT JOIN (
@@ -263,11 +267,13 @@ class userfilter {
                     WHERE uif.shortname=:paramcpfb$counter
                 ) as s$counter
                 ON u.id = s$counter.userid ";
-                $addwhere .= " s$counter.data = :paramcpfc$counter ";
+                $addwhere .= self::return_where("s$counter.data",
+                    $value,
+                    $operator,
+                    $counter,
+                    $params);
             }
-
             $counter++;
-
         }
 
         $select .= $addselect;
@@ -277,6 +283,72 @@ class userfilter {
         if (count($filterobjects) > 0) {
             $where .= " AND ( $addwhere ) ";
         }
+    }
+
+    /**
+     * Returns where sql string and adds params, based on input & Operator.
+     * @param string $needle
+     * @param string $haystack
+     * @param string $operator
+     * @param array $params
+     * @return string
+     */
+    private static function return_where(string $dbvalue,
+        string $formvalue,
+        string $operator,
+        int $counter,
+        array &$params) {
+        global $DB;
+
+        $inparams = [];
+
+        switch ($operator) {
+            case '=':
+                $inparams["paramop$counter"] = $formvalue;
+                $fragment = $DB->sql_equal($dbvalue, ":paramop$counter", false, false);
+                break;
+            case '!=':
+                $inparams["paramop$counter"] = $formvalue;
+                $fragment = $DB->sql_equal($dbvalue, ":paramop$counter", false, false, true);
+                break;
+            case '~':
+                $inparams["paramop$counter"] = "%$formvalue%";
+                $fragment = $DB->sql_like($dbvalue, ":paramop$counter", false, false);
+                break;
+            case '!~':
+                $inparams["paramop$counter"] = "%$formvalue%";
+                $fragment = $DB->sql_like($dbvalue, ":paramop$counter", false, false, true);
+                break;
+            case '[]':
+                $array = explode(',', $formvalue);
+                list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter");
+                break;
+            case '[!]':
+                $array = explode(',', $formvalue);
+                list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter", false);
+                break;
+            case '()':
+                $fragment = $dbvalue . " IS EMPTY";
+                break;
+            case '(!)':
+                $fragment = $dbvalue . " IS NOT EMPTY";
+                break;
+            case '>':
+                $inparams["paramop$counter"] = $formvalue;
+                $fragment = $dbvalue . " > :paramop$counter";
+                break;
+            case '<':
+                $inparams["paramop$counter"] = $formvalue;
+                $fragment = $dbvalue . " < :paramop$counter";
+                break;
+        }
+
+        $sql = " $fragment ";
+
+        $params = array_merge($params, $inparams);
+
+        return $sql;
+
     }
 
     /**
