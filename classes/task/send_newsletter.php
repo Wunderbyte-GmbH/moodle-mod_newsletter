@@ -94,7 +94,7 @@ class send_newsletter extends \core\task\scheduled_task {
             if ($issue->publishon <= time() && !$DB->record_exists('newsletter_deliveries',
                     array('issueid' => $issue->id))) {
                 // Populate the deliveries table.
-                $recipients = newsletter_get_all_valid_recipients($issue->newsletterid);
+                $recipients = newsletter_get_all_valid_recipients($issue->newsletterid, $issue->userfilter);
                 $subscriptionobjects = array();
                 foreach ($recipients as $userid => $recipient) {
                     $sub = new stdClass();
