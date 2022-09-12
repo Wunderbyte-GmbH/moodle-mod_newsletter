@@ -983,6 +983,7 @@ class newsletter implements renderable {
         // TODO: Add first day of the week check.
         $editissue = has_capability('mod/newsletter:editissue', $this->get_context());
         $deleteissue = has_capability('mod/newsletter:deleteissue', $this->get_context());
+        $duplicateissue = has_capability('mod/newsletter:duplicateissue', $this->get_context());
 
         $issues = $this->get_issues();
 
@@ -1017,7 +1018,7 @@ class newsletter implements renderable {
                 if (!($issue->publishon > time() && !$editissue)) { // do not display issues that
                                                                     // are not yet published.
                     $currentissuelist->add_issue_summary(
-                            new \newsletter_issue_summary($issue, $editissue, $deleteissue));
+                            new \newsletter_issue_summary($issue, $editissue, $deleteissue, $duplicateissue));
                 }
             } else {
                 if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
