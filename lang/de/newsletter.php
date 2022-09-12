@@ -205,6 +205,7 @@ $string['userprofilefield_value'] = "Vergleichswert";
 $string['userprofilefield_addcondition'] = "Eine weitere Bedingung hinzufügen";
 $string['AND'] = "Und";
 $string['OR'] = "Oder";
+$string['nofilter'] = " Kein Filter";
 
 $string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
 $string['contains'] = 'beinhaltet (Text)';
