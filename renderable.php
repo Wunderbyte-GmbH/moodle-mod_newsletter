@@ -125,7 +125,7 @@ class newsletter_issue_summary extends newsletter_issue {
     public $duplicateissue;
 
 
-    public function __construct(stdClass $issue, $editissue = false, $deleteissue = false, $duplicateissue = true) {
+    public function __construct(stdClass $issue, $editissue = false, $deleteissue = false, $duplicateissue = false) {
         parent::__construct($issue);
         $this->editissue = $editissue;
         $this->deleteissue = $deleteissue;
