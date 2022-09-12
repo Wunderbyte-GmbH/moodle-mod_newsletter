@@ -23,6 +23,7 @@
 
 namespace mod_newsletter;
 
+use context_module;
 use stdClass;
 
 /**
@@ -70,7 +71,8 @@ class userfilter {
                 $userprofilefieldsarray[$key] = $key;
             }
         }
-
+        $nofilter = get_string('nofilter', 'mod_newsletter');
+        $userprofilefieldsarray[0] = $nofilter;
         asort($userprofilefieldsarray);
 
         $operators = [
@@ -98,6 +100,7 @@ class userfilter {
             get_string('userprofilefield_field', 'mod_newsletter'),
             $userprofilefieldsarray
         );
+        $mform->setDefault('userprofilefield1_field', $nofilter);
 
         $mform->addElement(
             'select',
@@ -105,7 +108,7 @@ class userfilter {
             get_string('userprofilefield_operator', 'mod_newsletter'),
             $operators
         );
-        $mform->hideIf('userprofilefield_operator1', 'userprofilefield_field', 'eq', 0);
+        $mform->hideIf('userprofilefield1_operator', 'userprofilefield1_field', 'eq', 0);
 
         $mform->addElement(
             'text',
@@ -113,6 +116,7 @@ class userfilter {
             get_string('userprofilefield_value', 'mod_newsletter')
         );
         $mform->setType('userprofilefield1_value', PARAM_RAW);
+        $mform->hideIf('userprofilefield1_value', 'userprofilefield1_field', 'eq', 0);
 
         $mform->addElement(
             'select',
@@ -120,6 +124,7 @@ class userfilter {
             get_string('userprofilefield_addcondition', 'mod_newsletter'),
             $addcondition
         );
+        $mform->hideIf('userprofilefield2_addcondition', 'userprofilefield1_field', 'eq', 0);
 
         $mform->addElement(
             'select',
@@ -128,6 +133,7 @@ class userfilter {
             $userprofilefieldsarray
         );
         $mform->hideIf('userprofilefield2_field', 'userprofilefield2_addcondition', 'eq', 0);
+        $mform->hideIf('userprofilefield2_field', 'userprofilefield1_field', 'eq', 0);
 
         $mform->addElement(
             'select',
@@ -136,6 +142,7 @@ class userfilter {
             $operators
         );
         $mform->hideIf('userprofilefield2_operator', 'userprofilefield2_addcondition', 'eq', 0);
+        $mform->hideIf('userprofilefield2_operator', 'userprofilefield1_field', 'eq', 0);
 
         $mform->addElement(
             'text',
@@ -144,6 +151,7 @@ class userfilter {
         );
         $mform->setType('userprofilefield2_value', PARAM_RAW);
         $mform->hideIf('userprofilefield2_value', 'userprofilefield2_addcondition', 'eq', 0);
+        $mform->hideIf('userprofilefield2_value', 'userprofilefield1_field', 'eq', 0);
 
     }
 
@@ -164,7 +172,14 @@ class userfilter {
             $fieldprefix = 'userprofilefield' . $counter . '_';
 
             // If there is no field set, we don't save.
-            if (!isset($data->{$fieldprefix . 'field'})) {
+            if (empty($data->{$fieldprefix . 'field'}) && $counter === 1) {
+                return '';
+            } else if (empty($data->{$fieldprefix . 'field'})) {
+                $counter++;
+                continue;
+            }
+
+            if (($counter > 1) && empty($data->{$fieldprefix . 'addcondition'})) {
                 $counter++;
                 continue;
             }
@@ -205,8 +220,11 @@ class userfilter {
         array &$params,
         string $userfilter) {
 
-        if ($userfilter) {
+        if (!empty($userfilter)) {
             $filterobjects = json_decode($userfilter);
+        } else {
+            // Do nothing.
+            return;
         }
 
         // We can have two objects.
@@ -217,19 +235,23 @@ class userfilter {
         foreach ($filterobjects as $filterobject) {
 
             // We don't have an addcondition for the first filter.
-            if ($counter > 1 && !empty($filterobject->addcondition)) {
+            if ($counter > 1) {
+                if (!empty($filterobject->addcondition)) {
 
-                // Make sure we add the right markers, because we have a second condition here.
-                switch ($filterobject->addcondition) {
-                    case 'AND':
-                        // Add right sql.
+                    // Make sure we add the right markers, because we have a second condition here.
+                    switch ($filterobject->addcondition) {
+                        case 'AND':
+                            // Add right sql.
 
-                        $addwhere .= ' AND ';
-                        break;
-                    case 'OR':
-                        // Add right sql.
-                        $addwhere .= ' OR ';
-                        break;
+                            $addwhere .= ' AND ';
+                            break;
+                        case 'OR':
+                            // Add right sql.
+                            $addwhere .= ' OR ';
+                            break;
+                    }
+                } else {
+                    continue;
                 }
             }
 
@@ -322,10 +344,12 @@ class userfilter {
             case '[]':
                 $array = explode(',', $formvalue);
                 list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter");
+                $fragment = $dbvalue . " $fragment";
                 break;
             case '[!]':
                 $array = explode(',', $formvalue);
                 list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter", false);
+                $fragment = $dbvalue . " $fragment";
                 break;
             case '()':
                 $fragment = $dbvalue . " IS EMPTY";
@@ -379,5 +403,136 @@ class userfilter {
 
             $counter++;
         }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param stdClass $issue
+     * @return void
+     */
+    public static function user_can_see_this_issue(stdClass $issue) {
+
+        global $USER, $PAGE;
+
+        list($course, $cm) = get_course_and_cm_from_instance($issue->newsletterid, 'newsletter');
+        $context = context_module::instance($cm->id);
+        // A user having these rights, can always see the issue.
+        if (has_capability('mod/newsletter:editissue', $context)) {
+            return true;
+        }
+
+        $user = $USER;
+
+        $pereviousresult = true;
+        $result = null;
+
+        if (!empty($issue->userfilter)) {
+            $userfilters = json_decode($issue->userfilter);
+
+            profile_load_custom_fields($user);
+
+            $counter = 1;
+            foreach ($userfilters as $userfilter) {
+
+                if (!empty($userfilter->cp)) {
+
+                    $uservalue = $user->{$userfilter->cp} ?? null;
+
+                    $prelimanaryresult = self::check_user_values($userfilter->cp,
+                        $userfilter->value,
+                        $uservalue,
+                        $userfilter->operator);
+
+                } else if (!empty($userfilter->cpf)) {
+
+                    $uservalue = $user->profile[$userfilter->cpf] ?? null;
+
+                    $prelimanaryresult = self::check_user_values($userfilter->cpf,
+                        $userfilter->value,
+                        $uservalue,
+                        $userfilter->operator);
+
+                } else {
+                    // If there is no valid field, we can skip the rest right away.
+                    $prelimanaryresult = true;
+                }
+
+                if (isset($userfilter->addcondition)) {
+                    switch ($userfilter->addcondition) {
+                        case 'AND':
+                            $result = $pereviousresult && $prelimanaryresult;
+                        break;
+                        case 'OR':
+                            $result = $pereviousresult || $prelimanaryresult;
+                        break;
+                        default:
+                            $result = $pereviousresult;
+                    }
+                }
+                $pereviousresult = $prelimanaryresult;
+            }
+        }
+
+        $result = $result ?? $pereviousresult;
+
+        return $result;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param string $fieldname
+     * @param string $fieldvalue
+     * @param stdClass $user
+     * @param string $operator
+     * @return bool
+     */
+    private static function check_user_values(string $fieldname, string $fieldvalue, $uservalue, string $operator) {
+
+        $result = false;
+
+        // We accept null as uservalue only in case of one operator.
+        if ($uservalue === null && $operator != '()') {
+            return false;
+        }
+
+        switch ($operator) {
+            case '=':
+                return $uservalue == $fieldvalue;
+            case '!=':
+                return $uservalue != $fieldvalue;
+            case '~':
+                $pos = strpos($uservalue, $fieldvalue);
+
+                if ($pos == false) {
+                    return false;
+                } else {
+                    return true;
+                }
+            case '!~':
+                $pos = strpos($uservalue, $fieldvalue);
+
+                if ($pos != false) {
+                    return false;
+                } else {
+                    return true;
+                }
+            case '[]':
+                $array = explode(',', $fieldvalue);
+                return in_array($uservalue, $array);
+            case '[!]':
+                $array = explode(',', $fieldvalue);
+                return !in_array($uservalue, $array);
+            case '()':
+                return empty($uservalue);
+            case '(!)':
+                return !empty($uservalue);
+            case '>':
+                return $uservalue > $fieldvalue;
+            case '<':
+                return $uservalue < $fieldvalue;
+        }
+        return $result;
     }
 }

@@ -1294,7 +1294,14 @@ class newsletter implements renderable {
                 ORDER BY i.publishon DESC";
         $params = array('newsletterid' => $this->get_instance()->id, 'from' => $from, 'to' => $to);
         $records = $DB->get_records_sql($query, $params);
-        foreach ($records as $record) {
+        foreach ($records as $key => $record) {
+
+            if (!userfilter::user_can_see_this_issue($record)) {
+                unset($records[$key]);
+                $total--;
+                continue;
+            }
+
             $record->cmid = $this->get_course_module()->id;
             $record->numsubscriptions = $total;
             if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED ||

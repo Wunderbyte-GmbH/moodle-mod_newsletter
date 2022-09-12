@@ -244,6 +244,7 @@ $string['userprofilefield_value'] = "Value";
 $string['userprofilefield_addcondition'] = "Add another condition";
 $string['AND'] = "And";
 $string['OR'] = "Or";
+$string['nofilter'] = " No filter";
 
 $string['equals'] = 'has exactly this value (text or number)';
 $string['contains'] = 'contains (text)';
