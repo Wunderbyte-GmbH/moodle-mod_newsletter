@@ -110,8 +110,11 @@ class send_newsletter extends \core\task\scheduled_task {
                     }
                 }
                 $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
-                $DB->set_field('newsletter_issues', 'delivered',
-                        NEWSLETTER_DELIVERY_STATUS_INPROGRESS, array('id' => $issue->id));
+                $data = new stdClass();
+                $data->id = $issue->id;
+                $data->timemodified = time();
+                $data->delivered = NEWSLETTER_DELIVERY_STATUS_INPROGRESS;
+                $DB->update_record('newsletter_issues', $data);
             }
         }
 
@@ -175,8 +178,11 @@ class send_newsletter extends \core\task\scheduled_task {
             $userfrom = core_user::get_support_user();
 
             if (empty($deliveries)) {
-                $DB->set_field('newsletter_issues', 'delivered',
-                        NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+                $data = new stdClass();
+                $data->id = $issueid;
+                $data->timemodified = time();
+                $data->delivered = NEWSLETTER_DELIVERY_STATUS_DELIVERED;
+                $DB->update_record('newsletter_issues', $data);
                 break;
             }
             foreach ($deliveries as $deliveryid => $delivery) {
@@ -254,8 +260,11 @@ class send_newsletter extends \core\task\scheduled_task {
                 $DB->execute($sql, $params);
                 if (!$DB->record_exists('newsletter_deliveries',
                         array('issueid' => $issue->id, 'delivered' => 0))) {
-                    $DB->set_field('newsletter_issues', 'delivered',
-                            NEWSLETTER_DELIVERY_STATUS_DELIVERED, array('id' => $issueid));
+                    $data = new stdClass();
+                    $data->id = $issueid;
+                    $data->timemodified = time();
+                    $data->delivered = NEWSLETTER_DELIVERY_STATUS_DELIVERED;
+                    $DB->update_record('newsletter_issues', $data);
                 }
 
                 // Count how many mails we sent here.

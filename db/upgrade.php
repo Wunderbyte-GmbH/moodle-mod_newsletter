@@ -38,7 +38,8 @@ defined('MOODLE_INTERNAL') || die();
  * @param int $oldversion
  * @return bool
  */
-function xmldb_newsletter_upgrade($oldversion) {
+function xmldb_newsletter_upgrade($oldversion)
+{
     global $DB;
 
     $dbman = $DB->get_manager();
@@ -63,7 +64,7 @@ function xmldb_newsletter_upgrade($oldversion) {
         $table = new xmldb_table('newsletter_issues');
         $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'status');
 
-            // Conditionally change field type.
+        // Conditionally change field type.
         if ($dbman->field_exists($table, $field)) {
             $dbman->change_field_type($table, $field);
         }
@@ -267,12 +268,20 @@ function xmldb_newsletter_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016061700, 'newsletter');
     }
 
-        // Add possibility not to send unsubscribe link. Add new field nounsublink, #31.
+    // Add possibility not to send unsubscribe link. Add new field nounsublink, #31.
     if ($oldversion < 2018082706) {
         // Define field nounsublink to be added to newsletter_subscriptions.
         $table = new xmldb_table('newsletter_subscriptions');
-        $field = new xmldb_field('nounsublink', XMLDB_TYPE_INTEGER, '1', null, null, null, '0',
-                'sentnewsletters');
+        $field = new xmldb_field(
+            'nounsublink',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            null,
+            null,
+            '0',
+            'sentnewsletters'
+        );
 
         // Conditionally launch add field nounsublink.
         if (!$dbman->field_exists($table, $field)) {
@@ -345,6 +354,24 @@ function xmldb_newsletter_upgrade($oldversion) {
 
         // Newsletter savepoint reached.
         upgrade_mod_savepoint(true, 2022090800, 'newsletter');
+    }
+
+    if ($oldversion < 2022091400) {
+
+        // Define field timecreated to be added to newsletter_issues.
+        $table = new xmldb_table('newsletter_issues');
+        $field1 = new xmldb_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userfilter');
+        $field2 = new xmldb_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'timecreated');
+        // Conditionally launch add field timecreated.
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2022091400, 'newsletter');
     }
 
     return true;
