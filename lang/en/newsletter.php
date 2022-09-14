@@ -279,3 +279,6 @@ $string['privacy:metadata:newsletter_deliveries:userid'] = 'User who received th
 $string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID of the issue we sent';
 $string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID of the newsletter we sent';
 $string['privacy:metadata:newsletter_deliveries:delivered'] = 'Timestamp of newsletter delivery';
+
+// Search.
+$string['search:newsletterissue'] = 'Newsletter issue';

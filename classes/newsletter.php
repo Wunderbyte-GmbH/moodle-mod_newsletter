@@ -1148,6 +1148,8 @@ class newsletter implements renderable {
         $issue->stylesheetid = $data->stylesheetid;
         $issue->toc = $data->toc;
         $issue->userfilter = userfilter::return_json_from_form($data);
+        $issue->timecreated = time();
+        $issue->timemodified = $issue->timecreated;
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
 
         $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
@@ -1214,6 +1216,8 @@ class newsletter implements renderable {
         }
 
         $issue->userfilter = userfilter::return_json_from_form($data);
+
+        $issue->timemodified = time();
 
         $DB->update_record('newsletter_issues', $issue);
     }
@@ -1908,14 +1912,23 @@ class newsletter implements renderable {
         }
         return $DB->update_record('newsletter', $data);
     }
+
+    /**
+     * Function to duplicate newsletter and reset date to the future.
+     *
+     * @param integer $issueid
+     * @return void
+     */
     private function duplicate_issue(int $issueid) {
         global $DB;
-        $record = $DB->get_record('newsletter_issues', array('id'=> $issueid));
+        $record = $DB->get_record('newsletter_issues', array('id' => $issueid));
         unset($record->id);
         $now = time();
         $newtime = strtotime("+2 days", $now);
         $record->publishon = $newtime;
-        $insertrecord =  $DB->insert_record('newsletter_issues',$record);
+        $record->timecreated = $now;
+        $record->timemodified = $now;
+        $insertrecord = $DB->insert_record('newsletter_issues', $record);
 
         return $insertrecord;
     }

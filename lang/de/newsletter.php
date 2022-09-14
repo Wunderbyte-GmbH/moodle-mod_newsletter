@@ -240,3 +240,6 @@ $string['privacy:metadata:newsletter_deliveries:userid'] = 'Nuetzer/in die/der d
 $string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID der zugesandten Newsletterausgabe';
 $string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID des Newsletters';
 $string['privacy:metadata:newsletter_deliveries:delivered'] = 'Zeigt an, ob Newsletter zugestellt wurde';
+
+// Search.
+$string['search:newsletterissue'] = 'Newsletter Ausgabe';
