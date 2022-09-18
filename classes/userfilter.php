@@ -37,7 +37,7 @@ class userfilter {
      * @param [type] $mform
      * @return void
      */
-    public static function insert_form_elements(&$mform) {
+    public static function insert_form_elements(&$mform, $newsletterid, $userfilter) {
 
         global $DB;
 
@@ -153,6 +153,17 @@ class userfilter {
         $mform->hideIf('userprofilefield2_value', 'userprofilefield2_addcondition', 'eq', 0);
         $mform->hideIf('userprofilefield2_value', 'userprofilefield1_field', 'eq', 0);
 
+        // $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+
+        $count = self::return_number_of_filtered_recipients($newsletterid, $userfilter);
+
+        $mform->registerNoSubmitButton('calculatefilteredusers');
+        $elements = [
+            $mform->createElement('static', 'filtereduserscount', "filtereduserscount",
+                get_string('filteredusercount', 'mod_newsletter', $count)),
+            $mform->createElement('submit', 'calculatefilteredusers', get_string('calculateusers', 'mod_newsletter'))
+        ];
+        $mform->addGroup($elements, 'calculateusersgroup', 'calculateusersgroup', [' '], false);
     }
 
     /**
@@ -284,8 +295,8 @@ class userfilter {
                 $addselect .= " , s$counter.data as :paramcpfa$counter ";
                 $addfrom .= " LEFT JOIN (
                     SELECT ud.*, uif.shortname
-                    FROM m_user_info_data ud
-                    JOIN m_user_info_field uif ON ud.fieldid=uif.id
+                    FROM {user_info_data} ud
+                    JOIN {user_info_field} uif ON ud.fieldid=uif.id
                     WHERE uif.shortname=:paramcpfb$counter
                 ) as s$counter
                 ON u.id = s$counter.userid ";
@@ -326,20 +337,36 @@ class userfilter {
 
         switch ($operator) {
             case '=':
+                $dbvalue = $DB->sql_compare_text($dbvalue);
+                $formvalue = $DB->sql_compare_text($formvalue);
                 $inparams["paramop$counter"] = $formvalue;
                 $fragment = $DB->sql_equal($dbvalue, ":paramop$counter", false, false);
+
                 break;
             case '!=':
+                $dbvalue = $DB->sql_compare_text($dbvalue);
+                $formvalue = $DB->sql_compare_text($formvalue);
                 $inparams["paramop$counter"] = $formvalue;
                 $fragment = $DB->sql_equal($dbvalue, ":paramop$counter", false, false, true);
+
+                // With <> we need to add "OR IS NULL".
+                $fragment .= " OR $dbvalue IS NULL ";
+
                 break;
             case '~':
+                $dbvalue = $DB->sql_compare_text($dbvalue);
+                $formvalue = $DB->sql_compare_text($formvalue);
                 $inparams["paramop$counter"] = "%$formvalue%";
                 $fragment = $DB->sql_like($dbvalue, ":paramop$counter", false, false);
                 break;
             case '!~':
+                $dbvalue = $DB->sql_compare_text($dbvalue);
+                $formvalue = $DB->sql_compare_text($formvalue);
                 $inparams["paramop$counter"] = "%$formvalue%";
                 $fragment = $DB->sql_like($dbvalue, ":paramop$counter", false, false, true);
+
+                // With <> we need to add "OR IS NULL".
+                $fragment .= " OR $dbvalue IS NULL ";
                 break;
             case '[]':
                 $array = explode(',', $formvalue);
@@ -350,12 +377,17 @@ class userfilter {
                 $array = explode(',', $formvalue);
                 list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter", false);
                 $fragment = $dbvalue . " $fragment";
+
+                // With <> we need to add "OR IS NULL".
+                $fragment .= " OR $dbvalue IS NULL ";
                 break;
             case '()':
-                $fragment = $dbvalue . " IS EMPTY";
+                $fragment = $dbvalue . " IS NULL";
+                $fragment .= " OR $dbvalue = ''"; // To also cover empty strings.
                 break;
             case '(!)':
-                $fragment = $dbvalue . " IS NOT EMPTY";
+                $fragment = $dbvalue . " IS NOT NULL";
+                $fragment .= " AND $dbvalue <> ''"; // To also cover empty strings.
                 break;
             case '>':
                 $inparams["paramop$counter"] = $formvalue;
@@ -534,5 +566,14 @@ class userfilter {
                 return $uservalue < $fieldvalue;
         }
         return $result;
+    }
+
+
+    private static function return_number_of_filtered_recipients($newsletterid, $userfilter) {
+
+        if (!$userfilter) {
+            return 0;
+        }
+        return count(newsletter_get_all_valid_recipients($newsletterid, $userfilter));
     }
 }

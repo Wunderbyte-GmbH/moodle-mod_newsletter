@@ -218,6 +218,9 @@ $string['notinarray'] = 'TeilnehmerIn hat keinen dieser Werte (Komma getrennt)';
 $string['isempty'] = 'TeilnehmerIn hat keinen Wert gesetzt';
 $string['isnotempty'] = 'TeilnehmerIn hat einen Wert gesetzt';
 
+$string['filteredusercount'] = '{$a} NutzerInnen werden diesen Newsletter erhalten. Wenn Sie den Filter ändern, drücken Sie bitte den Berechnen-Button unten.';
+$string['calculateusers'] = 'Berechne die Zahl der gefilterten EmpfängerInnen.';
+
 // Privacy API.
 $string['privacy:metadata:newsletter_subscriptions'] = 'Newsletter-Abo anzeigen';
 $string['privacy:metadata:newsletter_subscriptions:userid'] = 'Nutzer/in, die das Abo initiert hat.';
