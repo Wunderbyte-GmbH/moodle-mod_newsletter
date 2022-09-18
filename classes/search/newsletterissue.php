@@ -113,7 +113,18 @@ class newsletterissue extends \core_search\base {
      * @return bool
      */
     public function check_access($id) {
-        global $USER;
+
+        global $DB;
+
+        // If the record does not exist anymore.
+        if (!$myobject = $DB->get_record('newsletter_issues', ['id' => $id])) {
+            return \core_search\manager::ACCESS_DELETED;
+        }
+
+        if ($myobject->delivered != 1) {
+            return \core_search\manager::ACCESS_DENIED;
+        }
+
         return \core_search\manager::ACCESS_GRANTED;
     }
 
