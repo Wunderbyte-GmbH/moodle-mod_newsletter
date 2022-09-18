@@ -76,6 +76,9 @@ class issue_form extends moodleform {
         $issue = $data['issue'];
         $context = $data['context'];
 
+        $userfilter = $issue ? $issue->userfilter : null;
+        $newsletterid = $issue ? $issue->newsletterid : 0;
+
         $mform->addElement('hidden', 'id', $newsletter->get_course_module()->id);
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'issue', $issue ? $issue->id : 0);
@@ -130,7 +133,7 @@ class issue_form extends moodleform {
         $mform->addElement('static', 'filteruserinfo', '',
                 get_string('header_filteruserinfo', 'mod_newsletter'));
 
-        userfilter::insert_form_elements($mform);
+        userfilter::insert_form_elements($mform, $newsletterid, $userfilter);
 
         $mform->addElement('header', 'header_publish',
                 get_string('header_publish', 'mod_newsletter'));

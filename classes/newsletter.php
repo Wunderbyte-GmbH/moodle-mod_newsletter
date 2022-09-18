@@ -33,6 +33,7 @@ use stdClass;
 use context;
 use moodle_url;
 use html_writer;
+use moodle_exception;
 use user_picture;
 
 defined('MOODLE_INTERNAL') || die();
@@ -123,12 +124,25 @@ class newsletter implements renderable {
         global $DB;
         $this->context = $context;
         if ($eagerload) {
-            $this->coursemodule = get_coursemodule_from_id('newsletter', $this->context->instanceid,
-                    0, false, MUST_EXIST);
-            $this->course = $DB->get_record('course', array('id' => $this->coursemodule->course),
-                    '*', MUST_EXIST);
-            $this->instance = $DB->get_record('newsletter',
-                    array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
+            $this->coursemodule = get_coursemodule_from_id(
+                'newsletter',
+                $this->context->instanceid,
+                0,
+                false,
+                MUST_EXIST
+            );
+            $this->course = $DB->get_record(
+                'course',
+                array('id' => $this->coursemodule->course),
+                '*',
+                MUST_EXIST
+            );
+            $this->instance = $DB->get_record(
+                'newsletter',
+                array('id' => $this->get_course_module()->instance),
+                '*',
+                MUST_EXIST
+            );
             $this->config = get_config('mod_newsletter');
             $this->context = $context;
         }
@@ -151,8 +165,13 @@ class newsletter implements renderable {
     public function get_course_module() {
         if (!$this->coursemodule) {
             if ($this->context && $this->context->contextlevel == CONTEXT_MODULE) {
-                $this->coursemodule = get_coursemodule_from_id('newsletter',
-                        $this->context->instanceid, 0, false, MUST_EXIST);
+                $this->coursemodule = get_coursemodule_from_id(
+                    'newsletter',
+                    $this->context->instanceid,
+                    0,
+                    false,
+                    MUST_EXIST
+                );
             }
         }
         return $this->coursemodule;
@@ -167,11 +186,16 @@ class newsletter implements renderable {
         global $DB;
         if (!$this->instance) {
             if ($this->get_course_module()) {
-                $this->instance = $DB->get_record('newsletter',
-                        array('id' => $this->get_course_module()->instance), '*', MUST_EXIST);
+                $this->instance = $DB->get_record(
+                    'newsletter',
+                    array('id' => $this->get_course_module()->instance),
+                    '*',
+                    MUST_EXIST
+                );
             } else {
                 throw new \coding_exception(
-                        'Improper use of the newsletter class. Cannot load the newsletter record.');
+                    'Improper use of the newsletter class. Cannot load the newsletter record.'
+                );
             }
         }
         return $this->instance;
@@ -186,12 +210,18 @@ class newsletter implements renderable {
     public function get_subid($userid = 0) {
         global $DB, $USER;
         if ($userid === 0 && !$this->subscriptionid) {
-            $this->subscriptionid = $DB->get_field('newsletter_subscriptions', 'id',
-                    array('userid' => $USER->id, 'newsletterid' => $this->get_instance()->id));
+            $this->subscriptionid = $DB->get_field(
+                'newsletter_subscriptions',
+                'id',
+                array('userid' => $USER->id, 'newsletterid' => $this->get_instance()->id)
+            );
             return $this->subscriptionid;
         } else {
-            return $DB->get_field('newsletter_subscriptions', 'id',
-                    array('userid' => $userid, 'newsletterid' => $this->get_instance()->id));
+            return $DB->get_field(
+                'newsletter_subscriptions',
+                'id',
+                array('userid' => $userid, 'newsletterid' => $this->get_instance()->id)
+            );
         }
     }
 
@@ -204,8 +234,12 @@ class newsletter implements renderable {
         global $DB;
         if (!$this->course) {
             if ($this->context) {
-                $this->course = $DB->get_record('course',
-                        array('id' => $this->get_instance()->course), '*', MUST_EXIST);
+                $this->course = $DB->get_record(
+                    'course',
+                    array('id' => $this->get_instance()->course),
+                    '*',
+                    MUST_EXIST
+                );
             }
         }
         return $this->course;
@@ -243,8 +277,10 @@ class newsletter implements renderable {
      */
     public function get_subscriptions() {
         global $DB;
-        return $DB->get_records('newsletter_subscriptions',
-                array('id' => $this->get_instance()->id));
+        return $DB->get_records(
+            'newsletter_subscriptions',
+            array('id' => $this->get_instance()->id)
+        );
     }
 
     /**
@@ -266,15 +302,19 @@ class newsletter implements renderable {
 
         $DB->delete_records_select('newsletter_subscriptions', "newsletterid $sql", $inparams);
         $DB->delete_records_select('newsletter_deliveries', "newsletterid $sql", $inparams);
-        $status[] = array('component' => $componentstr,
-            'item' => get_string('delete_all_subscriptions', 'newsletter'), 'error' => false);
+        $status[] = array(
+            'component' => $componentstr,
+            'item' => get_string('delete_all_subscriptions', 'newsletter'), 'error' => false
+        );
         return $status;
     }
 
     private function get_js_module($strings = array()) {
-        $jsmodule = array('name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/module.js',
+        $jsmodule = array(
+            'name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/module.js',
             'requires' => array('node', 'event', 'node-screen', 'panel', 'node-event-delegate'),
-            'strings' => $strings);
+            'strings' => $strings
+        );
 
         return $jsmodule;
     }
@@ -285,10 +325,12 @@ class newsletter implements renderable {
      * @return array
      */
     public function get_subscription_statuslist() {
-        return array(NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string('health_0', 'mod_newsletter'),
+        return array(
+            NEWSLETTER_SUBSCRIBER_STATUS_OK => get_string('health_0', 'mod_newsletter'),
             NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC => get_string('health_1', 'mod_newsletter'),
             NEWSLETTER_SUBSCRIBER_STATUS_BLACKLISTED => get_string('health_2', 'mod_newsletter'),
-            NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED => get_string('health_4', 'mod_newsletter'));
+            NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED => get_string('health_4', 'mod_newsletter')
+        );
     }
 
     /**
@@ -356,8 +398,9 @@ class newsletter implements renderable {
                 $output = $this->display_guest_subscribe_form($params);
                 break;
             default:
-                print_error(
-                        'Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' . $params[NEWSLETTER_PARAM_ACTION]);
+                throw new moodle_exception (
+                    'Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' . $params[NEWSLETTER_PARAM_ACTION]
+                );
                 break;
         }
 
@@ -376,27 +419,41 @@ class newsletter implements renderable {
         $PAGE->requires->js_module($this->get_js_module());
         $authplugin = get_auth_plugin('email');
         if (!$authplugin->can_signup()) {
-            print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
+            throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
         }
         $output = '';
         $renderer = $this->get_renderer();
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
-        $mform = new \mod_newsletter_guest_signup_form(null,
-                array('id' => $this->get_course_module()->id,
-                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
+        $mform = new \mod_newsletter_guest_signup_form(
+            null,
+            array(
+                'id' => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE
+            )
+        );
         if ($mform->is_cancelled()) {
-            redirect(new moodle_url('view.php', array('id' => $this->get_course_module()->id,
-                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
+            redirect(new moodle_url('view.php', array(
+                'id' => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER
+            )));
             return;
         } else if ($data = $mform->get_data()) {
             $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
             $a = $data->email;
             $output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter', $a));
             $url = $this->get_url();
-            $output .= html_writer::link($url, get_string('continue'),
-                    array('class' => 'btn mdl-align'));
+            $output .= html_writer::link(
+                $url,
+                get_string('continue'),
+                array('class' => 'btn mdl-align')
+            );
             return $output;
         } else if ($this->get_instance()->allowguestusersubscriptions && (!isloggedin() || isguestuser())) {
             $output .= $renderer->render(new \newsletter_form($mform, null));
@@ -418,17 +475,31 @@ class newsletter implements renderable {
         $renderer = $this->get_renderer();
 
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
-        $mform = new \mod_newsletter_resubscribe_form(null,
-                array('id' => $this->get_course_module()->id,
-                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
+        $mform = new \mod_newsletter_resubscribe_form(
+            null,
+            array(
+                'id' => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_SUBSCRIBE
+            )
+        );
 
         if ($mform->is_cancelled()) {
-            redirect(new moodle_url('view.php',
-                            array('id' => $this->get_course_module()->id,
-                                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER))
-                    );
+            redirect(
+                new moodle_url(
+                    'view.php',
+                    array(
+                        'id' => $this->get_course_module()->id,
+                        NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER
+                    )
+                )
+            );
             return;
         } else if ($data = $mform->get_data()) {
             if ($data->resubscribe_confirmation) {
@@ -437,15 +508,23 @@ class newsletter implements renderable {
                 $output .= html_writer::div(get_string('resubscriptionsuccess', 'mod_newsletter'));
                 $output .= html_writer::div('&nbsp;');
                 $url = $this->get_url();
-                $output .= html_writer::link($url, get_string('continue'),
-                        array('class' => 'btn mdl-align'));
+                $output .= html_writer::link(
+                    $url,
+                    get_string('continue'),
+                    array('class' => 'btn mdl-align')
+                );
                 $output .= $renderer->render_footer();
                 return $output;
             } else {
                 redirect(
-                        new moodle_url('view.php',
-                                array('id' => $this->get_course_module()->id,
-                                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER)));
+                    new moodle_url(
+                        'view.php',
+                        array(
+                            'id' => $this->get_course_module()->id,
+                            NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER
+                        )
+                    )
+                );
             }
         } else {
             $output .= $renderer->render(new \newsletter_form($mform, null));
@@ -466,27 +545,47 @@ class newsletter implements renderable {
 
         $output = '';
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
-        $str = file_rewrite_pluginfile_urls($this->get_instance()->intro, 'pluginfile.php',
-            $this->get_context()->id, 'mod_newsletter', 'intro', null);
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
+        $str = file_rewrite_pluginfile_urls(
+            $this->get_instance()->intro,
+            'pluginfile.php',
+            $this->get_context()->id,
+            'mod_newsletter',
+            'intro',
+            null
+        );
         $output .= format_text($str, $this->get_instance()->introformat);
         $output .= $renderer->render(
-                new \newsletter_main_toolbar($this->get_course_module()->id,
-                        $params[NEWSLETTER_PARAM_GROUP_BY],
-                        has_capability('mod/newsletter:createissue', $this->context),
-                        has_capability('mod/newsletter:managesubscriptions', $this->context)));
+            new \newsletter_main_toolbar(
+                $this->get_course_module()->id,
+                $params[NEWSLETTER_PARAM_GROUP_BY],
+                has_capability('mod/newsletter:createissue', $this->context),
+                has_capability('mod/newsletter:managesubscriptions', $this->context)
+            )
+        );
 
-        if (has_capability('mod/newsletter:manageownsubscription', $this->context) &&
-                $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if (
+            has_capability('mod/newsletter:manageownsubscription', $this->context) &&
+            $this->instance->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED
+        ) {
             if (!$this->is_subscribed()) {
                 $url = $this->get_subsribe_url();
                 $text = get_string('subscribe', 'mod_newsletter');
                 $output .= html_writer::link($url, $text, ['class', 'btn btn-primary m-2']);
             } else {
-                $url = new moodle_url('/mod/newsletter/view.php',
-                        array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                            NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE));
+                $url = new moodle_url(
+                    '/mod/newsletter/view.php',
+                    array(
+                        NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                        NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_UNSUBSCRIBE
+                    )
+                );
                 $text = get_string('unsubscribe', 'mod_newsletter');
                 $output .= html_writer::link($url, $text, ['class' => 'btn btn-primary m-2']);
             }
@@ -497,9 +596,13 @@ class newsletter implements renderable {
                 $guestsignuppossible = false;
             }
             if ($this->get_instance()->allowguestusersubscriptions && (!isloggedin() || isguestuser()) && $guestsignuppossible) {
-                $url = new moodle_url('/mod/newsletter/view.php',
-                        array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                            NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE));
+                $url = new moodle_url(
+                    '/mod/newsletter/view.php',
+                    array(
+                        NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                        NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE
+                    )
+                );
                 $text = get_string('subscribe', 'mod_newsletter');
                 $output .= html_writer::link($url, $text, array('class' => 'btn btn-primary m-2'));
             }
@@ -525,33 +628,52 @@ class newsletter implements renderable {
     private function view_read_issue_page(array $params) {
         global $CFG;
         if (!(has_capability('mod/newsletter:editissue', $this->get_context())) && $this->get_issue(
-                $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
+            $params[NEWSLETTER_PARAM_ISSUE]
+        )->publishon > time()) {
             require_capability('mod/newsletter:editissue', $this->get_context());
         }
         if (!(has_capability('mod/newsletter:createissue', $this->get_context())) && $this->get_issue(
-            $params[NEWSLETTER_PARAM_ISSUE])->publishon > time()) {
-        require_capability('mod/newsletter:createissue', $this->get_context());
-    }
+            $params[NEWSLETTER_PARAM_ISSUE]
+        )->publishon > time()) {
+            require_capability('mod/newsletter:createissue', $this->get_context());
+        }
         $renderer = $this->get_renderer();
 
         $output = $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
         $currentissue = $this->get_issue($params[NEWSLETTER_PARAM_ISSUE]);
 
         if (has_capability('mod/newsletter:editissue', $this->get_context())) {
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                        'action' => NEWSLETTER_ACTION_EDIT_ISSUE,
-                        NEWSLETTER_PARAM_ISSUE => $currentissue->id));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                array(
+                    NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                    'action' => NEWSLETTER_ACTION_EDIT_ISSUE,
+                    NEWSLETTER_PARAM_ISSUE => $currentissue->id
+                )
+            );
             $output .= $renderer->render(
-                    new \newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'),
-                            'btn btn-default'));
+                new \newsletter_action_link(
+                    $url,
+                    get_string('edit_issue', 'mod_newsletter'),
+                    'btn btn-default'
+                )
+            );
         }
 
-        $navigationbar = new \newsletter_navigation_bar($currentissue,
-                $this->get_first_issue($currentissue), $this->get_previous_issue($currentissue),
-                $this->get_next_issue($currentissue), $this->get_last_issue($currentissue));
+        $navigationbar = new \newsletter_navigation_bar(
+            $currentissue,
+            $this->get_first_issue($currentissue),
+            $this->get_previous_issue($currentissue),
+            $this->get_next_issue($currentissue),
+            $this->get_last_issue($currentissue)
+        );
         $output .= $renderer->render($navigationbar);
 
         // Generate table of content.
@@ -559,22 +681,39 @@ class newsletter implements renderable {
         $currentissue->htmlcontent = $parsedhtml->get_parsed_html();
 
         // Render the html with inline css based on the used stylesheet.
-        $currentissue->htmlcontent = file_rewrite_pluginfile_urls($currentissue->htmlcontent,
-                'pluginfile.php', $this->get_context()->id, 'mod_newsletter',
-                NEWSLETTER_FILE_AREA_ISSUE, $params[NEWSLETTER_PARAM_ISSUE],
-                \mod_newsletter\issue_form::editor_options($this->get_context(),
-                        $params[NEWSLETTER_PARAM_ISSUE]));
-        $currentissue->htmlcontent = $this->inline_css($currentissue->htmlcontent,
-                $currentissue->stylesheetid);
+        $currentissue->htmlcontent = file_rewrite_pluginfile_urls(
+            $currentissue->htmlcontent,
+            'pluginfile.php',
+            $this->get_context()->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ISSUE,
+            $params[NEWSLETTER_PARAM_ISSUE],
+            \mod_newsletter\issue_form::editor_options(
+                $this->get_context(),
+                $params[NEWSLETTER_PARAM_ISSUE]
+            )
+        );
+        $currentissue->htmlcontent = $this->inline_css(
+            $currentissue->htmlcontent,
+            $currentissue->stylesheetid
+        );
 
         $output .= $renderer->render(new \newsletter_issue($currentissue));
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($this->get_context()->id, 'mod_newsletter',
-                NEWSLETTER_FILE_AREA_ATTACHMENT, $currentissue->id, "", false);
+        $files = $fs->get_area_files(
+            $this->get_context()->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ATTACHMENT,
+            $currentissue->id,
+            "",
+            false
+        );
         foreach ($files as $file) {
-            $file->link = file_encode_url($CFG->wwwroot . '/pluginfile.php',
-                    '/' . $this->get_context()->id . '/mod_newsletter/attachments/' . $currentissue->id . '/' . $file->get_filename());
+            $file->link = file_encode_url(
+                $CFG->wwwroot . '/pluginfile.php',
+                '/' . $this->get_context()->id . '/mod_newsletter/attachments/' . $currentissue->id . '/' . $file->get_filename()
+            );
         }
 
         if (!empty($files)) {
@@ -584,15 +723,21 @@ class newsletter implements renderable {
         }
         if (has_capability('mod/newsletter:editissue', $this->get_context())) {
             $output .= $renderer->render(
-                    new \newsletter_action_link($url, get_string('edit_issue', 'mod_newsletter'),
-                            'btn btn-default'));
+                new \newsletter_action_link(
+                    $url,
+                    get_string('edit_issue', 'mod_newsletter'),
+                    'btn btn-default'
+                )
+            );
         }
         $output .= $renderer->render($navigationbar);
         $output .= $renderer->render_footer();
 
-        $params = array('context' => $this->get_context(),
+        $params = array(
+            'context' => $this->get_context(),
             'objectid' => $params[NEWSLETTER_PARAM_ISSUE],
-            'other' => array('newsletterid' => $this->get_instance()->id));
+            'other' => array('newsletterid' => $this->get_instance()->id)
+        );
 
         $event = \mod_newsletter\event\issue_viewed::create($params);
         $event->trigger();
@@ -609,9 +754,11 @@ class newsletter implements renderable {
     private function view_delete_issue_page(array $params) {
         global $OUTPUT;
         if (!$params[NEWSLETTER_PARAM_ISSUE] || !$this->check_issue_id(
-                $params[NEWSLETTER_PARAM_ISSUE])) {
-            print_error(
-                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
+            $params[NEWSLETTER_PARAM_ISSUE]
+        )) {
+            throw new moodle_exception (
+                'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
+            );
         }
 
         if ($params[NEWSLETTER_PARAM_CONFIRM] != NEWSLETTER_CONFIRM_UNKNOWN) {
@@ -622,22 +769,33 @@ class newsletter implements renderable {
             } else if ($params[NEWSLETTER_PARAM_CONFIRM] == NEWSLETTER_CONFIRM_NO) {
                 redirect($url);
             } else {
-                print_error("Wrong confirm!");
+                throw new moodle_exception ("Wrong confirm!");
             }
         }
 
         $renderer = $this->get_renderer();
         $output = '';
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
-        $url = new moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                    NEWSLETTER_PARAM_ISSUE => $params[NEWSLETTER_PARAM_ISSUE],
-                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_ISSUE));
-        $output .= $OUTPUT->confirm(get_string('delete_issue_question', 'mod_newsletter'),
-                new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
-                new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
+        $url = new moodle_url(
+            '/mod/newsletter/view.php',
+            array(
+                NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ISSUE => $params[NEWSLETTER_PARAM_ISSUE],
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_ISSUE
+            )
+        );
+        $output .= $OUTPUT->confirm(
+            get_string('delete_issue_question', 'mod_newsletter'),
+            new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
+            new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO))
+        );
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -651,8 +809,9 @@ class newsletter implements renderable {
     private function view_edit_issue_page(array $params) {
         global $CFG, $PAGE;
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
-            print_error(
-                    'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]);
+            throw new moodle_exception (
+                'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
+            );
         }
 
         $context = $this->get_context();
@@ -678,8 +837,14 @@ class newsletter implements renderable {
         $issue->newsletterid = $this->get_instance()->id;
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET,
-                $this->get_instance()->id, 'filename', false);
+        $files = $fs->get_area_files(
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_STYLESHEET,
+            $this->get_instance()->id,
+            'filename',
+            false
+        );
         $options = array();
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
         foreach ($files as $file) {
@@ -688,32 +853,65 @@ class newsletter implements renderable {
         }
 
         $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_init_call('M.mod_newsletter.init_editor',
-                array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET));
+        $PAGE->requires->js_init_call(
+            'M.mod_newsletter.init_editor',
+            array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET)
+        );
 
-        $mform = new \mod_newsletter\issue_form(null,
-                array('newsletter' => $this, 'issue' => $issue, 'context' => $context));
+        $mform = new \mod_newsletter\issue_form(
+            null,
+            array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
+        );
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');
-        file_prepare_draft_area($draftitemid, $context->id, 'mod_newsletter',
-                NEWSLETTER_FILE_AREA_ATTACHMENT, empty($issue->id) ? null : $issue->id,
-                \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context()));
+        file_prepare_draft_area(
+            $draftitemid,
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ATTACHMENT,
+            empty($issue->id) ? null : $issue->id,
+            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context())
+        );
 
         $issueid = empty($issue->id) ? null : $issue->id;
         $draftideditor = file_get_submitted_draft_itemid('htmlcontent');
-        $currenttext = file_prepare_draft_area($draftideditor, $context->id, 'mod_newsletter',
-                NEWSLETTER_FILE_AREA_ISSUE, $issueid,
-                \mod_newsletter\issue_form::editor_options($context, $issueid), $issue->htmlcontent);
-        $setarray = array('attachments' => $draftitemid, 'title' => $issue->title,
-        'htmlcontent' => array('text' => $currenttext,
-            'format' => empty($issue->messageformat) ? editors_get_preferred_format() : $issue->messageformat,
-            'itemid' => $draftideditor), 'deliverystarted' => $deliverystartedorcompleted,
-        'toc' => $issue->toc, 'publishon' => $issue->publishon,
-        'stylesheetid' => $issue->stylesheetid);
-        userfilter::set_form_values($issue, $setarray);
-        $mform->set_data($setarray);
+        $currenttext = file_prepare_draft_area(
+            $draftideditor,
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ISSUE,
+            $issueid,
+            \mod_newsletter\issue_form::editor_options($context, $issueid),
+            $issue->htmlcontent
+        );
 
-        if ($data = $mform->get_data()) {
+        $setarray = array(
+            'attachments' => $draftitemid, 'title' => $issue->title,
+            'htmlcontent' => array(
+                'text' => $currenttext,
+                'format' => empty($issue->messageformat) ? editors_get_preferred_format() : $issue->messageformat,
+                'itemid' => $draftideditor
+            ), 'deliverystarted' => $deliverystartedorcompleted,
+            'toc' => $issue->toc, 'publishon' => $issue->publishon,
+            'stylesheetid' => $issue->stylesheetid
+        );
+
+        // When we only want to recalculate filter.
+        if ($mform->no_submit_button_pressed()) {
+            $data = $mform->get_submitted_data();
+            if (!$data->issue) {
+                $this->add_issue($data);
+            } else {
+                // We need the new issue object.
+                $issue = $this->update_issue($data);
+                // Now we set the form with the right values, before it will be rendered again.
+                // As we want a static element to be rendered again, we recreate the whole form.
+                $mform = new \mod_newsletter\issue_form(
+                    null,
+                    array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
+                );
+            }
+        } else if ($data = $mform->get_data()) {
             if (!$data->issue) {
                 $this->add_issue($data);
             } else {
@@ -722,17 +920,26 @@ class newsletter implements renderable {
             redirect($this->get_url());
         }
 
+        userfilter::set_form_values($issue, $setarray);
+        $mform->set_data($setarray);
+
         $output = '';
         $renderer = $this->get_renderer();
 
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
         // TODO: remove ugly config hack and provide js for atto.
         $texteditors = $CFG->texteditors;
         $CFG->texteditors = 'tinymce,textarea';
         $output .= $renderer->render(
-                new \newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter')));
+            new \newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter'))
+        );
         $CFG->texteditors = $texteditors;
         $output .= $renderer->render_footer();
         return $output;
@@ -747,9 +954,13 @@ class newsletter implements renderable {
     private function view_manage_subscriptions(array $params) {
         global $DB, $OUTPUT;
 
-        $url = new moodle_url('/mod/newsletter/view.php',
-                array('id' => $this->get_course_module()->id,
-                    'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+        $url = new moodle_url(
+            '/mod/newsletter/view.php',
+            array(
+                'id' => $this->get_course_module()->id,
+                'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS
+            )
+        );
 
         list($filtersql, $filterparams) = $this->get_filter_sql($params);
         if ($params['resetbutton'] !== '') {
@@ -763,38 +974,54 @@ class newsletter implements renderable {
         $total = $DB->count_records('newsletter_subscriptions', $sqlparams);
         list($countsql, $countparams) = $this->get_filter_sql($params, true);
         if ($countsql > 0) {
-        	$totalfiltered = $DB->count_records_sql($countsql, $countparams);
-	    }
-	    else {
-		    $totalfiltered = 0;
-	    }
+            $totalfiltered = $DB->count_records_sql($countsql, $countparams);
+        } else {
+            $totalfiltered = 0;
+        }
         $pages = $this->calculate_pages($totalfiltered, $from, $count);
 
-        $columns = array(NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
+        $columns = array(
+            NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_EMAIL,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_NAME, NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_HEALTH,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_BOUNCERATIO,
             NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_TIMESUBSCRIBED,
-            NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS);
+            NEWSLETTER_SUBSCRIPTION_LIST_COLUMN_ACTIONS
+        );
 
         $filterform = new \mod_newsletter\subscription\mod_newsletter_subscription_filter_form(
-                'view.php', array('newsletter' => $this), 'get', '', array('id' => 'filterform'));
+            'view.php',
+            array('newsletter' => $this),
+            'get',
+            '',
+            array('id' => 'filterform')
+        );
         $filterform->set_data(
-                array('search' => $params['search'], 'status' => $params['status'],
-                    'count' => $params['count'], 'orderby' => $params['orderby']));
+            array(
+                'search' => $params['search'], 'status' => $params['status'],
+                'count' => $params['count'], 'orderby' => $params['orderby']
+            )
+        );
 
         $renderer = $this->get_renderer();
         $output = '';
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
         $newurl = $url;
         $newurl->params($params);
 
         require_once(dirname(__FILE__) . '/subscription/subscriptions_admin_form.php');
         $cohorts = \cohort_get_available_cohorts($this->get_context());
         if (!empty($cohorts)) {
-            $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(null,
-                    array('id' => $this->get_course_module()->id, 'course' => $this->get_course()));
+            $mform = new \mod_newsletter\subscription\mod_newsletter_subscriptions_admin_form(
+                null,
+                array('id' => $this->get_course_module()->id, 'course' => $this->get_course())
+            );
             if ($data = $mform->get_data()) {
                 if (isset($data->subscribe)) {
                     foreach ($data->cohorts as $cohortid) {
@@ -805,7 +1032,7 @@ class newsletter implements renderable {
                         $this->unsubscribe_cohort($cohortid);
                     }
                 } else {
-                    print_error("Wrong submit!");
+                    throw new moodle_exception ("Wrong submit!");
                 }
                 redirect($url);
             }
@@ -813,12 +1040,16 @@ class newsletter implements renderable {
 
         require_once(dirname(__FILE__) . '/subscription/newsletter_user_subscription.php');
         $subscriberselector = new \mod_newsletter\subscription\mod_newsletter_potential_subscribers(
-                'subsribeusers',
-                array('courseid' => $this->get_course()->id,
-                    'newsletterid' => $this->get_instance()->id));
+            'subsribeusers',
+            array(
+                'courseid' => $this->get_course()->id,
+                'newsletterid' => $this->get_instance()->id
+            )
+        );
         $subscribedusers = new \mod_newsletter\subscription\mod_newsletter_existing_subscribers(
-                'subscribedusers',
-                array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this));
+            'subscribedusers',
+            array('newsletterid' => $this->get_instance()->id, 'newsletter' => $this)
+        );
 
         if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
             $userstosubscribe = $subscriberselector->get_selected_users();
@@ -855,10 +1086,13 @@ class newsletter implements renderable {
 
         require_once(dirname(__FILE__) . '/subscription/subscriber_selector_form.php');
         $subscriberform = new \mod_newsletter\subscription\mod_newsletter_subscriber_selector_form(
-                null,
-                array('id' => $this->get_course_module()->id, 'course' => $this->get_course(),
-                    'existing' => $subscribedusers, 'potential' => $subscriberselector,
-                    'leftarrow' => $OUTPUT->larrow(), 'rightarrow' => $OUTPUT->rarrow()));
+            null,
+            array(
+                'id' => $this->get_course_module()->id, 'course' => $this->get_course(),
+                'existing' => $subscribedusers, 'potential' => $subscriberselector,
+                'leftarrow' => $OUTPUT->larrow(), 'rightarrow' => $OUTPUT->rarrow()
+            )
+        );
 
         $output .= $renderer->render(new \newsletter_form($subscriberform, null));
         if (!empty($cohorts)) {
@@ -866,14 +1100,21 @@ class newsletter implements renderable {
         }
         $output .= $renderer->render(new \newsletter_form($filterform));
         $output .= $renderer->render(
-                new \newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered));
+            new \newsletter_pager($newurl, $from, $count, $pages, $total, $totalfiltered)
+        );
         $output .= $renderer->render(
-                new \newsletter_subscription_list($this->get_course_module()->id, $subscriptions,
-                        $columns));
+            new \newsletter_subscription_list(
+                $this->get_course_module()->id,
+                $subscriptions,
+                $columns
+            )
+        );
         $output .= $renderer->render_footer();
 
-        $logparams = array('context' => $this->get_context(),
-            'objectid' => $this->get_instance()->id);
+        $logparams = array(
+            'context' => $this->get_context(),
+            'objectid' => $this->get_instance()->id
+        );
         $event = \mod_newsletter\event\subscriptions_viewed::create($logparams);
         $event->trigger();
 
@@ -902,21 +1143,31 @@ class newsletter implements renderable {
      */
     private function view_edit_subscription(array $params) {
         global $DB;
-        $subscription = $DB->get_record('newsletter_subscriptions',
-                array('id' => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
+        $subscription = $DB->get_record(
+            'newsletter_subscriptions',
+            array('id' => $params[NEWSLETTER_PARAM_SUBSCRIPTION])
+        );
         require_once(dirname(__FILE__) . '/subscription/subscription_form.php');
-        $mform = new \mod_newsletter\subscription\mod_newsletter_subscription_form(null,
-                array('newsletter' => $this, 'subscription' => $subscription));
+        $mform = new \mod_newsletter\subscription\mod_newsletter_subscription_form(
+            null,
+            array('newsletter' => $this, 'subscription' => $subscription)
+        );
 
         if ($mform->is_cancelled()) {
-            redirect(new moodle_url('view.php', array('id' => $this->get_course_module()->id,
-                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
+            redirect(new moodle_url('view.php', array(
+                'id' => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS
+            )));
             return;
         } else if ($data = $mform->get_data()) {
             $this->update_subscription($data);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                        NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                array(
+                    NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS
+                )
+            );
             redirect($url);
         }
 
@@ -924,10 +1175,16 @@ class newsletter implements renderable {
         $renderer = $this->get_renderer();
 
         $output .= $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
         $output .= $renderer->render(
-                new \newsletter_form($mform, get_string('edit_subscription_title', 'mod_newsletter')));
+            new \newsletter_form($mform, get_string('edit_subscription_title', 'mod_newsletter'))
+        );
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -942,31 +1199,46 @@ class newsletter implements renderable {
         global $OUTPUT;
 
         if ($params[NEWSLETTER_PARAM_CONFIRM] != NEWSLETTER_CONFIRM_UNKNOWN) {
-            $redirecturl = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                        NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
+            $redirecturl = new moodle_url(
+                '/mod/newsletter/view.php',
+                array(
+                    NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS
+                )
+            );
             if ($params[NEWSLETTER_PARAM_CONFIRM] == NEWSLETTER_CONFIRM_YES) {
                 $this->delete_subscription($params[NEWSLETTER_PARAM_SUBSCRIPTION]);
                 redirect($redirecturl);
             } else if ($params[NEWSLETTER_PARAM_CONFIRM] == NEWSLETTER_CONFIRM_NO) {
                 redirect($redirecturl);
             } else {
-                print_error("Wrong confirm!");
+                throw new moodle_exception ("Wrong confirm!");
             }
         }
 
         $renderer = $this->get_renderer();
         $output = $renderer->render(
-                new \newsletter_header($this->get_instance(), $this->get_context(), false,
-                        $this->get_course_module()->id));
+            new \newsletter_header(
+                $this->get_instance(),
+                $this->get_context(),
+                false,
+                $this->get_course_module()->id
+            )
+        );
 
-        $url = new moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
-                    NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
-                    NEWSLETTER_PARAM_SUBSCRIPTION => $params[NEWSLETTER_PARAM_SUBSCRIPTION]));
-        $output .= $OUTPUT->confirm(get_string('delete_subscription_question', 'mod_newsletter'),
-                new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
-                new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO)));
+        $url = new moodle_url(
+            '/mod/newsletter/view.php',
+            array(
+                NEWSLETTER_PARAM_ID => $this->get_course_module()->id,
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_DELETE_SUBSCRIPTION,
+                NEWSLETTER_PARAM_SUBSCRIPTION => $params[NEWSLETTER_PARAM_SUBSCRIPTION]
+            )
+        );
+        $output .= $OUTPUT->confirm(
+            get_string('delete_subscription_question', 'mod_newsletter'),
+            new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_YES)),
+            new moodle_url($url, array(NEWSLETTER_PARAM_CONFIRM => NEWSLETTER_CONFIRM_NO))
+        );
         $output .= $renderer->render_footer();
         return $output;
     }
@@ -1014,16 +1286,19 @@ class newsletter implements renderable {
         $sectionlist = new \newsletter_section_list($heading);
         $currentissuelist = new \newsletter_issue_summary_list();
         foreach ($issues as $issue) {
-            if ($issue->publishon >= $from && $issue->publishon < $to) { // If issue in timeslot
-                if (!($issue->publishon > time() && !$editissue)) { // do not display issues that
-                                                                    // are not yet published.
+            if ($issue->publishon >= $from && $issue->publishon < $to) { // If issue in timeslot.
+                if (!($issue->publishon > time() && !$editissue)) { // Do not display issues that.
+                    // Are not yet published.
                     $currentissuelist->add_issue_summary(
-                            new \newsletter_issue_summary($issue, $editissue, $deleteissue, $duplicateissue));
+                        new \newsletter_issue_summary($issue, $editissue, $deleteissue, $duplicateissue)
+                    );
                 }
             } else {
                 if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
                     $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(
-                            strtotime('yesterday', $to), $datefromto) . ')';
+                        strtotime('yesterday', $to),
+                        $datefromto
+                    ) . ')';
                 } else {
                     $heading = userdate($from, $dateformat);
                 }
@@ -1046,20 +1321,24 @@ class newsletter implements renderable {
                 }
                 if (!empty($currentissuelist->issues)) {
                     $sectionlist->add_issue_section(
-                            new \newsletter_section($heading, $currentissuelist));
+                        new \newsletter_section($heading, $currentissuelist)
+                    );
                 }
                 $currentissuelist = new \newsletter_issue_summary_list();
                 if (!($issue->publishon > time() && !$editissue)) { // Do not display issues that
-                                                                    // are not yet published.
+                    // are not yet published.
                     $currentissuelist->add_issue_summary(
-                            new \newsletter_issue_summary($issue, $editissue, $deleteissue));
+                        new \newsletter_issue_summary($issue, $editissue, $deleteissue)
+                    );
                 }
             } // End if issue in timeslot.
         } // Foreach issue.
         if (!empty($currentissuelist->issues)) {
             if ($groupby == NEWSLETTER_GROUP_ISSUES_BY_WEEK) {
                 $heading = userdate($from, $dateformat) . ' (' . userdate($from, $datefromto) . ' - ' . userdate(
-                        strtotime('yesterday', $to), $datefromto) . ')';
+                    strtotime('yesterday', $to),
+                    $datefromto
+                ) . ')';
             } else {
                 $heading = userdate($from, $dateformat);
             }
@@ -1071,7 +1350,7 @@ class newsletter implements renderable {
     /**
      * get first day of year (from) and the first day of the following year (to) of the issue's publication date
      *
-     * @param number $publishonts issue's publication date
+     * @param int $publishonts issue's publication date
      * @return array:number number |from to| from:first day of the year of publication, to: first day following year
      */
     private function get_year_from_to_issuelist($publishonts) {
@@ -1086,8 +1365,8 @@ class newsletter implements renderable {
      * calculate number of pages for displaying subscriptions
      *
      * @param number $total
-     * @param number $from
-     * @param number $count
+     * @param int $from
+     * @param int $count
      * @return multitype:number |multitype:unknown number
      */
     private function calculate_pages($total, $from, $count) {
@@ -1123,8 +1402,11 @@ class newsletter implements renderable {
     private function check_issue_id($issueid) {
         global $DB;
 
-        return !$issueid || $DB->get_field('newsletter_issues', 'newsletterid',
-                array('id' => $issueid, 'newsletterid' => $this->get_instance()->id));
+        return !$issueid || $DB->get_field(
+            'newsletter_issues',
+            'newsletterid',
+            array('id' => $issueid, 'newsletterid' => $this->get_instance()->id)
+        );
     }
 
     /**
@@ -1152,24 +1434,43 @@ class newsletter implements renderable {
         $issue->timemodified = $issue->timecreated;
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
 
-        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
-                'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,
-                \mod_newsletter\issue_form::editor_options($context, $issue->id),
-                $data->htmlcontent['text']);
+        $issue->htmlcontent = file_save_draft_area_files(
+            $data->htmlcontent['itemid'],
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ISSUE,
+            $issue->id,
+            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            $data->htmlcontent['text']
+        );
 
-        $DB->set_field('newsletter_issues', 'htmlcontent', $issue->htmlcontent,
-                array('id' => $issue->id));
+        $DB->set_field(
+            'newsletter_issues',
+            'htmlcontent',
+            $issue->htmlcontent,
+            array('id' => $issue->id)
+        );
 
-        $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
-            'maxfiles' => -1);
+        $fileoptions = array(
+            'subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
+            'maxfiles' => -1
+        );
 
         if ($data && $data->attachments) {
-            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter',
-                    NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
+            file_save_draft_area_files(
+                $data->attachments,
+                $context->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_ATTACHMENT,
+                $issue->id,
+                $fileoptions
+            );
         }
 
-        $params = array('context' => $context, 'objectid' => $issue->id,
-            'other' => array('newsletterid' => $issue->newsletterid));
+        $params = array(
+            'context' => $context, 'objectid' => $issue->id,
+            'other' => array('newsletterid' => $issue->newsletterid)
+        );
         $event = \mod_newsletter\event\issue_created::create($params);
         $event->trigger();
 
@@ -1180,6 +1481,7 @@ class newsletter implements renderable {
      * Update an existing newsletter issue.
      *
      * @param stdClass $data
+     * @return stdClass
      */
     private function update_issue(stdClass $data) {
         global $DB;
@@ -1187,7 +1489,8 @@ class newsletter implements renderable {
         $context = $this->get_context();
         $oldissue = $this->get_issue($data->issue);
         $deliverystartedorcompleted = true;
-        if ($oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN || $oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
+        if ($oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_UNKNOWN
+            || $oldissue->delivered == NEWSLETTER_DELIVERY_STATUS_FAILED) {
             $deliverystartedorcompleted = false;
         }
 
@@ -1195,10 +1498,15 @@ class newsletter implements renderable {
         $issue->id = $data->issue;
         $issue->title = $data->title;
         $issue->newsletterid = $this->get_instance()->id;
-        $issue->htmlcontent = file_save_draft_area_files($data->htmlcontent['itemid'], $context->id,
-                'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE, $issue->id,
-                \mod_newsletter\issue_form::editor_options($context, $issue->id),
-                $data->htmlcontent['text']);
+        $issue->htmlcontent = file_save_draft_area_files(
+            $data->htmlcontent['itemid'],
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ISSUE,
+            $issue->id,
+            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            $data->htmlcontent['text']
+        );
 
         // The publishon on date must not be altered after newsletter was sent.
         if (!$deliverystartedorcompleted) {
@@ -1207,12 +1515,20 @@ class newsletter implements renderable {
 
         $issue->stylesheetid = $data->stylesheetid;
         $issue->toc = $data->toc;
-        $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
-            'maxfiles' => -1);
+        $fileoptions = array(
+            'subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
+            'maxfiles' => -1
+        );
 
         if ($data && $data->attachments) {
-            file_save_draft_area_files($data->attachments, $context->id, 'mod_newsletter',
-                    NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, $fileoptions);
+            file_save_draft_area_files(
+                $data->attachments,
+                $context->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_ATTACHMENT,
+                $issue->id,
+                $fileoptions
+            );
         }
 
         $issue->userfilter = userfilter::return_json_from_form($data);
@@ -1220,6 +1536,8 @@ class newsletter implements renderable {
         $issue->timemodified = time();
 
         $DB->update_record('newsletter_issues', $issue);
+
+        return $issue;
     }
 
     /**
@@ -1252,8 +1570,12 @@ class newsletter implements renderable {
         $params = array_merge($params, $enrolledparams);
         $users = $DB->get_fieldset_sql($sql, $params);
         foreach ($users as $userid) {
-            $this->subscribe($userid, true, NEWSLETTER_SUBSCRIBER_STATUS_OK,
-                    $resubscribeunsubscribed);
+            $this->subscribe(
+                $userid,
+                true,
+                NEWSLETTER_SUBSCRIBER_STATUS_OK,
+                $resubscribeunsubscribed
+            );
         }
     }
 
@@ -1287,8 +1609,10 @@ class newsletter implements renderable {
      */
     private function get_issues($from = 0, $to = 0) {
         global $DB;
-        $total = $DB->count_records_select('newsletter_subscriptions',
-            'newsletterid = ' . $this->get_instance()->id . ' AND health < 2');
+        $total = $DB->count_records_select(
+            'newsletter_subscriptions',
+            'newsletterid = ' . $this->get_instance()->id . ' AND health < 2'
+        );
 
         $query = "SELECT i.*
                     FROM {newsletter_issues} i
@@ -1308,12 +1632,19 @@ class newsletter implements renderable {
 
             $record->cmid = $this->get_course_module()->id;
             $record->numsubscriptions = $total;
-            if ($record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED ||
-                $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS) {
-                $record->numnotyetdelivered = $DB->count_records('newsletter_deliveries',
-                    array('issueid' => $record->id, 'delivered' => 0));
-                $record->numdelivered = $DB->count_records_select('newsletter_deliveries',
-                    'issueid = :issueid AND delivered > 0', array('issueid' => $record->id));
+            if (
+                $record->delivered == NEWSLETTER_DELIVERY_STATUS_DELIVERED ||
+                $record->delivered == NEWSLETTER_DELIVERY_STATUS_INPROGRESS
+            ) {
+                $record->numnotyetdelivered = $DB->count_records(
+                    'newsletter_deliveries',
+                    array('issueid' => $record->id, 'delivered' => 0)
+                );
+                $record->numdelivered = $DB->count_records_select(
+                    'newsletter_deliveries',
+                    'issueid = :issueid AND delivered > 0',
+                    array('issueid' => $record->id)
+                );
             } else {
                 $record->numdelivered = 0;
             }
@@ -1335,8 +1666,10 @@ class newsletter implements renderable {
         if (isset($this->issues[$issueid])) {
             return $this->issues[$issueid];
         } else {
-            $record = $DB->get_record('newsletter_issues',
-                    array('id' => $issueid, 'newsletterid' => $this->get_instance()->id));
+            $record = $DB->get_record(
+                'newsletter_issues',
+                array('id' => $issueid, 'newsletterid' => $this->get_instance()->id)
+            );
             if ($record) {
                 $record->cmid = $this->get_course_module()->id;
                 $record->context = $this->get_context()->id;
@@ -1355,8 +1688,14 @@ class newsletter implements renderable {
     public function get_stylesheets($id = 0) {
         $fs = get_file_storage();
         $context = $this->get_context();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET,
-                $this->get_instance()->id, 'filename', false);
+        $files = $fs->get_area_files(
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_STYLESHEET,
+            $this->get_instance()->id,
+            'filename',
+            false
+        );
         if ($id === 0) {
             return $files;
         } else {
@@ -1381,7 +1720,8 @@ class newsletter implements renderable {
         global $CFG;
         $cssfile = $this->get_stylesheets($stylesheetid);
         $basecss = file_get_contents(
-                $CFG->dirroot . '/mod/newsletter/' . NEWSLETTER_BASE_STYLESHEET_PATH);
+            $CFG->dirroot . '/mod/newsletter/' . NEWSLETTER_BASE_STYLESHEET_PATH
+        );
         $toccss = file_get_contents($CFG->dirroot . '/mod/newsletter/' . 'toc.css');
         $css = $basecss . $toccss;
         if (!empty($cssfile)) {
@@ -1397,24 +1737,38 @@ class newsletter implements renderable {
 
         if (!$fulldocument) {
             if (preg_match(
+                '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
+                $html
+            )) {
+                $html = preg_replace(
                     '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
-                    $html)) {
-                $html = preg_replace(
-                        '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
-                        '<div style="$1 $2">$3</div>', $html);
+                    '<div style="$1 $2">$3</div>',
+                    $html
+                );
             } else if (preg_match(
-                    '/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi', $html)) {
+                '/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
+                $html
+            )) {
                 $html = preg_replace(
-                        '/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
-                        '<div style="$1">$2</div>', $html);
+                    '/.*?<html[^>]*?>.*?<body.*?style="([^"]*?)"[^>]*?>(.+)<\/body>.*/msi',
+                    '<div style="$1">$2</div>',
+                    $html
+                );
             } else if (preg_match(
-                    '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
+                '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi',
+                $html
+            )) {
                 $html = preg_replace(
-                        '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi',
-                        '<div style="$1">$2</div>', $html);
+                    '/.*?<html.*?style="([^"]*?)"[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi',
+                    '<div style="$1">$2</div>',
+                    $html
+                );
             } else if (preg_match('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi', $html)) {
-                $html = preg_replace('/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi',
-                        '<div>$1</div>', $html);
+                $html = preg_replace(
+                    '/.*?<html[^>]*?>.*?<body[^>]*?>(.+)<\/body>.*/msi',
+                    '<div>$1</div>',
+                    $html
+                );
             } else {
                 $html = '';
             }
@@ -1426,7 +1780,7 @@ class newsletter implements renderable {
      * returns the previous issue of a newsletter instance
      *
      * @param stdClass $issue
-     * @return array <NULL, mixed>
+     * @return null|array <NULL, mixed>
      */
     private function get_previous_issue($issue) {
         global $DB;
@@ -1472,8 +1826,10 @@ class newsletter implements renderable {
                      AND i.publishon < :publishon
                      AND i.id != :id
                 ORDER BY i.publishon ASC";
-        $params = array('newsletterid' => $issue->newsletterid, 'publishon' => $issue->publishon,
-            'id' => $issue->id);
+        $params = array(
+            'newsletterid' => $issue->newsletterid, 'publishon' => $issue->publishon,
+            'id' => $issue->id
+        );
         $results = $DB->get_records_sql($query, $params);
         return empty($results) ? null : reset($results);
     }
@@ -1492,8 +1848,10 @@ class newsletter implements renderable {
                      AND i.publishon > :publishon
                      AND i.id != :id
                 ORDER BY i.publishon DESC";
-        $params = array('newsletterid' => $issue->newsletterid, 'publishon' => $issue->publishon,
-            'id' => $issue->id);
+        $params = array(
+            'newsletterid' => $issue->newsletterid, 'publishon' => $issue->publishon,
+            'id' => $issue->id
+        );
         $results = $DB->get_records_sql($query, $params);
         return empty($results) ? null : reset($results);
     }
@@ -1505,8 +1863,10 @@ class newsletter implements renderable {
      * @throws \moodle_exception
      */
     public function get_url() {
-        return new moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id));
+        return new moodle_url(
+            '/mod/newsletter/view.php',
+            array(NEWSLETTER_PARAM_ID => $this->get_course_module()->id)
+        );
     }
 
     /**
@@ -1535,8 +1895,13 @@ class newsletter implements renderable {
      * @return boolean|number <boolean, number> subscriptionid for new subscription false when user is subscribed
      *  and status remains unchanged true when changed from unsubscribed to NEWSLETTER_SUBSCRIBER_STATUS_OK
      */
-    public function subscribe($userid = 0, $bulk = false, $status = NEWSLETTER_SUBSCRIBER_STATUS_OK,
-        $resubscribeunsubscribed = false, $instanceid = 0) {
+    public function subscribe(
+        $userid = 0,
+        $bulk = false,
+        $status = NEWSLETTER_SUBSCRIBER_STATUS_OK,
+        $resubscribeunsubscribed = false,
+        $instanceid = 0
+    ) {
         global $DB, $USER;
         $now = time();
 
@@ -1546,17 +1911,21 @@ class newsletter implements renderable {
         if ($instanceid == 0) {
             $instanceid = $this->get_instance()->id;
         }
-        if ($sub = $DB->get_record("newsletter_subscriptions",
-                array("userid" => $userid, "newsletterid" => $instanceid))) {
+        if ($sub = $DB->get_record(
+            "newsletter_subscriptions",
+            array("userid" => $userid, "newsletterid" => $instanceid)
+        )) {
             if ($sub->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED && $resubscribeunsubscribed) {
                 $sub->health = NEWSLETTER_SUBSCRIBER_STATUS_OK;
                 $sub->timestatuschanged = $now;
                 $sub->subscriberid = $USER->id;
                 $result = $DB->update_record('newsletter_subscriptions', $sub);
                 if ($result) {
-                    $params = array('context' => $this->get_context(), 'objectid' => $sub->id,
+                    $params = array(
+                        'context' => $this->get_context(), 'objectid' => $sub->id,
                         'relateduserid' => $userid,
-                        'other' => array('newsletterid' => $sub->newsletterid));
+                        'other' => array('newsletterid' => $sub->newsletterid)
+                    );
                     $event = \mod_newsletter\event\subscription_resubscribed::create($params);
                     $event->trigger();
                 }
@@ -1574,9 +1943,11 @@ class newsletter implements renderable {
             $sub->subscriberid = $USER->id;
             $result = $DB->insert_record("newsletter_subscriptions", $sub, true, $bulk);
             if ($result) {
-                $params = array('context' => $this->get_context(), 'objectid' => $result,
+                $params = array(
+                    'context' => $this->get_context(), 'objectid' => $result,
                     'relateduserid' => $userid,
-                    'other' => array('newsletterid' => $sub->newsletterid));
+                    'other' => array('newsletterid' => $sub->newsletterid)
+                );
                 $event = \mod_newsletter\event\subscription_created::create($params);
                 $event->trigger();
             }
@@ -1593,7 +1964,8 @@ class newsletter implements renderable {
         global $DB;
 
         if ($data->health == NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED && $this->get_subscription_status(
-                $data->subscription) != NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
+            $data->subscription
+        ) != NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED) {
             $this->unsubscribe($data->subscription);
         } else {
             $subscription = new stdClass();
@@ -1603,10 +1975,14 @@ class newsletter implements renderable {
             $subscription->timestatuschanged = time();
             $DB->update_record('newsletter_subscriptions', $subscription);
 
-            $params = array('context' => $this->get_context(), 'objectid' => $data->subscription,
+            $params = array(
+                'context' => $this->get_context(), 'objectid' => $data->subscription,
                 'relateduserid' => $data->userid,
-                'other' => array('newsletterid' => $this->get_instance()->id,
-                    'status' => $data->health));
+                'other' => array(
+                    'newsletterid' => $this->get_instance()->id,
+                    'status' => $data->health
+                )
+            );
             $event = \mod_newsletter\event\subscription_statuschanged::create($params);
             $event->trigger();
         }
@@ -1626,9 +2002,11 @@ class newsletter implements renderable {
         }
         $result = $DB->delete_records("newsletter_subscriptions", array('id' => $subid));
 
-        $params = array('context' => $this->get_context(), 'objectid' => $subid,
+        $params = array(
+            'context' => $this->get_context(), 'objectid' => $subid,
             'relateduserid' => $userid,
-            'other' => array('newsletterid' => $this->get_instance()->id));
+            'other' => array('newsletterid' => $this->get_instance()->id)
+        );
         $event = \mod_newsletter\event\subscription_deleted::create($params);
         $event->trigger();
 
@@ -1657,9 +2035,11 @@ class newsletter implements renderable {
 
         $result = $DB->update_record('newsletter_subscriptions', $sub);
 
-        $params = array('context' => $this->get_context(), 'objectid' => $subid,
+        $params = array(
+            'context' => $this->get_context(), 'objectid' => $subid,
             'relateduserid' => $userid,
-            'other' => array('newsletterid' => $this->get_instance()->id));
+            'other' => array('newsletterid' => $this->get_instance()->id)
+        );
         $event = \mod_newsletter\event\subscription_unsubscribed::create($params);
         $event->trigger();
 
@@ -1677,10 +2057,14 @@ class newsletter implements renderable {
         if (!$userid) {
             $userid = $USER->id;
         }
-        return $DB->record_exists_select("newsletter_subscriptions",
-                "userid = :userid AND newsletterid = :newsletterid AND health <> :health",
-                array("userid" => $userid, "newsletterid" => $this->get_instance()->id,
-                    "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED));
+        return $DB->record_exists_select(
+            "newsletter_subscriptions",
+            "userid = :userid AND newsletterid = :newsletterid AND health <> :health",
+            array(
+                "userid" => $userid, "newsletterid" => $this->get_instance()->id,
+                "health" => NEWSLETTER_SUBSCRIBER_STATUS_UNSUBSCRIBED
+            )
+        );
     }
 
     /**
@@ -1700,8 +2084,10 @@ class newsletter implements renderable {
      */
     public function get_bounceemail_address() {
         global $CFG;
-        if ($this->config->enablebounce == '1' && filter_var($this->config->bounceemail,
-                FILTER_VALIDATE_EMAIL)) {
+        if ($this->config->enablebounce == '1' && filter_var(
+            $this->config->bounceemail,
+            FILTER_VALIDATE_EMAIL
+        )) {
             return $this->config->bounceemail;
         } else {
             return $CFG->noreplyaddress;
@@ -1727,19 +2113,25 @@ class newsletter implements renderable {
         require_once($CFG->dirroot . '/user/lib.php');
 
         if (empty($CFG->registerauth)) {
-            print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
+            throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
         }
         $authplugin = get_auth_plugin($CFG->registerauth);
 
         if (!$authplugin->can_signup()) {
-            print_error('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
+            throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
         }
 
         // Generate username. If already exists try to find another one, repeat until username found.
-        $cfirstname = preg_replace('/[^a-zA-Z]+/', '',
-                iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname));
-        $clastname = preg_replace('/[^a-zA-Z]+/', '',
-                iconv('UTF-8', 'US-ASCII//TRANSLIT', $lastname));
+        $cfirstname = preg_replace(
+            '/[^a-zA-Z]+/',
+            '',
+            iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname)
+        );
+        $clastname = preg_replace(
+            '/[^a-zA-Z]+/',
+            '',
+            iconv('UTF-8', 'US-ASCII//TRANSLIT', $lastname)
+        );
         $username = strtolower(substr($cfirstname, 0, 1) . $clastname);
         $i = 0;
         do {
@@ -1778,19 +2170,28 @@ class newsletter implements renderable {
         $newslettername = $DB->get_field('newsletter', 'name', array('id' => $cm->instance));
 
         $data = "{$secret}-{$user->id}-{$cm->instance}-guest";
-        $activateurl = new moodle_url('/mod/newsletter/confirm.php',
-                array(NEWSLETTER_PARAM_DATA => $data));
+        $activateurl = new moodle_url(
+            '/mod/newsletter/confirm.php',
+            array(NEWSLETTER_PARAM_DATA => $data)
+        );
 
         $site = get_site();
-        $a = array('fullname' => fullname($user), 'newslettername' => $newslettername,
+        $a = array(
+            'fullname' => fullname($user), 'newslettername' => $newslettername,
             'sitename' => format_string($site->fullname), 'email' => $email,
             'username' => $user->username, 'password' => $password,
-            'link' => $activateurl->__toString(), 'admin' => generate_email_signoff());
+            'link' => $activateurl->__toString(), 'admin' => generate_email_signoff()
+        );
 
         $htmlcontent = text_to_html(get_string('new_user_subscribe_message', 'newsletter', $a));
 
-        if (!email_to_user($user, "newsletter", get_string('welcometonewsletter', 'mod_newsletter'),
-                '', $htmlcontent)) {
+        if (!email_to_user(
+            $user,
+            "newsletter",
+            get_string('welcometonewsletter', 'mod_newsletter'),
+            '',
+            $htmlcontent
+        )) {
             return false;
         }
         return true;
@@ -1801,7 +2202,7 @@ class newsletter implements renderable {
      *
      * @return array Two-element array with SQL and params for WHERE clause
      */
-    protected function get_filter_sql(array $getparams, $count = false) {
+    public function get_filter_sql(array $getparams, $count = false) {
         $allnamefields = user_picture::fields('u', null, 'userid');
         $extrafields = get_extra_user_fields($this->get_context());
         if ($count) {
@@ -1859,22 +2260,37 @@ class newsletter implements renderable {
         $newsletter->timemodified = $now;
         $newsletter->id = $DB->insert_record('newsletter', $newsletter);
 
-        $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
-            'maxfiles' => -1);
+        $fileoptions = array(
+            'subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
+            'maxfiles' => -1
+        );
 
         $context = $this->get_context();
 
         if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-            file_save_draft_area_files($mform->get_data()->stylesheets, $context->id,
-                    'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $newsletter->id, $fileoptions);
+            file_save_draft_area_files(
+                $mform->get_data()->stylesheets,
+                $context->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_STYLESHEET,
+                $newsletter->id,
+                $fileoptions
+            );
         }
 
-        if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if (
+            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED
+        ) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
-                $this->subscribe($user->id, true, NEWSLETTER_SUBSCRIBER_STATUS_OK, false,
-                        $newsletter->id);
+                $this->subscribe(
+                    $user->id,
+                    true,
+                    NEWSLETTER_SUBSCRIBER_STATUS_OK,
+                    false,
+                    $newsletter->id
+                );
             }
         }
         return $newsletter->id;
@@ -1893,18 +2309,28 @@ class newsletter implements renderable {
         $data->timemodified = $now;
         $data->id = $data->instance;
 
-        $fileoptions = array('subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
-            'maxfiles' => -1);
+        $fileoptions = array(
+            'subdirs' => NEWSLETTER_FILE_OPTIONS_SUBDIRS, 'maxbytes' => 0,
+            'maxfiles' => -1
+        );
 
         $context = $this->get_context();
 
         if ($mform && $mform->get_data() && $mform->get_data()->stylesheets) {
-            file_save_draft_area_files($mform->get_data()->stylesheets, $context->id,
-                    'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET, $data->id, $fileoptions);
+            file_save_draft_area_files(
+                $mform->get_data()->stylesheets,
+                $context->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_STYLESHEET,
+                $data->id,
+                $fileoptions
+            );
         }
 
-        if ($data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
-                $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+        if (
+            $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+            $data->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED
+        ) {
             $users = get_enrolled_users($context, null, null, 'u.id');
             foreach ($users as $user) {
                 $this->subscribe($user->id, true);
@@ -1932,5 +2358,4 @@ class newsletter implements renderable {
 
         return $insertrecord;
     }
-
 }

@@ -257,6 +257,9 @@ $string['notinarray'] = 'user has none of these comma separated values';
 $string['isempty'] = 'field is empty';
 $string['isnotempty'] = 'field is not empty';
 
+$string['filteredusercount'] = '{$a} users will receive the newsletter. If you change something, click on the "Calculate" Button below.';
+$string['calculateusers'] = 'Calculate number of filtered recipients';
+
 // Privacy API.
 $string['privacy:metadata:newsletter_subscriptions'] = 'Represent a subscription to a newsletter.';
 $string['privacy:metadata:newsletter_subscriptions:userid'] = 'User who created the record';
