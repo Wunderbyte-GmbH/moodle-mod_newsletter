@@ -571,9 +571,6 @@ class userfilter {
 
     private static function return_number_of_filtered_recipients($newsletterid, $userfilter) {
 
-        if (!$userfilter) {
-            return 0;
-        }
         return count(newsletter_get_all_valid_recipients($newsletterid, $userfilter));
     }
 }

@@ -899,18 +899,18 @@ class newsletter implements renderable {
         // When we only want to recalculate filter.
         if ($mform->no_submit_button_pressed()) {
             $data = $mform->get_submitted_data();
-            if (!$data->issue) {
-                $this->add_issue($data);
+            if ($data->issue) {
+                $issue = $this->update_issue($data);
             } else {
                 // We need the new issue object.
-                $issue = $this->update_issue($data);
-                // Now we set the form with the right values, before it will be rendered again.
-                // As we want a static element to be rendered again, we recreate the whole form.
-                $mform = new \mod_newsletter\issue_form(
-                    null,
-                    array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
-                );
+                $issue = $this->return_issue_from_form_data($data);
             }
+            // Now we set the form with the right values, before it will be rendered again.
+            // As we want a static element to be rendered again, we recreate the whole form.
+            $mform = new \mod_newsletter\issue_form(
+                null,
+                array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
+            );
         } else if ($data = $mform->get_data()) {
             if (!$data->issue) {
                 $this->add_issue($data);
@@ -1413,7 +1413,7 @@ class newsletter implements renderable {
      * Add newsletter issue
      *
      * @param stdClass $data
-     * @return bool|int
+     * @return stdClass
      * @throws \coding_exception
      * @throws \dml_exception
      */
@@ -1421,17 +1421,8 @@ class newsletter implements renderable {
         global $DB;
         $context = $this->get_context();
 
-        $issue = new stdClass();
-        $issue->id = 0;
-        $issue->newsletterid = $this->get_instance()->id;
-        $issue->title = $data->title;
-        $issue->htmlcontent = '';
-        $issue->publishon = $data->publishon;
-        $issue->stylesheetid = $data->stylesheetid;
-        $issue->toc = $data->toc;
-        $issue->userfilter = userfilter::return_json_from_form($data);
-        $issue->timecreated = time();
-        $issue->timemodified = $issue->timecreated;
+        $issue = $this->return_issue_from_form_data($data);
+
         $issue->id = $DB->insert_record('newsletter_issues', $issue);
 
         $issue->htmlcontent = file_save_draft_area_files(
@@ -1474,7 +1465,7 @@ class newsletter implements renderable {
         $event = \mod_newsletter\event\issue_created::create($params);
         $event->trigger();
 
-        return $issue->id;
+        return $issue;
     }
 
     /**
@@ -1536,6 +1527,29 @@ class newsletter implements renderable {
         $issue->timemodified = time();
 
         $DB->update_record('newsletter_issues', $issue);
+
+        return $issue;
+    }
+
+    /**
+     * Function to return issue object from form data.
+     *
+     * @param stdClass $data
+     * @return stdClass
+     */
+    private function return_issue_from_form_data($data) {
+
+        $issue = new stdClass();
+        $issue->id = 0;
+        $issue->newsletterid = $this->get_instance()->id;
+        $issue->title = $data->title;
+        $issue->htmlcontent = '';
+        $issue->publishon = $data->publishon;
+        $issue->stylesheetid = $data->stylesheetid;
+        $issue->toc = $data->toc;
+        $issue->userfilter = userfilter::return_json_from_form($data);
+        $issue->timecreated = time();
+        $issue->timemodified = $issue->timecreated;
 
         return $issue;
     }

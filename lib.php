@@ -360,7 +360,9 @@ function newsletter_get_all_valid_recipients($newsletterid, $userfilter = null) 
                AND u.id <> $guestuserid ";
 
     // Depending on the filter, we add the right sql code.
-    userfilter::add_sql($select, $from, $where, $params, $userfilter);
+    if (!empty($userfilter)) {
+        userfilter::add_sql($select, $from, $where, $params, $userfilter);
+    }
 
     $sql = $select . $from . $where;
     return $DB->get_records_sql($sql, $params);

@@ -76,7 +76,7 @@ class issue_form extends moodleform {
         $issue = $data['issue'];
         $context = $data['context'];
 
-        $userfilter = $issue ? $issue->userfilter : null;
+        $userfilter = $issue ? $issue->userfilter ?? null : null;
         $newsletterid = $issue ? $issue->newsletterid : 0;
 
         $mform->addElement('hidden', 'id', $newsletter->get_course_module()->id);
