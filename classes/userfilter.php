@@ -56,17 +56,43 @@ class userfilter {
 
         $stringmanager = get_string_manager();
 
+        $columstoexclude = [
+            'trustbitmask', 
+            'password', 
+            'id',
+            'auth',
+            'confirmed',
+            'policyagreed',
+            'deleted',
+            'suspended',
+            'mnethostid',
+            'idnumber',
+            'emailstop',
+            'calendartype',
+            'timezone',
+            'secret',
+            'descriptionformat',
+            'mailformat',
+            'maildigest',
+            'autosubscribe',
+            'trackforums',
+            'trustbitmask',
+            'imagealt'
+        ];
+
         // Choose the user profile field which is used to store each user's price category.
         $userprofilefields = $DB->get_columns('user', true);
         // Create an array of key => value pairs for the dropdown.
         foreach ($userprofilefields as $key => $value) {
 
-            if (in_array($key, ['password', 'id'])) {
+            if (in_array($key, $columstoexclude)) {
                 continue;
             }
 
-            if ($stringmanager->string_exists($key, 'core')) {
-                $userprofilefieldsarray[$key] = get_string($key);
+            if ($stringmanager->string_exists($key, 'mod_newsletter')) {
+                $userprofilefieldsarray[$key] = get_string($key, 'mod_newsletter');
+            } else if ($stringmanager->string_exists($key, 'core')) {
+                $userprofilefieldsarray[$key] = get_string($key, 'core');
             } else {
                 $userprofilefieldsarray[$key] = $key;
             }
