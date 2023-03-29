@@ -285,3 +285,9 @@ $string['privacy:metadata:newsletter_deliveries:delivered'] = 'Timestamp of news
 
 // Search.
 $string['search:newsletterissue'] = 'Newsletter issue';
+
+
+//Filter Criteria
+$string['lang'] = 'Language';
+$string['picture'] = 'Picture';
+
