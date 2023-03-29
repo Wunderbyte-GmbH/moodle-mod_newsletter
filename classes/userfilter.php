@@ -77,7 +77,20 @@ class userfilter {
             'autosubscribe',
             'trackforums',
             'trustbitmask',
-            'imagealt'
+            'imagealt', 
+            'moodlenetprofile', 
+            'currentlogin', 
+            'test',
+            'timemodified', 
+            'maildisplay',
+            'alternatename', 
+            'lastnamephonetic',
+            'firstnamephonetic',
+            'lastip',
+            'theme'
+
+
+
         ];
 
         // Choose the user profile field which is used to store each user's price category.
