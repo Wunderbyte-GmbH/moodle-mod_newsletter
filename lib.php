@@ -654,6 +654,10 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
 function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
         navigation_node $newsletternode = null) {
     global $PAGE;
+
+    if (!isset($PAGE->cm->id)) {
+        return;
+    }
     $newsletter = mod_newsletter\newsletter::get_newsletter_by_course_module($PAGE->cm->id);
 
     if (has_capability('mod/newsletter:managesubscriptions', $newsletter->get_context())) {
