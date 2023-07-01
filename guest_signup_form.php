@@ -63,6 +63,12 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addRule('email', null, 'required', null, 'client');
         $mform->addRule('email', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
+        if (signup_captcha_enabled()) {
+            $mform->addElement('recaptcha', 'recaptcha_element', get_string('security_question', 'auth'));
+            $mform->addHelpButton('recaptcha_element', 'recaptcha', 'auth');
+            $mform->closeHeaderBefore('recaptcha_element');
+        }
+
         $this->add_action_buttons(true, get_string('subscribe', 'mod_newsletter'));
     }
 
