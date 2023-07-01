@@ -36,6 +36,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
 
         $this->page->set_title(get_string('pluginname', 'mod_newsletter'));
         $this->page->set_heading($header->newsletter->name);
+        if ($header->embed) {
+            $this->page->set_pagelayout('embedded');
+        }
 
         $output .= $this->output->header();
 

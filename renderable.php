@@ -40,6 +40,8 @@ class newsletter_header implements renderable {
     public $showintro = false;
     /** @public int coursemoduleid - The course module id */
     public $coursemoduleid = 0;
+    /** @public boolean embed - Embed or not */
+    public $embed = false;
 
     /**
      * Constructor
@@ -49,12 +51,14 @@ class newsletter_header implements renderable {
      * (or the course context if the coursemodule has not been created yet)
      * @param bool $showintro - show or hide the intro
      * @param int $coursemoduleid - the course module id
+     * @param bool $embed - render with or without page header
      */
-    public function __construct(stdClass $newsletter, $context, $showintro, $coursemoduleid) {
+    public function __construct(stdClass $newsletter, context $context, bool $showintro, int $coursemoduleid, bool $embed = false) {
         $this->newsletter = $newsletter;
         $this->context = $context;
         $this->showintro = $showintro;
         $this->coursemoduleid = $coursemoduleid;
+        $this->embed = $embed;
     }
 }
 

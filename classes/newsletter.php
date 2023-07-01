@@ -120,7 +120,7 @@ class newsletter implements renderable {
      * @param context_module $context
      * @param boolean $eagerload
      */
-    public function __construct(context_module $context, $eagerload = false) {
+    public function __construct(context_module $context, bool $eagerload = false) {
         global $DB;
         $this->context = $context;
         if ($eagerload) {
@@ -424,12 +424,13 @@ class newsletter implements renderable {
         $output = '';
         $renderer = $this->get_renderer();
         $output .= $renderer->render(
-            new \newsletter_header(
-                $this->get_instance(),
-                $this->get_context(),
-                false,
-                $this->get_course_module()->id
-            )
+                new \newsletter_header(
+                        $this->get_instance(),
+                        $this->get_context(),
+                        false,
+                        $this->get_course_module()->id,
+                        $params['embed']
+                )
         );
         $mform = new \mod_newsletter_guest_signup_form(
             null,
@@ -443,7 +444,6 @@ class newsletter implements renderable {
                 'id' => $this->get_course_module()->id,
                 NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER
             )));
-            return;
         } else if ($data = $mform->get_data()) {
             $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
             $a = $data->email;
