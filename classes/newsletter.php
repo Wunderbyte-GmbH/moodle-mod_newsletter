@@ -25,10 +25,12 @@
 
 namespace mod_newsletter;
 
+use coding_exception;
 use context_module;
-use mod_newsletter_renderer;
+use mod_newsletter_instance_store;
 use newsletter_section_list;
 use renderable;
+use renderer_base;
 use stdClass;
 use context;
 use moodle_url;
@@ -51,34 +53,34 @@ class newsletter implements renderable {
     private $instance = null;
 
     /** @var context of the course module for this newsletter instance (or just the course if we are creating a new one) */
-    private $context = null;
+    private $context;
 
     /** @var stdClass the course this newsletter instance belongs to */
     private $course = null;
 
-    /** @var stdClass the course module for this assign instance */
-    private $coursemodule = null;
+    /** @var ?stdClass the course module for this assign instance */
+    private ?stdClass $coursemodule = null;
 
-    /** @var stdClass the admin config for all newsletter instances  */
-    private $config = null;
+    /** @var ?stdClass the admin config for all newsletter instances  */
+    private ?stdClass $config = null;
 
-    /** @var mod_newsletter_renderer the custom renderer for this module */
-    private $renderer = null;
+    /** @var ?renderer_base the custom renderer for this module */
+    private ?renderer_base $renderer = null;
 
-    /** @var integer the subscription id of $USER, if subscribed  */
-    private $subscriptionid = null;
+    /** @var ?int the subscription id of $USER, if subscribed  */
+    private ?int $subscriptionid = null;
 
     /** @var array of objects containing data records of newsletter issues sorted be issueid */
-    private $issues = array();
+    private array $issues = array();
 
     /**
      * get a newsletter object by providing the id of the newsletter table (default: mdl_newsletter)
      *
-     * @param number $newsletterid
-     * @param boolean $eagerload
-     * @return newsletter
+     * @param int $newsletterid
+     * @param bool $eagerload
+     * @return newsletter the newsletter instance
      */
-    public static function get_newsletter_by_instance($newsletterid, $eagerload = false) {
+    public static function get_newsletter_by_instance(int $newsletterid, bool $eagerload = false): newsletter {
         $cm = get_coursemodule_from_instance('newsletter', $newsletterid);
         $context = context_module::instance($cm->id);
         return self::create_newsletter_instance($context, $eagerload);
@@ -87,11 +89,11 @@ class newsletter implements renderable {
     /**
      * get a newsletter object by providing the course module id (view.php?id=xxx)
      *
-     * @param number $cmid
-     * @param boolean $eagerload
+     * @param int $cmid
+     * @param bool $eagerload
      * @return newsletter
      */
-    public static function get_newsletter_by_course_module($cmid, $eagerload = false) {
+    public static function get_newsletter_by_course_module(int $cmid, bool $eagerload = false): newsletter {
         $context = context_module::instance($cmid);
         return self::create_newsletter_instance($context, $eagerload);
     }
@@ -100,14 +102,14 @@ class newsletter implements renderable {
      * When not cached create the newsletter instance otherwise return it from the cache
      *
      * @param context_module $context
-     * @param boolean $eagerload
+     * @param bool $eagerload
      * @return newsletter $nl the newsletter instance
      */
-    private static function create_newsletter_instance(context_module $context, $eagerload) {
+    private static function create_newsletter_instance(context_module $context, bool $eagerload): newsletter {
         $cmid = $context->id;
-        if (!$nl = \mod_newsletter_instance_store::instance($cmid, 'newsletter')) {
-            $nl = new \mod_newsletter\newsletter($context, $eagerload);
-            \mod_newsletter_instance_store::register($cmid, 'newsletter', $nl);
+        if (!$nl = mod_newsletter_instance_store::instance($cmid, 'newsletter')) {
+            $nl = new newsletter($context, $eagerload);
+            mod_newsletter_instance_store::register($cmid, 'newsletter', $nl);
         }
         return $nl;
     }
@@ -160,9 +162,9 @@ class newsletter implements renderable {
     /**
      * Get the current course module
      *
-     * @return mixed stdClass|null The course module
+     * @return ?stdClass The course module
      */
-    public function get_course_module() {
+    public function get_course_module(): ?stdClass {
         if (!$this->coursemodule) {
             if ($this->context && $this->context->contextlevel == CONTEXT_MODULE) {
                 $this->coursemodule = get_coursemodule_from_id(
@@ -180,9 +182,9 @@ class newsletter implements renderable {
     /**
      * Get the settings for the current instance of this newsletter.
      *
-     * @return stdClass The settings
+     * @return object The settings
      */
-    public function get_instance() {
+    public function get_instance(): object {
         global $DB;
         if (!$this->instance) {
             if ($this->get_course_module()) {
@@ -193,7 +195,7 @@ class newsletter implements renderable {
                     MUST_EXIST
                 );
             } else {
-                throw new \coding_exception(
+                throw new coding_exception(
                     'Improper use of the newsletter class. Cannot load the newsletter record.'
                 );
             }
@@ -204,10 +206,10 @@ class newsletter implements renderable {
     /**
      * Get subscription id of user if $userid = 0 id of current user is returned
      *
-     * @param integer userid
-     * @return integer|boolean subscriptionid | false if no subscription is found
+     * @param int userid
+     * @return int|boolean subscriptionid | false if no subscription is found
      */
-    public function get_subid($userid = 0) {
+    public function get_subid(int $userid = 0) {
         global $DB, $USER;
         if ($userid === 0 && !$this->subscriptionid) {
             $this->subscriptionid = $DB->get_field(
@@ -248,9 +250,9 @@ class newsletter implements renderable {
     /**
      * Get the module renderer
      *
-     * @return mixed stdClass|null The module renderer
+     * @return renderer_base The module renderer
      */
-    public function get_renderer() {
+    public function get_renderer(): renderer_base {
         global $PAGE;
         if (!$this->renderer) {
             $this->renderer = $PAGE->get_renderer('mod_newsletter');
@@ -261,9 +263,9 @@ class newsletter implements renderable {
     /**
      * get global newsletter settings (admin settings)
      *
-     * @return stdClass configuration object
+     * @return object configuration object
      */
-    public function get_config() {
+    public function get_config(): object {
         if (!$this->config) {
             $this->config = get_config('mod_newsletter');
         }
@@ -275,7 +277,7 @@ class newsletter implements renderable {
      *
      * @return array of objects with subscription id as key
      */
-    public function get_subscriptions() {
+    public function get_subscriptions(): array {
         global $DB;
         return $DB->get_records(
             'newsletter_subscriptions',
@@ -338,7 +340,8 @@ class newsletter implements renderable {
      *
      * @return string rendered view
      */
-    public function view($params) {
+    public function view($params): string {
+        $output = '';
         switch ($params[NEWSLETTER_PARAM_ACTION]) {
             case NEWSLETTER_ACTION_VIEW_NEWSLETTER:
                 require_capability('mod/newsletter:viewnewsletter', $this->context);
@@ -401,9 +404,7 @@ class newsletter implements renderable {
                 throw new moodle_exception (
                     'Wrong ' . NEWSLETTER_PARAM_ACTION . ' parameter value: ' . $params[NEWSLETTER_PARAM_ACTION]
                 );
-                break;
         }
-
         return $output;
     }
 
@@ -414,7 +415,7 @@ class newsletter implements renderable {
      * @param array $params url params passed as get variables
      * @return string html rendered guest subscription
      */
-    private function display_guest_subscribe_form(array $params) {
+    private function display_guest_subscribe_form(array $params): string {
         global $PAGE;
         $PAGE->requires->js_module($this->get_js_module());
         $authplugin = get_auth_plugin('email');
@@ -460,6 +461,7 @@ class newsletter implements renderable {
             $output .= $renderer->render_footer();
             return $output;
         }
+        return $output;
     }
 
     /**
@@ -468,7 +470,7 @@ class newsletter implements renderable {
      * @param array $params url params passed as get variables
      * @return string html rendered resubscription
      */
-    private function display_resubscribe_form(array $params) {
+    private function display_resubscribe_form(array $params): string {
         global $PAGE;
         $PAGE->requires->js_module($this->get_js_module());
         $output = '';
@@ -500,7 +502,6 @@ class newsletter implements renderable {
                     )
                 )
             );
-            return;
         } else if ($data = $mform->get_data()) {
             if ($data->resubscribe_confirmation) {
                 $this->subscribe(0, false, NEWSLETTER_SUBSCRIBER_STATUS_OK, true, 0);
@@ -531,6 +532,7 @@ class newsletter implements renderable {
             $output .= $renderer->render_footer();
             return $output;
         }
+        return $output;
     }
 
     /**
@@ -539,7 +541,7 @@ class newsletter implements renderable {
      * @param array $params
      * @return string html
      */
-    private function view_newsletter(array $params) {
+    private function view_newsletter(array $params): string {
         global $CFG;
         $renderer = $this->get_renderer();
 
@@ -558,7 +560,7 @@ class newsletter implements renderable {
             $this->get_context()->id,
             'mod_newsletter',
             'intro',
-            null
+            $this->get_course_module()->id
         );
         $output .= format_text($str, $this->get_instance()->introformat);
         $output .= $renderer->render(
@@ -1158,7 +1160,6 @@ class newsletter implements renderable {
                 'id' => $this->get_course_module()->id,
                 NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS
             )));
-            return;
         } else if ($data = $mform->get_data()) {
             $this->update_subscription($data);
             $url = new moodle_url(
@@ -1364,12 +1365,12 @@ class newsletter implements renderable {
     /**
      * calculate number of pages for displaying subscriptions
      *
-     * @param number $total
+     * @param int $total
      * @param int $from
      * @param int $count
-     * @return multitype:number |multitype:unknown number
+     * @return array number of pages
      */
-    private function calculate_pages($total, $from, $count) {
+    private function calculate_pages(int $total, int $from, int $count): array {
         $pages = array();
         $pagenum = 1;
 
@@ -1387,7 +1388,6 @@ class newsletter implements renderable {
             $pages[$i] = $pagenum;
             $pagenum++;
         }
-
         return $pages;
     }
 
@@ -1396,10 +1396,10 @@ class newsletter implements renderable {
      *
      * @param $issueid
      * @return bool
-     * @throws \coding_exception
+     * @throws coding_exception
      * @throws \dml_exception
      */
-    private function check_issue_id($issueid) {
+    private function check_issue_id(int $issueid): bool {
         global $DB;
 
         return !$issueid || $DB->get_field(
@@ -1414,7 +1414,7 @@ class newsletter implements renderable {
      *
      * @param stdClass $data
      * @return stdClass
-     * @throws \coding_exception
+     * @throws coding_exception
      * @throws \dml_exception
      */
     private function add_issue(stdClass $data) {
@@ -1617,11 +1617,11 @@ class newsletter implements renderable {
      * Get the database records of newsletterissues from a range of publishing dates.
      * The range is specified as $from timestamp and $to timestamp
      *
-     * @param number $from UTC timestamp
-     * @param number $to UTC timestamp
-     * @return multitype: db records of newsletter issues
+     * @param int $from UTC timestamp
+     * @param int $to UTC timestamp
+     * @return array db records of newsletter issues
      */
-    private function get_issues($from = 0, $to = 0) {
+    private function get_issues(int $from = 0, int $to = 0): array {
         global $DB;
         $total = $DB->count_records_select(
             'newsletter_subscriptions',
@@ -2121,7 +2121,7 @@ class newsletter implements renderable {
      * @param string $email
      * @return boolean true when confirm mail was successfully sent to user, false when not
      */
-    public function subscribe_guest($firstname, $lastname, $email) {
+    public function subscribe_guest(string $firstname, string $lastname, string $email): bool {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/user/profile/lib.php');
         require_once($CFG->dirroot . '/user/lib.php');
@@ -2136,23 +2136,27 @@ class newsletter implements renderable {
         }
 
         // Generate username. If already exists try to find another one, repeat until username found.
-        $cfirstname = preg_replace(
-            '/[^a-zA-Z]+/',
-            '',
-            iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname)
-        );
-        $clastname = preg_replace(
-            '/[^a-zA-Z]+/',
-            '',
-            iconv('UTF-8', 'US-ASCII//TRANSLIT', $lastname)
-        );
-        $username = strtolower(substr($cfirstname, 0, 1) . $clastname);
-        $i = 0;
-        do {
-            $newusername = $username . ($i != 0 ? $i : '');
-            $i++;
-            $olduser = get_complete_user_data('username', $newusername);
-        } while (!empty($olduser));
+        if ($CFG->extendedusernamechars) {
+            $newusername = $email;
+        } else {
+            $cfirstname = preg_replace(
+                    '/[^a-zA-Z]+/',
+                    '',
+                    iconv('UTF-8', 'US-ASCII//TRANSLIT', $firstname)
+            );
+            $clastname = preg_replace(
+                    '/[^a-zA-Z]+/',
+                    '',
+                    iconv('UTF-8', 'US-ASCII//TRANSLIT', $lastname)
+            );
+            $username = strtolower(substr($cfirstname, 0, 1) . $clastname);
+            $i = 0;
+            do {
+                $newusername = $username . ($i != 0 ? $i : '');
+                $i++;
+                $olduser = get_complete_user_data('username', $newusername);
+            } while (!empty($olduser));
+        }
 
         $usernew = new stdClass();
         $usernew->username = $newusername;
@@ -2164,10 +2168,8 @@ class newsletter implements renderable {
         $usernew->deleted = 0;
         $usernew->password = $password = generate_password();
         $usernew->mailformat = 1;
-        $usernew->confirmed = 0;
         $usernew->lang = current_language();
         $usernew->firstaccess = time();
-        $usernew->timecreated = time();
         $usernew->timemodified = time();
         $usernew->secret = $secret = random_string(15);
         $usernew->mnethostid = $CFG->mnet_localhost_id; // Always local user.
@@ -2359,7 +2361,7 @@ class newsletter implements renderable {
      * @param integer $issueid
      * @return void
      */
-    private function duplicate_issue(int $issueid) {
+    private function duplicate_issue(int $issueid): ?int {
         global $DB;
         $record = $DB->get_record('newsletter_issues', array('id' => $issueid));
         unset($record->id);
@@ -2368,8 +2370,7 @@ class newsletter implements renderable {
         $record->publishon = $newtime;
         $record->timecreated = $now;
         $record->timemodified = $now;
-        $insertrecord = $DB->insert_record('newsletter_issues', $record);
-
-        return $insertrecord;
+        $record->delivered = 0;
+        return $DB->insert_record('newsletter_issues', $record);
     }
 }

@@ -326,9 +326,9 @@ class mod_newsletter_renderer extends plugin_renderer_base {
     /**
      * Renders the footer
      *
-     * @return void
+     * @return string
      */
-    public function render_footer() {
+    public function render_footer(): string {
         return $this->output->footer();
     }
 
