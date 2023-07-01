@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2023041400;        // If version == 0 then module will not be installed
+$plugin->version   = 2023070200;        // If version == 0 then module will not be installed
 $plugin->requires  = 2020061500;        // Requires this Moodle version
 $plugin->maturity  = MATURITY_STABLE;   // Maturity
 $plugin->release   = 'v2.3.1-NewYorkTimes';  // Already used names: Der Standard, Le Monde Diplomatique
