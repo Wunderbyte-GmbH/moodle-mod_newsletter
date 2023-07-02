@@ -137,20 +137,17 @@ $string['new_user_subscribe_message'] = 'Hello {$a->fullname},
 
 You have requested to be subscribed to
 \'{$a->newslettername}\' newsletter at \'{$a->sitename}\'
-using this email address. A new account has been made for you:
+using this email address. 
+
+Please confirm your subscription with clicking on the following link:
+
+{$a->link}
+
+You can change your settings anytime using these credentials:
 
 Username: {$a->username}
 Password: {$a->password}
 
-You can change the account details after confirmation.
-To confirm your new account, please go to this web address:
-
-{$a->link}
-
-In most mail programs, this should appear as a blue link
-which you can just click on.  If that doesn\'t work,
-then cut and paste the address into the address
-line at the top of your web browser window.
 
 If you need help, please contact the site administrator,
 {$a->admin}';

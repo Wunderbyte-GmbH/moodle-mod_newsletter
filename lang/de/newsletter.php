@@ -128,17 +128,16 @@ $string['newsletter:unsubscribecohort'] = 'Globale Gruppe vom Newsletter abmelde
 $string['newsletter:viewnewsletter'] = 'Newsletter-Instanz anzeigen';
 $string['new_user_subscribe_message'] = 'Hallo {$a->fullname},
 
-Es wurde mit Ihrer E-Mail-Adresse ein neues Konto bei \'Moodle Übersetzung\' angefordert.
+Du wurdest erfolgreich zum \'{$a->newslettername}\' Newsletter auf \'{$a->sitename}\' hinzugefügt.
 
-Anmeldename: {$a->username}
-Passwort: {$a->password}
-
-Um das neue Konto zu bestätigen, gehen Sie bitte zu dieser Web-Adresse:
+Um deine Anmeldung zu bestätigen, klicke auf folgenden Link:
 
 {$a->link}
 
-In den meisten Mail-Programmen sollte diese als anklickbarer Link angezeigt werden.
-Sollte dies nicht der Fall sein, kopieren Sie bitte diesen Link und fügen Sie ihn in die Adressleiste Ihres Web-Browser ein.
+Um alle Einstellungen zu verwalten, verwende folgende Zugangsdaten:
+
+Anmeldename: {$a->username}
+Passwort: {$a->password}
 
 Wenn Sie Hilfe benötigen, kontaktieren Sie bitte den/die Administrator/in der Website,
 {$a->admin}';
