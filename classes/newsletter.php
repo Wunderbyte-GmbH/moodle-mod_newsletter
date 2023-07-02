@@ -27,6 +27,8 @@ namespace mod_newsletter;
 
 use coding_exception;
 use context_module;
+use core\event\user_created;
+use core_user;
 use mod_newsletter_instance_store;
 use newsletter_section_list;
 use renderable;
@@ -2182,7 +2184,7 @@ class newsletter implements renderable {
         $usernew->courseid = $this->get_course()->id;
         $usernew->id = user_create_user($usernew, false, false);
         $user = $DB->get_record('user', array('id' => $usernew->id));
-        \core\event\user_created::create_from_userid($user->id)->trigger();
+        user_created::create_from_userid($user->id)->trigger();
 
         $this->subscribe($user->id, false, NEWSLETTER_SUBSCRIBER_STATUS_OK);
 
@@ -2203,13 +2205,15 @@ class newsletter implements renderable {
             'link' => $activateurl->__toString(), 'admin' => generate_email_signoff()
         );
 
-        $htmlcontent = text_to_html(get_string('new_user_subscribe_message', 'newsletter', $a));
+        $messagetext = get_string('new_user_subscribe_message', 'newsletter', $a);
+        $htmlcontent = text_to_html($messagetext);
+        $supportuser = core_user::get_support_user();
 
         if (!email_to_user(
             $user,
-            "newsletter",
+            $supportuser,
             get_string('welcometonewsletter', 'mod_newsletter'),
-            '',
+            $messagetext,
             $htmlcontent
         )) {
             return false;
