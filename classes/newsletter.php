@@ -2205,7 +2205,7 @@ class newsletter implements renderable {
             'link' => $activateurl->__toString(), 'admin' => generate_email_signoff()
         );
 
-        $messagetext = get_string('new_user_subscribe_message', 'newsletter', $a);
+        $messagetext = get_string('subscription_message', 'newsletter', $a);
         $htmlcontent = text_to_html($messagetext);
         $supportuser = core_user::get_support_user();
 

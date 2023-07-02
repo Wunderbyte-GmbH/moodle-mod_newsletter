@@ -133,7 +133,7 @@ $string['subscribe_question'] = 'Would you like to subscribe to newsletter "{$a-
 $string['unsubscribe_question'] = 'Would you like to unsubscribe your e-mail address "{$a->email}" from newsletter "{$a->name}"?';
 $string['unsubscription_succesful'] = 'Your email "{$a->email}" was successfully removed from the following newsletter: "{$a->name}".';
 
-$string['new_user_subscribe_message'] = 'Hello {$a->fullname},
+$string['subscription_message'] = 'Hello {$a->fullname},
 
 You have requested to be subscribed to
 \'{$a->newslettername}\' newsletter at \'{$a->sitename}\'

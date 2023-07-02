@@ -126,7 +126,7 @@ $string['newsletter:subscribecohort'] = 'Globale Gruppe für den Newsletter anme
 $string['newsletter:subscribeuser'] = 'Nutzer/innen für den Newsletter anmelden';
 $string['newsletter:unsubscribecohort'] = 'Globale Gruppe vom Newsletter abmelden';
 $string['newsletter:viewnewsletter'] = 'Newsletter-Instanz anzeigen';
-$string['new_user_subscribe_message'] = 'Hallo {$a->fullname},
+$string['subscription_message'] = 'Hallo {$a->fullname},
 
 Du wurdest erfolgreich zum \'{$a->newslettername}\' Newsletter auf \'{$a->sitename}\' hinzugefügt.
 
