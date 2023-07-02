@@ -437,23 +437,28 @@ class newsletter implements renderable {
             null,
             array(
                 'id' => $this->get_course_module()->id,
-                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_GUESTSUBSCRIBE,
+                'embed' => $params['embed']
             )
         );
         if ($mform->is_cancelled()) {
             redirect(new moodle_url('view.php', array(
                 'id' => $this->get_course_module()->id,
-                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER
+                NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_VIEW_NEWSLETTER,
+                    'embed' => $params['embed']
             )));
         } else if ($data = $mform->get_data()) {
             $this->subscribe_guest($data->firstname, $data->lastname, $data->email);
             $a = $data->email;
             $output .= html_writer::div(get_string('guestsubscriptionsuccess', 'newsletter', $a));
             $url = $this->get_url();
+            if(isset($data->embed)) {
+                $url->params(['embed' => $data->embed]);
+            }
             $output .= html_writer::link(
                 $url,
                 get_string('continue'),
-                array('class' => 'btn mdl-align')
+                array('class' => 'btn mdl-align', 'target' => '_top')
             );
             return $output;
         } else if ($this->get_instance()->allowguestusersubscriptions && (!isloggedin() || isguestuser())) {
@@ -562,7 +567,6 @@ class newsletter implements renderable {
             'intro',
             $this->get_course_module()->id
         );
-        $output .= format_text($str, $this->get_instance()->introformat);
         $output .= $renderer->render(
             new \newsletter_main_toolbar(
                 $this->get_course_module()->id,

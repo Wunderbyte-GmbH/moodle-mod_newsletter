@@ -44,10 +44,6 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         }
         $output .= $this->output->header();
 
-        if ($header->showintro) {
-            $output .= format_module_intro('newsletter', $header->newsletter, $header->coursemoduleid);
-        }
-
         return $output;
     }
 
