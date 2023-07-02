@@ -140,7 +140,7 @@ You have requested to be subscribed to
 \'{$a->newslettername}\' newsletter at \'{$a->sitename}\'
 using this email address. 
 
-Please confirm your subscription with clicking on the following link:
+Please confirm your subscription by clicking on the following link:
 
 {$a->link}
 
