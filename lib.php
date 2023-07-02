@@ -196,7 +196,7 @@ function newsletter_add_instance(stdClass $data, mod_newsletter_mod_form $mform 
  */
 function newsletter_update_instance(stdClass $data, mod_newsletter_mod_form $mform = null) {
     $context = context_module::instance($data->coursemodule);
-    $newsletter = new mod_newsletter\newsletter($context, null, null);
+    $newsletter = new mod_newsletter\newsletter($context, false);
     return $newsletter->update_instance($data, $mform);
 }
 
