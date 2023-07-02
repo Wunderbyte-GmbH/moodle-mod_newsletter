@@ -32,14 +32,15 @@ defined('MOODLE_INTERNAL') || die();
 class mod_newsletter_renderer extends plugin_renderer_base {
 
     public function render_newsletter_header(newsletter_header $header) {
+        global $CFG;
         $output = '';
 
         $this->page->set_title(get_string('pluginname', 'mod_newsletter'));
         $this->page->set_heading($header->newsletter->name);
         if ($header->embed) {
+            $CFG->allowframembedding = 1;
             $this->page->set_pagelayout('embedded');
         }
-
         $output .= $this->output->header();
 
         if ($header->showintro) {
