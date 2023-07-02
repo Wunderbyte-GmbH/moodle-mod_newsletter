@@ -193,3 +193,6 @@
 #page-mod-newsletter-view.embed .activity-header {
   display: none;
 }
+body#page-mod-newsletter-view.embed {
+  background-color: transparent !important;
+}
