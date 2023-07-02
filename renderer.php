@@ -38,15 +38,14 @@ class mod_newsletter_renderer extends plugin_renderer_base {
         $this->page->set_title(get_string('pluginname', 'mod_newsletter'));
         $this->page->set_heading($header->newsletter->name);
         if ($header->embed) {
+            $this->page->add_body_class('embed');
             $CFG->allowframembedding = 1;
             $this->page->set_pagelayout('embedded');
         }
         $output .= $this->output->header();
 
         if ($header->showintro) {
-            $output .= $this->output->box_start('generalbox boxaligncenter', 'intro');
-            $output .= format_module_intro('newsletter', $header->assign, $header->coursemoduleid);
-            $output .= $this->output->box_end();
+            $output .= format_module_intro('newsletter', $header->newsletter, $header->coursemoduleid);
         }
 
         return $output;

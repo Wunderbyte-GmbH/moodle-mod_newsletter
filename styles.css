@@ -189,3 +189,7 @@
 .mod-newsletter__action-link, .newsletter-toolbar {
   display: inline-block;
 }
+
+#page-mod-newsletter-view.embed .activity-header {
+  display: none;
+}
