@@ -228,7 +228,7 @@ class newsletter implements renderable {
             );
         }
     }
-
+    
     /**
      * Get the current course
      *

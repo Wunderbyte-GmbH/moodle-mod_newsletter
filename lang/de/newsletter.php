@@ -32,6 +32,7 @@ Um Ihre Profildetails zu bearbeiten, klicken Sie bitte auf folgenden Link: {$a->
 Um zum Newsletter zu gelangen, klicken Sie bitte auf folgenden Link:  {$a->newsletterlink}.';
 $string['allowguestusersubscriptions_help'] = 'Erlauben Sie Gastnutzer/innen, Newsletter auf dieser Seite zu abonnieren. Dazu ist es erforderlich, dass Sie das Anlegen von Gastzugängen in den Moodleeinstellungen erlauben.';
 $string['allowguestusersubscriptions'] = 'Gasteinschreibungen erlauben';
+$string['header_profilefield'] = 'Profilfeld für Anmeldung';
 $string['allusers'] = 'Nutzer/innen (inklusive Abgemeldete):';
 $string['already_published'] = 'Die Ausgabe wurde veröffentlicht.';
 $string['attachments'] = 'Anhänge';
@@ -67,8 +68,10 @@ $string['edit_issue'] = 'Diese Ausgabe bearbeiten';
 $string['edit_issue_title'] = 'Newsletter-Ausgabe bearbeiten';
 $string['edit_subscription_title'] = 'Abonnement bearbeiten';
 $string['emailexists'] = 'Es existiert bereits ein Benutzeraccount mit dieser E-Mailadresse, eine erneute Anlage ist daher nicht nötig. Bitte loggen Sie sich ein, um diesen Newsletter zu abonnieren.
-
 Sollten Sie Ihre Zugangsdaten vergessen haben, benutzen Sie bitte den {$a} Link auf der Login-Seite um Ihr Passwort zurücksetzen zu lassen.';
+$string['help_profilefield_help'] = 'Hier können Sie auswählen, welche Checkbox für das Newsletter Abonnement verwendet werden soll. ';
+
+
 $string['entries_per_page'] = 'Angezeigte Einträge pro Seite';
 $string['eventissuecreated'] = 'Newsletter-Ausgabe wurde erstellt';
 $string['eventissueviewed'] = 'Newsletter-Ausgabe wurde angezeigt';

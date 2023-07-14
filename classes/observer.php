@@ -40,26 +40,52 @@ class mod_newsletter_observer {
         // Needed for constants.
         require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
-        $sql = "SELECT n.id, cm.id AS cmid
-              FROM {newsletter} n
-              JOIN {course_modules} cm ON cm.instance = n.id
-              JOIN {modules} m ON m.id = cm.module
-         LEFT JOIN {newsletter_subscriptions} ns ON ns.newsletterid = n.id AND ns.userid = :userid
-             WHERE n.course = :courseid
-               AND (n.subscriptionmode = :submode1
-                OR n.subscriptionmode = :submode2)
-               AND m.name = 'newsletter'
-               AND ns.id IS NULL";
-        $params = array('courseid' => $courseid, 'userid' => $userid,
-            'submode1' => NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT,
-            'submode2' => NEWSLETTER_SUBSCRIPTION_MODE_FORCED);
+        $sql = "SELECT n.id, n.subscriptionmode, cm.id AS cmid
+            FROM {newsletter} n
+            JOIN {course_modules} cm ON cm.instance = n.id
+            JOIN {modules} m ON m.id = cm.module
+            LEFT JOIN {newsletter_subscriptions} ns ON ns.newsletterid = n.id AND ns.userid = :userid
+            JOIN {user_info_field} uif
+            ON uif.id = n.profilefield
+            JOIN {user_info_data} uid
+            ON uid.fieldid = uif.id
+            JOIN {user} u
+            ON u.id = uid.userid
+            WHERE n.course = :courseid
+            AND m.name = 'newsletter'
+            AND ns.id IS NULL";
+        $params = array('courseid' => $courseid, 'userid' => $userid);
+
+        // Get all newsletter that have activated a profilefield subscription
+        $sql1 = "SELECT n.id
+        FROM {newsletter} n
+        JOIN {user_info_field} uif
+        ON uif.id = n.profilefield
+        JOIN {user_info_data} uid
+        ON uid.fieldid = uif.id
+        JOIN {user} u
+        ON u.id = uid.userid
+        WHERE u.id = :userid
+        AND uid.data = 1
+        AND n.course = :courseid";
+        $newsletterids = $DB->get_fieldset_sql($sql1, $params);
 
         $newsletters = $DB->get_records_sql($sql, $params);
         foreach ($newsletters as $newsletter) {
-            $newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
-            $newsletter->subscribe($userid);
+            if($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || 
+            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+                $newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
+                $newsletter->subscribe($userid);
+            } else if($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN) {
+                if (in_array($newsletter->id, $newsletterids)) {
+                    $newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
+                    $newsletter->subscribe($userid);
+                } else {
+                    $newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
+                }
+            }
         }
-    }
+    } 
 
     /**
      * Triggered via user_created event. Subscribes user to newsletter on frontpage
@@ -71,6 +97,18 @@ class mod_newsletter_observer {
         self::subscribe($user->id, 1);
     }
 
+    /**
+     * Triggered via user_created event. Subscribes user to newsletter on frontpage
+     *
+     * @param \core\event\user_created $event
+     */
+    public static function user_updated(\core\event\user_updated $event) {
+        $user = $event->get_record_snapshot('user', $event->objectid);
+        self::subscribe($user->id, 1);
+    }
+
+
+    
     /**
      * Triggered via user_enrolment_deleted event.
      *

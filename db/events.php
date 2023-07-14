@@ -19,6 +19,8 @@ defined('MOODLE_INTERNAL') || die();
 $observers = array(
     array('eventname' => '\core\event\user_created',
         'callback' => 'mod_newsletter_observer::user_created'),
+    array('eventname' => '\core\event\user_updated',
+        'callback' => 'mod_newsletter_observer::user_updated'),
     array('eventname' => '\core\event\role_assigned',
         'callback' => 'mod_newsletter_observer::role_assigned'),
     array('eventname' => '\core\event\user_deleted',
