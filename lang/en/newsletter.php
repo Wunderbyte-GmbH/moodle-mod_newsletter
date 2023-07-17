@@ -77,6 +77,7 @@ $string['publishon'] = 'Publish on';
 $string['header_content'] = 'Issue content';
 $string['header_publish'] = 'Publishing options';
 $string['header_publishinfo'] = 'After the delivery of the newsletter issue is started, it will not be possible to change the publishing date anymore';
+$string['help_profilefield_help'] = 'Here you can select which checkbox is used for the newsletter subscription.';
 
 $string['config_send_notifications_label'] = 'Send notifications';
 $string['config_send_notifications_desc'] = 'Check this box to enable sending subscription-related notifications to subscribers.';
@@ -178,6 +179,7 @@ $string['unsubscribe'] = 'Unsubscribe';
 
 $string['allowguestusersubscriptions'] = 'Allow guest user subscription';
 $string['allowguestusersubscriptions_help'] = 'Enable to allow guest users to subscribe to newsletters on this site. This will necessitate their creating user accounts.';
+$string['header_profilefield'] = 'Profilefield for Signup';
 $string['welcomemessage'] = 'Welcome message';
 $string['welcomemessage_help'] = 'This text will be presented to a user after he had enrolled successfully for a newsletter.';
 $string['welcomemessageguestuser'] = 'Welcome message guest user';

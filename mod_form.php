@@ -1,4 +1,5 @@
 <?php
+use mod_newsletter\userfilter;
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -28,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 require_once($CFG->libdir . '/formslib.php');
 
+
 /**
  * Module instance settings form
  */
@@ -38,6 +40,16 @@ class mod_newsletter_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $CFG;
+
+        $mform = &$this->_form;
+        $data = &$this->_customdata;
+
+        $newsletter = $data['newsletter'];
+        $issue = $data['issue'];
+        $context = $data['context'];
+
+        $userfilter = $issue ? $issue->userfilter ?? null : null;
+        $newsletterid = $issue ? $issue->newsletterid : 0;
 
         $mform = $this->_form;
 
@@ -74,10 +86,11 @@ class mod_newsletter_mod_form extends moodleform_mod {
                 get_string('welcomemessage', 'mod_newsletter'), 'wrap="virtual" rows="8" cols="50"');
         $mform->addHelpButton('welcomemessage', 'welcomemessage', 'mod_newsletter');
 
-        $mform->addElement('textarea', 'welcomemessageguestuser',
-                get_string('welcomemessageguestuser', 'mod_newsletter'),
-                'wrap="virtual" rows="8" cols="50"');
-        $mform->addHelpButton('welcomemessageguestuser', 'welcomemessageguestuser', 'mod_newsletter');
+        $mform->addElement('header', 'header_profilefield',
+                get_string('header_profilefield', 'mod_newsletter'));
+        $mform->addElement('select', 'profilefield',
+                get_string('header_profilefield', 'mod_newsletter'),  $this->cpf_list());
+        $mform->addHelpButton('profilefield', 'help_profilefield', 'mod_newsletter');
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -93,6 +106,26 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $entry->stylesheets = $draftitemid;
 
         parent::set_data($entry);
+    }
+
+    public function cpf_list() {
+        global $DB;
+
+        $userprofilefieldsarray = [];
+        $customuserprofilefields = $DB->get_records('user_info_field', ['datatype' => 'checkbox'], '', 'id, name, shortname');
+        
+        if (!empty($customuserprofilefields)) {
+        
+            // Create an array of key => value pairs for the dropdown.
+            foreach ($customuserprofilefields as $cpf) {
+                $userprofilefieldsarray[$cpf->id] = $cpf->name;
+            }
+        }
+        $nofilter = get_string('nofilter', 'mod_newsletter');
+        $userprofilefieldsarray[0] = $nofilter;
+        asort($userprofilefieldsarray);
+
+        return $userprofilefieldsarray;
     }
 
     public function make_subscription_option_list() {

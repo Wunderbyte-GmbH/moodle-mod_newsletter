@@ -228,7 +228,7 @@ class newsletter implements renderable {
             );
         }
     }
-
+    
     /**
      * Get the current course
      *
@@ -1899,7 +1899,7 @@ class newsletter implements renderable {
         $url->param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_SUBSCRIBE);
         return $url;
     }
-
+    
     /**
      * subscribe a user to a newsletter and return the subscription id if successful
      * When user status is unsubscribed and $resubscribed_unsubscribed
