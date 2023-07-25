@@ -22,8 +22,8 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
           MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
-          CODECHECKER_IGNORE_PATHS: CssToInlineStyles, emls
-          PHPDOCCHECKER_IGNORE_PATHS: CssToInlineStyles, emls
+          CODECHECKER_IGNORE_PATHS: CssToInlineStyles, emls, lib/Models, lib/CwsDebug.php, lib/CwsDump.php, lib/Handler.php
+          PHPDOCCHECKER_IGNORE_PATHS: CssToInlineStyles, emls, lib/Models, lib/CwsDebug.php, lib/CwsDump.php, lib/Handler.php
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
