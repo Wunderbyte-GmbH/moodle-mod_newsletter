@@ -69,9 +69,9 @@ $string['edit_issue_title'] = 'Newsletter-Ausgabe bearbeiten';
 $string['edit_subscription_title'] = 'Abonnement bearbeiten';
 $string['emailexists'] = 'Es existiert bereits ein Benutzeraccount mit dieser E-Mailadresse, eine erneute Anlage ist daher nicht nötig. Bitte loggen Sie sich ein, um diesen Newsletter zu abonnieren.
 Sollten Sie Ihre Zugangsdaten vergessen haben, benutzen Sie bitte den {$a} Link auf der Login-Seite um Ihr Passwort zurücksetzen zu lassen.';
-$string['help_profilefield_help'] = 'Hier können Sie auswählen, welche Checkbox für das Newsletter Abonnement verwendet werden soll. ';
-
-
+$string['help_profilefield_help'] = 'Hier können Sie auswählen, welche Userprofilfeld für das Newsletter Abonnement verwendet werden soll. 
+Es können nur Userprofilfelder vom Typ Checkbox verwendet werden. Diese können unter Website Administration -> Nutzer/innen -> Profilfelder
+angelegt werden. User müssen dann dieses Profilfeld auswählen, um den Newsletter bei der Registrierung zu abonnieren.';
 $string['entries_per_page'] = 'Angezeigte Einträge pro Seite';
 $string['eventissuecreated'] = 'Newsletter-Ausgabe wurde erstellt';
 $string['eventissueviewed'] = 'Newsletter-Ausgabe wurde angezeigt';
@@ -207,7 +207,7 @@ $string['userprofilefield_value'] = "Vergleichswert";
 $string['userprofilefield_addcondition'] = "Eine weitere Bedingung hinzufügen";
 $string['AND'] = "Und";
 $string['OR'] = "Oder";
-$string['nofilter'] = " Kein Filter";
+$string['nofieldselected'] = "Kein Nutzerprofilfeld ausgewählt";
 
 $string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
 $string['contains'] = 'beinhaltet (Text)';

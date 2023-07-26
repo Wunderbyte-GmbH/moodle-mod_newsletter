@@ -102,12 +102,10 @@ class mod_newsletter_mod_form extends moodleform_mod {
      */
     public function cpf_list(): array {
         global $DB;
-
         $userprofilefieldsarray = [];
         $customuserprofilefields = $DB->get_records('user_info_field', ['datatype' => 'checkbox'], '', 'id, name, shortname');
 
         if (!empty($customuserprofilefields)) {
-
             // Create an array of key => value pairs for the dropdown.
             foreach ($customuserprofilefields as $cpf) {
                 $userprofilefieldsarray[$cpf->id] = $cpf->name;

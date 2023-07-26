@@ -77,8 +77,9 @@ $string['publishon'] = 'Publish on';
 $string['header_content'] = 'Issue content';
 $string['header_publish'] = 'Publishing options';
 $string['header_publishinfo'] = 'After the delivery of the newsletter issue is started, it will not be possible to change the publishing date anymore';
-$string['help_profilefield_help'] = 'Here you can select which checkbox is used for the newsletter subscription.';
-
+$string['help_profilefield_help'] = 'Here you can select which custom user profile field is used for the newsletter subscription. 
+Only user profile fields of  type checkbox can be used. These can be created under Administration -> Users -> User Profile Fields.
+Once setup users must select this profile field to subscribe to the newsletter during registration.';
 $string['config_send_notifications_label'] = 'Send notifications';
 $string['config_send_notifications_desc'] = 'Check this box to enable sending subscription-related notifications to subscribers.';
 $string['config_debug_label'] = 'Cron DEBUG mode';
@@ -243,7 +244,7 @@ $string['userprofilefield_value'] = "Value";
 $string['userprofilefield_addcondition'] = "Add another condition";
 $string['AND'] = "And";
 $string['OR'] = "Or";
-$string['nofilter'] = " No filter";
+$string['nofieldselected'] = "No user profile field selected";
 
 $string['equals'] = 'has exactly this value (text or number)';
 $string['contains'] = 'contains (text)';
