@@ -43,7 +43,7 @@ $PAGE->set_context($context);
 
 if ($secret && $userid) {
     if (!$user = get_complete_user_data('id', $userid)) {
-        print_error("Cannot find user!");
+        throw new \moodle_exception("Cannot find user!");
     }
     if ($user->confirmed) {
         redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)),
@@ -70,9 +70,9 @@ if ($secret && $userid) {
                     $welcomemessage, 15);
             // TODO: user/editadvanced.php?id=2.
         } else {
-            print_error('The link you followed is invalid.');
+            throw new \moodle_exception('The link you followed is invalid.');
         }
     }
 } else {
-    print_error('The link you followed is invalid.');
+    throw new \moodle_exception('The link you followed is invalid.');
 }

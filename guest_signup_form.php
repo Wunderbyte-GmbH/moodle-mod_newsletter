@@ -49,8 +49,6 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
-        // $mform->addElement('html', '<h3>' . get_string('guestsubscribe', 'mod_newsletter') . '</h3>');
-
         $mform->addElement('text', 'firstname', get_string('firstname'), array('size' => '64'));
         $mform->setType('firstname', PARAM_TEXT);
         $mform->addRule('firstname', null, 'required', null, 'client');
@@ -88,7 +86,7 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $usernew = (object) $usernew;
 
         $user = $DB->get_record('user', array('id' => $usernew->id));
-        if (!$user or $user->email !== $usernew->email) {
+        if (!$user || $user->email !== $usernew->email) {
             if (!validate_email($usernew->email)) {
                 $err['email'] = get_string('invalidemail');
             } else if ($DB->record_exists('user',

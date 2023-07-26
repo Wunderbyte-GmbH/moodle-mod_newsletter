@@ -138,7 +138,7 @@ $string['subscription_message'] = 'Hello {$a->fullname},
 
 You have requested to be subscribed to
 \'{$a->newslettername}\' newsletter at \'{$a->sitename}\'
-using this email address. 
+using this email address.
 
 Please confirm your subscription by clicking on the following link:
 

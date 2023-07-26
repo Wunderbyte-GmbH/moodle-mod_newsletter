@@ -41,7 +41,7 @@ if ($user) {
             redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)),
                     "The creation of your account was cancelled at your request!", 5);
         } else {
-            print_error('The link you followed is invalid.');
+            throw new \moodle_exception('The link you followed is invalid.', 'mod_newsletter');
         }
     }
 } else {
@@ -109,7 +109,7 @@ if ($newsletter->is_subscribed($user->id)) {
     } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
         redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)));
     } else {
-        print_error('Wrong ' . NEWSLETTER_PARAM_CONFIRM . ' code: ' . $confirm . '!');
+        throw new \moodle_exception('Wrong ' . NEWSLETTER_PARAM_CONFIRM . ' code: ' . $confirm . '!');
     }
 } else {
     require_capability('mod/newsletter:viewnewsletter', $context);
@@ -130,7 +130,8 @@ if ($newsletter->is_subscribed($user->id)) {
     } else if ($confirm == NEWSLETTER_CONFIRM_NO) {
         redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $id)));
     } else {
-        print_error('Wrong ' . NEWSLETTER_PARAM_CONFIRM . ' code: ' . $confirm . '!');
+        throw new \moodle_exception('Wrong ' . NEWSLETTER_PARAM_CONFIRM . ' code: ' . $confirm . '!',
+                'mod_newsletter');
     }
 }
 

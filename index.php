@@ -32,7 +32,7 @@ require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 $id = required_param('id', PARAM_INT);
 
 if (!$course = $DB->get_record("course", array("id" => $id))) {
-    print_error('invalidcourseid');
+    throw new \moodle_exception('invalidcourseid');
 }
 require_login($course);
 
