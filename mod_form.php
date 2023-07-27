@@ -77,8 +77,8 @@ class mod_newsletter_mod_form extends moodleform_mod {
         $mform->addElement('header', 'header_profilefield',
                 get_string('header_profilefield', 'mod_newsletter'));
         $mform->addElement('select', 'profilefield',
-                get_string('header_profilefield', 'mod_newsletter'), $this->cpf_list());
-        $mform->addHelpButton('profilefield', 'help_profilefield', 'mod_newsletter');
+                get_string('profilefield', 'mod_newsletter'), $this->cpf_list());
+        $mform->addHelpButton('profilefield', 'profilefield', 'mod_newsletter');
 
         $this->standard_coursemodule_elements();
         $this->add_action_buttons();
@@ -111,8 +111,7 @@ class mod_newsletter_mod_form extends moodleform_mod {
                 $userprofilefieldsarray[$cpf->id] = $cpf->name;
             }
         }
-        $nofilter = get_string('nofilter', 'mod_newsletter');
-        $userprofilefieldsarray[0] = $nofilter;
+        $userprofilefieldsarray[0] = '';
         asort($userprofilefieldsarray);
 
         return $userprofilefieldsarray;
