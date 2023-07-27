@@ -2227,15 +2227,16 @@ class newsletter implements renderable {
      * @return array Two-element array with SQL and params for WHERE clause
      */
     public function get_filter_sql(array $getparams, $count = false) {
-        $allnamefields = user_picture::fields('u', null, 'userid');
-        $extrafields = get_extra_user_fields($this->get_context());
+        $fields = \core_user\fields::for_name()->with_identity($this->context, false);
+        $usersql = $fields->get_sql('u');
+        $extrafields = $fields->get_required_fields([\core_user\fields::PURPOSE_IDENTITY]);
         if ($count) {
             $sql = "SELECT COUNT(*)
             FROM {newsletter_subscriptions} ns
             INNER JOIN {user} u ON ns.userid = u.id
             WHERE ns.newsletterid = :newsletterid AND ";
         } else {
-            $sql = "SELECT DISTINCT ns.*, {$allnamefields}, COUNT(DISTINCT nb.id) AS bounces
+            $sql = "SELECT DISTINCT ns.* {$usersql->selects}, COUNT(DISTINCT nb.id) AS bounces
             FROM {newsletter_subscriptions} ns
             INNER JOIN {user} u ON ns.userid = u.id
             LEFT JOIN {newsletter_bounces} nb ON nb.userid = u.id
