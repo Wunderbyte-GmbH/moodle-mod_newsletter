@@ -393,7 +393,7 @@ function xmldb_newsletter_upgrade($oldversion)
 
         // Define field id to be added to newsletter.
         $table = new xmldb_table('newsletter');
-        $field = new xmldb_field('profilefield', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'welcomemessageguestuser');
+        $field = new xmldb_field('aboprofilefield', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'welcomemessageguestuser');
 
         // Conditionally launch add field id.
         if (!$dbman->field_exists($table, $field)) {

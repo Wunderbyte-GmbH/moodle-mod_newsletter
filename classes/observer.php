@@ -45,7 +45,7 @@ class mod_newsletter_observer {
             JOIN {course_modules} cm ON cm.instance = n.id
             JOIN {modules} m ON m.id = cm.module
             JOIN {user_info_field} uif
-            ON uif.id = n.profilefield
+            ON uif.id = n.aboprofilefield
             JOIN {user_info_data} uid
             ON uid.fieldid = uif.id 
             JOIN {user} u
