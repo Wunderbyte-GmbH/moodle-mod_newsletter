@@ -17,7 +17,7 @@
         <FIELD NAME="allowguestusersubscriptions" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="welcomemessage" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="welcomemessageguestuser" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="aboprofilefield" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/ COMMENT="User profile field for triggering newsletter subscription">
+        <FIELD NAME="aboprofilefield" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="User profile field triggering subscription"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
