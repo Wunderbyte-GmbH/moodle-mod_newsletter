@@ -374,21 +374,6 @@ function xmldb_newsletter_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2022091400, 'newsletter');
     }
 
-    if ($oldversion < 2023071201) {
-
-        // Define field id to be added to newsletter.
-        $table = new xmldb_table('newsletter');
-        $field = new xmldb_field('profilefield', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'welcomemessageguestuser');
-
-        // Conditionally launch add field id.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Newsletter savepoint reached.
-        upgrade_mod_savepoint(true, 2023071201, 'newsletter');
-    }
-
     if ($oldversion < 2023071307) {
 
         // Define field id to be added to newsletter.
@@ -403,7 +388,5 @@ function xmldb_newsletter_upgrade($oldversion)
         // Newsletter savepoint reached.
         upgrade_mod_savepoint(true, 2023071307, 'newsletter');
     }
-
-
     return true;
 }
