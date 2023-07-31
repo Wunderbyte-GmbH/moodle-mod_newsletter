@@ -208,7 +208,7 @@ class newsletter implements renderable {
     /**
      * Get subscription id of user if $userid = 0 id of current user is returned
      *
-     * @param int userid
+     * @param int $userid
      * @return int|boolean subscriptionid | false if no subscription is found
      */
     public function get_subid(int $userid = 0) {
@@ -272,19 +272,6 @@ class newsletter implements renderable {
             $this->config = get_config('mod_newsletter');
         }
         return $this->config;
-    }
-
-    /**
-     * get all subscribed users for a newsletter instance
-     *
-     * @return array of objects with subscription id as key
-     */
-    public function get_subscriptions(): array {
-        global $DB;
-        return $DB->get_records(
-            'newsletter_subscriptions',
-            array('id' => $this->get_instance()->id)
-        );
     }
 
     /**
@@ -1137,7 +1124,7 @@ class newsletter implements renderable {
      * @return int
      * @throws \dml_exception
      */
-    public static function get_delivered_issues($userid) {
+    public static function get_delivered_issues($userid): int {
         global $DB;
         $delivered = $DB->count_records('newsletter_deliveries', array('userid' => $userid));
         return $delivered;
@@ -1288,6 +1275,10 @@ class newsletter implements renderable {
                 $dateformat = get_string("week") . " %W/%Y";
                 $datefromto = "%d. %B %Y";
                 break;
+            default:
+                $from = strtotime("first day of this month", $firstissue->publishon);
+                $to = strtotime("next month", $from);
+                $dateformat = "%B %Y";
         }
 
         $sectionlist = new \newsletter_section_list($heading);
@@ -1335,7 +1326,7 @@ class newsletter implements renderable {
                 if (!($issue->publishon > time() && !$editissue)) { // Do not display issues that
                     // are not yet published.
                     $currentissuelist->add_issue_summary(
-                        new \newsletter_issue_summary($issue, $editissue, $deleteissue)
+                        new \newsletter_issue_summary($issue, $editissue, $deleteissue, $duplicateissue)
                     );
                 }
             } // End if issue in timeslot.

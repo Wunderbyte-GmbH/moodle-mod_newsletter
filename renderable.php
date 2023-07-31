@@ -123,11 +123,13 @@ class newsletter_issue implements renderable {
     }
 }
 
+/**
+ *
+ */
 class newsletter_issue_summary extends newsletter_issue {
     public $editissue;
     public $deleteissue;
     public $duplicateissue;
-
 
     public function __construct(stdClass $issue, $editissue = false, $deleteissue = false, $duplicateissue = false) {
         parent::__construct($issue);
@@ -138,9 +140,9 @@ class newsletter_issue_summary extends newsletter_issue {
 }
 
 class newsletter_subscription_list implements renderable {
-    public $cmid;
-    public $subscriptions;
-    public $columns;
+    public int $cmid;
+    public array $subscriptions;
+    public array $columns;
     public function __construct($cmid, array $subscriptions, array $columns) {
         $this->cmid = $cmid;
         $this->subscriptions = $subscriptions;
@@ -166,8 +168,8 @@ class newsletter_issue_summary_list implements renderable {
 
 class newsletter_section_list implements renderable {
 
-    public $heading = '';
-    public $sections = array();
+    public string $heading = '';
+    public array $sections = array();
 
     /**
      * Constructor
