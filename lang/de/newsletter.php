@@ -146,6 +146,7 @@ Passwort: {$a->password}
 Wenn Sie Hilfe benötigen, kontaktieren Sie bitte den/die Administrator/in der Website,
 {$a->admin}';
 $string['no_issues'] = 'Zu diesem Newsletter bestehen noch keine Ausgaben.';
+$string['nofilter'] = 'Keinen Filter verwenden';
 $string['send_newsletter'] = 'Newsletter versenden';
 $string['process_bounces'] = 'Zurückgewiesene E-Mails verarbeiten';
 $string['page_first'] = 'Erste Seite';

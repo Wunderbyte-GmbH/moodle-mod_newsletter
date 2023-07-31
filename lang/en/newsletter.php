@@ -173,6 +173,7 @@ $string['already_published'] = 'This issue has been published.';
 $string['delete_issue_question'] = 'Are you sure you want to delete this issue?';
 $string['delete_subscription_question'] = 'Are you sure you want to delete this subscription?';
 $string['no_issues'] = 'This newsletter has no issues yet.';
+$string['nofilter'] = 'Do not use a filter';
 
 $string['edit_subscription_title'] = 'Edit subscription';
 $string['subscribe'] = 'Subscribe';

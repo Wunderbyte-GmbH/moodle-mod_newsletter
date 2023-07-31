@@ -71,9 +71,9 @@ class userfilter {
                 $userprofilefieldsarray[$key] = $key;
             }
         }
-        $nofilter = get_string('nofilter', 'mod_newsletter');
-        $userprofilefieldsarray[0] = $nofilter;
         asort($userprofilefieldsarray);
+        $nofilter = get_string('nofilter', 'mod_newsletter');
+        array_unshift($userprofilefieldsarray, $nofilter);
 
         $operators = [
             '=' => get_string('equals', 'mod_newsletter'),
@@ -100,7 +100,7 @@ class userfilter {
             get_string('userprofilefield_field', 'mod_newsletter'),
             $userprofilefieldsarray
         );
-        $mform->setDefault('userprofilefield1_field', $nofilter);
+        $mform->setDefault('userprofilefield1_field', 0);
 
         $mform->addElement(
             'select',
@@ -170,7 +170,7 @@ class userfilter {
      * Interprets the form data and returns the right json generated from it.
      *
      * @param [type] $data
-     * @return void
+     * @return string
      */
     public static function return_json_from_form($data) {
 
@@ -516,7 +516,7 @@ class userfilter {
      *
      * @param string $fieldname
      * @param string $fieldvalue
-     * @param stdClass $user
+     * @param ?stdClass $uservalue
      * @param string $operator
      * @return bool
      */
