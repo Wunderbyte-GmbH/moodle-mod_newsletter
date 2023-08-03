@@ -78,6 +78,7 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->applyFilter('firstname', 'trim');
         $mform->applyFilter('lastname', 'trim');
         $mform->applyFilter('email', 'trim');
+        $mform->applyFilter('email', 'strtolower');
     }
 
     public function validation($usernew, $files) {

@@ -1,103 +1,119 @@
 /* line 1, sass/partials/components/_issue.scss */
 .mod_newsletter__issue--full__container {
-  padding: 1em;
-  border: 1px solid lightgray;
+    padding: 1em;
+    border: 1px solid lightgray;
 }
 
 /* line 66, navbar/*.png */
-.navbar-sprite, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--first, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--previous, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--next, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--last {
-  background: url([[pix:newsletter|navbar-sd917361d2f]]) no-repeat;
+.navbar-sprite,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--first,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--previous,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--next,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--last {
+    background: url([[pix:newsletter|navbar-sd917361d2f]]) no-repeat;
 }
 
 /* line 3, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar__container {
-  text-align: center;
+    text-align: center;
 }
 
 /* line 7, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar {
-  display: inline-block;
-  margin: 0 auto;
+    display: inline-block;
+    margin: 0 auto;
 }
+
 /* line 11, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__title {
-  float: left;
-  display: inline-block;
-  margin: 0.25em;
-  height: 24px;
+    float: left;
+    display: inline-block;
+    margin: 0.25em;
+    height: 24px;
 }
+
 /* line 18, sass/partials/components/_navbar.scss */
-.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--first, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--previous, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--next, .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--last {
-  float: left;
-  display: inline-block;
-  margin: 0.25em;
-  height: 24px;
-  width: 24px;
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--first,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--previous,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--next,
+.mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--last {
+    float: left;
+    display: inline-block;
+    margin: 0.25em;
+    height: 24px;
+    width: 24px;
 }
+
 /* line 26, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--first {
-  background-position: 0 -24px;
+    background-position: 0 -24px;
 }
+
 /* line 31, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--previous {
-  background-position: 0 -48px;
+    background-position: 0 -48px;
 }
+
 /* line 36, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--next {
-  background-position: 0 -72px;
+    background-position: 0 -72px;
 }
+
 /* line 41, sass/partials/components/_navbar.scss */
 .mod-newsletter__navigation-bar .mod-newsletter__navigation-bar__button--last {
-  background-position: 0 0;
+    background-position: 0 0;
 }
 
 /* line 3, sass/partials/components/_meter.scss */
 .mod_newsletter__meter {
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d3d3d3), color-stop(20%, #ffffff), color-stop(40%, #808080), color-stop(100%, #d3d3d3));
-  background-image: -webkit-linear-gradient(#d3d3d3, #ffffff 20%, #808080 40%, #d3d3d3);
-  background-image: -moz-linear-gradient(#d3d3d3, #ffffff 20%, #808080 40%, #d3d3d3);
-  background-image: -o-linear-gradient(#d3d3d3, #ffffff 20%, #808080 40%, #d3d3d3);
-  background-image: linear-gradient(#d3d3d3, #ffffff 20%, #808080 40%, #d3d3d3);
-  display: inline-block;
-  height: 1.5em;
-  width: 16em;
-  padding: 0;
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d3d3d3), color-stop(20%, #fff), color-stop(40%, #808080), color-stop(100%, #d3d3d3));
+    background-image: -webkit-linear-gradient(#d3d3d3, #fff 20%, #808080 40%, #d3d3d3);
+    background-image: -moz-linear-gradient(#d3d3d3, #fff 20%, #808080 40%, #d3d3d3);
+    background-image: -o-linear-gradient(#d3d3d3, #fff 20%, #808080 40%, #d3d3d3);
+    background-image: linear-gradient(#d3d3d3, #fff 20%, #808080 40%, #d3d3d3);
+    display: inline-block;
+    height: 1.5em;
+    width: 16em;
+    padding: 0;
 }
 
 .mod_newsletter__issue--summary__link-edit {
 }
 
 .mod_newsletter_remaining {
-	float: right;
-	padding-right: 3px;
+    float: right;
+    padding-right: 3px;
 }
+
 /* line 9, sass/partials/components/_meter.scss */
 .mod_newsletter__meter .mod_newsletter__meter__foreground {
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #90ee90), color-stop(20%, #ffffff), color-stop(40%, #008000), color-stop(100%, #90ee90));
-  background-image: -webkit-linear-gradient(#90ee90, #ffffff 20%, #008000 40%, #90ee90);
-  background-image: -moz-linear-gradient(#90ee90, #ffffff 20%, #008000 40%, #90ee90);
-  background-image: -o-linear-gradient(#90ee90, #ffffff 20%, #008000 40%, #90ee90);
-  background-image: linear-gradient(#90ee90, #ffffff 20%, #008000 40%, #90ee90);
-  height: 100%;
-  width: 0;
-  padding: 0;
-  text-indent: 3px;
+    background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #90ee90), color-stop(20%, #fff), color-stop(40%, #008000), color-stop(100%, #90ee90));
+    background-image: -webkit-linear-gradient(#90ee90, #fff 20%, #008000 40%, #90ee90);
+    background-image: -moz-linear-gradient(#90ee90, #fff 20%, #008000 40%, #90ee90);
+    background-image: -o-linear-gradient(#90ee90, #fff 20%, #008000 40%, #90ee90);
+    background-image: linear-gradient(#90ee90, #fff 20%, #008000 40%, #90ee90);
+    height: 100%;
+    width: 0;
+    padding: 0;
+    text-indent: 3px;
 }
 
 /* line 2, sass/partials/components/_issue-list.scss */
 .mod_newsletter__issue-list ul {
-  list-style: none !important;
-  margin: 0;
-  padding: 0;
+    list-style: none !important;
+    margin: 0;
+    padding: 0;
 }
+
 /* line 7, sass/partials/components/_issue-list.scss */
 .mod_newsletter__issue-list ul li {
-  margin: 0.25em;
-  padding: 0.5em;
+    margin: 0.25em;
+    padding: 0.5em;
 }
+
 /* line 10, sass/partials/components/_issue-list.scss */
 .mod_newsletter__issue-list ul li:hover {
-  background-color: #ddd;
+    background-color: #ddd;
 }
 
 /* line 20, sass/partials/components/_issue-list.scss */
@@ -105,48 +121,53 @@
 .mod_newsletter__issue--summary .mod_newsletter__issue--summary__link-read,
 .mod_newsletter__issue--summary .mod_newsletter__issue--summary__link-edit,
 .mod_newsletter__issue--summary .mod_newsletter__issue__meter {
-  margin-right: 1em;
-  display: inline-block;
+    margin-right: 1em;
+    display: inline-block;
 }
+
 /* line 25, sass/partials/components/_issue-list.scss */
 .mod_newsletter__issue--summary .mod_newsletter__issue--summary__link-read-icon {
-  width: 2em;
-  height: 2em;
-  vertical-align: middle;
+    width: 2em;
+    height: 2em;
+    vertical-align: middle;
 }
 
 /* line 33, sass/partials/components/_issue-list.scss */
 .mod_newsletter__section-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
+
 /* line 38, sass/partials/components/_issue-list.scss */
 .mod_newsletter__section-list ul:not(.pagination) li {
-  margin: 0.25em;
-  padding: 0.5em;
+    margin: 0.25em;
+    padding: 0.5em;
 }
 
 .pagination {
-  margin: 0.5em !important;
-  padding: 0.5em !important;
+    margin: 0.5em !important;
+    padding: 0.5em !important;
 }
+
 /* line 45, sass/partials/components/_issue-list.scss */
 .mod_newsletter__section {
-  margin: 0.25em;
-  padding: 0.5em;
+    margin: 0.25em;
+    padding: 0.5em;
 }
 
 /* line 2, sass/partials/components/_pager.scss */
 .mod_newsletter__pager ul {
-  list-style-type: none;
-  text-align: center;
+    list-style-type: none;
+    text-align: center;
 }
+
 /* line 5, sass/partials/components/_pager.scss */
 .mod_newsletter__pager ul li {
-  display: inline;
-  padding: 0px 3px 0px 3px;
+    display: inline;
+    padding: 0 3px 0 3px;
 }
+
 #page-mod-newsletter-view #filterform {
     min-height: 20px;
     border-radius: 3px;
@@ -154,45 +175,78 @@
 }
 
 #page-mod-newsletter-view #filterform div,
-#page-mod-newsletter-view #filterform fieldset {display:inline;float:none;clear:none;width:auto;margin:0;}
-#page-mod-newsletter-view #filterform .fitem {white-space:nowrap;}
-#page-mod-newsletter-view #filterform fieldset > div {display:block;float:left;background:#f2f2f2;padding:8px;}
+#page-mod-newsletter-view #filterform fieldset {
+    display: inline;
+    float: none;
+    clear: none;
+    width: auto;
+    margin: 0;
+}
+
+#page-mod-newsletter-view #filterform .fitem {
+    white-space: nowrap;
+}
+
+#page-mod-newsletter-view #filterform fieldset > div {
+    display: block;
+    float: left;
+    background: #f2f2f2;
+    padding: 8px;
+}
+
 #page-mod-newsletter-view #filterform select,
-#page-mod-newsletter-view #filterform .ftext input {width:8em;}
+#page-mod-newsletter-view #filterform .ftext input {
+    width: 8em;
+}
+
 #page-mod-newsletter-view #filterform #fitem_id_role,
 #page-mod-newsletter-view #filterform #fitem_id_ifilter,
-#page-mod-newsletter-view #filterform #fgroup_id_buttons {margin-left:0.5em;}
-#page-mod-newsletter-view .paging { clear: right; }
+#page-mod-newsletter-view #filterform #fgroup_id_buttons {
+    margin-left: 0.5em;
+}
+
+#page-mod-newsletter-view .paging {
+    clear: right;
+}
+
 #page-mod-newsletter-view #filterform .fitem {
     display: inline-block;
     line-height: 40px;
     margin-right: 0.3em;
     white-space: nowrap;
 }
+
 #page-mod-newsletter-view #filterform .fitem label {
     display: inline;
     line-height: 20px;
     padding-right: 0.3em;
 }
-#page-mod-newsletter-view select, 
-#page-mod-newsletter-view input[type="text"], 
-#page-mod-newsletter-view input, 
+
+#page-mod-newsletter-view select,
+#page-mod-newsletter-view input[type="text"],
+#page-mod-newsletter-view input,
 #page-mod-newsletter-view input[type="search"],
 #page-mod-newsletter-view button {
-	margin-bottom: 0px;
-	}
-.mod_newsletter__pager span { padding-right: 10px;}
+    margin-bottom: 0;
+}
+
+.mod_newsletter__pager span {
+    padding-right: 10px;
+}
 
 #page-mod-newsletter-view #region-main .box .mform fieldset legend {
-	margin: 0;
+    margin: 0;
 }
-.mod-newsletter__action-link, .newsletter-toolbar {
-  display: inline-block;
+
+.mod-newsletter__action-link,
+.newsletter-toolbar {
+    display: inline-block;
 }
 
 #page-mod-newsletter-view.embed .activity-header {
-  display: none;
+    display: none;
 }
+
 body#page-mod-newsletter-view.embed {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
