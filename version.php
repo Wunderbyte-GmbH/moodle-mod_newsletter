@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2023072700;
+$plugin->version = 2023111700;
 $plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v2.3.6-NewYorkTimes';  // Already used names: Der Standard, Le Monde Diplomatique.
+$plugin->release = 'v2.3.7-NewYorkTimes';  // Already used names: Der Standard, Le Monde Diplomatique.
 $plugin->component = 'mod_newsletter';
