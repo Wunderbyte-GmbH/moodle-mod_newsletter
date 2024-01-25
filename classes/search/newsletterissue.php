@@ -38,6 +38,13 @@ class newsletterissue extends \core_search\base {
     private array $data = []; // stores data.
 
     /**
+     * The context levels the search implementation is working on.
+     *
+     * @var array
+     */
+    protected static $levels = [CONTEXT_MODULE];
+
+    /**
      * Returns recordset containing required data for indexing Newsletter issues.
      * We only return newsletters which have been modified AND which have been published.
      *
