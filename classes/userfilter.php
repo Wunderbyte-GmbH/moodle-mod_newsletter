@@ -100,7 +100,7 @@ class userfilter {
             get_string('userprofilefield_field', 'mod_newsletter'),
             $userprofilefieldsarray
         );
-        $mform->setDefault('userprofilefield1_field', 0);
+        $mform->setDefault('userprofilefield1_field', "0");
 
         $mform->addElement(
             'select',
