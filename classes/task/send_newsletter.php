@@ -96,9 +96,9 @@ class send_newsletter extends \core\task\scheduled_task {
                 // Populate the deliveries table.
                 $recipients = newsletter_get_all_valid_recipients($issue->newsletterid, $issue->userfilter);
                 $subscriptionobjects = array();
-                foreach ($recipients as $userid => $recipient) {
+                foreach ($recipients as $recipient) {
                     $sub = new stdClass();
-                    $sub->userid = $userid;
+                    $sub->userid = $recipient->userid;
                     $sub->issueid = $issue->id;
                     $sub->newsletterid = $issue->newsletterid;
                     $sub->deliverytime = 0;
@@ -106,7 +106,7 @@ class send_newsletter extends \core\task\scheduled_task {
                     $subscriptionobjects[] = $sub;
                     if ($recipient->nounsublink) {
                         // Who doesn't receive unsublink per issue.
-                        $nounsublink[$issue->id][] = $userid;
+                        $nounsublink[$issue->id][] = $recipient->userid;
                     }
                 }
                 $DB->insert_records('newsletter_deliveries', $subscriptionobjects);
