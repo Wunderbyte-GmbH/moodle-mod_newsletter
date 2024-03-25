@@ -65,6 +65,7 @@ $string['delete_issue'] = 'Diese Newsletter-Ausgabe löschen';
 $string['delete_issue_question'] = 'Sind Sie sicher, dass Sie diese Newsletter-Ausgabe löschen wollen?';
 $string['delete_subscription_question'] = 'Sind Sie sicher, dass Sie dieses Newsletter-Abonnement kündigen wollen?';
 $string['edit_issue'] = 'Diese Ausgabe bearbeiten';
+$string['redirect_Message'] = 'Bitte ändern Sie ihren Texteditor, auf den TinyMCE Editor.';
 $string['edit_issue_title'] = 'Newsletter-Ausgabe bearbeiten';
 $string['edit_subscription_title'] = 'Abonnement bearbeiten';
 $string['emailexists'] = 'Es existiert bereits ein Benutzeraccount mit dieser E-Mailadresse, eine erneute Anlage ist daher nicht nötig. Bitte loggen Sie sich ein, um diesen Newsletter zu abonnieren.

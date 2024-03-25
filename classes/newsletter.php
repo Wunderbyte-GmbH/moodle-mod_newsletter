@@ -228,7 +228,7 @@ class newsletter implements renderable {
             );
         }
     }
-    
+
     /**
      * Get the current course
      *
@@ -302,7 +302,7 @@ class newsletter implements renderable {
 
     private function get_js_module($strings = array()) {
         $jsmodule = array(
-            'name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/module.js',
+            'name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/amd/src/editor.js',
             'requires' => array('node', 'event', 'node-screen', 'panel', 'node-event-delegate'),
             'strings' => $strings
         );
@@ -802,7 +802,11 @@ class newsletter implements renderable {
      * @return string rendered HTML
      */
     private function view_edit_issue_page(array $params) {
-        global $CFG, $PAGE;
+        global $CFG, $PAGE, $USER, $OUTPUT;
+        $currentext = trim(explode(',', $CFG->texteditors)[0]);
+        if ($currentext != 'tiny') {
+            redirect('/admin/settings.php?section=manageeditors', get_string('redirect_Message', 'mod_newsletter'), null, \core\output\notification::NOTIFY_ERROR);
+        }
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             throw new moodle_exception (
                 'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
@@ -931,7 +935,6 @@ class newsletter implements renderable {
         );
         // TODO: remove ugly config hack and provide js for atto.
         $texteditors = $CFG->texteditors;
-        $CFG->texteditors = 'tinymce,textarea';
         $output .= $renderer->render(
             new \newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter'))
         );
