@@ -60,9 +60,9 @@ class mod_newsletter_mod_form extends moodleform_mod {
                 $this->make_subscription_option_list());
         $mform->addHelpButton('subscriptionmode', 'subscription_mode', 'mod_newsletter');
 
-        $mform->addElement('filemanager', 'stylesheets', get_string('stylesheets', 'mod_newsletter'),
-                array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'accepted_types' => 'css'));
-        $mform->addHelpButton('stylesheets', 'stylesheets', 'mod_newsletter');
+        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'mod_newsletter'),
+                null);
+        $mform->addHelpButton('attachments', 'attachments', 'mod_newsletter');
 
         $mform->addElement('advcheckbox', 'allowguestusersubscriptions',
                 get_string('allowguestusersubscriptions', 'mod_newsletter'));

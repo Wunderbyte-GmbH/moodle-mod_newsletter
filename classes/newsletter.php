@@ -851,12 +851,6 @@ class newsletter implements renderable {
             $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
         }
 
-        $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_init_call(
-            'M.mod_newsletter.init_editor',
-            array($options, $issue->id ? $issue->stylesheetid : NEWSLETTER_DEFAULT_STYLESHEET)
-        );
-
         $mform = new \mod_newsletter\issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)

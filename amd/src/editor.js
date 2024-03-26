@@ -63,6 +63,7 @@ M.mod_newsletter.init_editor = function(stylesheets, selected) {
     var select = document.querySelector('#id_stylesheetid');
     if (select) {
         select.addEventListener('change', change_stylesheet);
+        tinymceEditor.activeEditor.contentCSS = select;
     } else {
         setTimeout(function () {
             M.mod_newsletter.init_editor(stylesheets, selected);
