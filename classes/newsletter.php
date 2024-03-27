@@ -929,6 +929,7 @@ class newsletter implements renderable {
         );
         // TODO: remove ugly config hack and provide js for atto.
         $texteditors = $CFG->texteditors;
+        $CFG->texteditors = 'tiny';
         $output .= $renderer->render(
             new \newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter'))
         );
