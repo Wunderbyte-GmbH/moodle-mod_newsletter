@@ -69,6 +69,7 @@ class issue_form extends moodleform {
      * Defines forms elements
      */
     public function definition() {
+        GLOBAL $CFG;
         $mform = &$this->_form;
         $data = &$this->_customdata;
 

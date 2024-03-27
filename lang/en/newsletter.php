@@ -66,6 +66,7 @@ $string['attachments_help'] = 'Upload files you want to deliver with this issue 
 $string['attachments_no'] = 'No Attachments uploaded.';
 
 $string['delete_all_subscriptions'] = 'Delete all subscriptions';
+$string['redirect_Message'] = 'Please change your text editor to the TinyMCE editor.';
 
 $string['subscription_mode'] = 'Subscription mode';
 $string['subscription_mode_help'] = 'Select whether the enrolled users are subscribed to this newsletter automatically (opt out) or have to subscribe manually (opt in). WARNING! Opt out will automatically subscribe all enrolled users!';

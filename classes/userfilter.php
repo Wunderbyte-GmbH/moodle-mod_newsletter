@@ -340,7 +340,7 @@ class userfilter {
                 $dbvalue = $DB->sql_compare_text($dbvalue);
                 $formvalue = $DB->sql_compare_text($formvalue);
                 $inparams["paramop$counter"] = $formvalue;
-                $fragment = $DB->sql_equal($dbvalue, ":paramop$counter", false, false);
+                $fragment = "$dbvalue = :paramop$counter";
 
                 break;
             case '!=':
