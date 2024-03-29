@@ -38,15 +38,17 @@ use context;
 use moodle_url;
 use html_writer;
 use moodle_exception;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 use user_picture;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/newsletter/renderable.php');
-require_once($CFG->dirroot . '/mod/newsletter/CssToInlineStyles/CssToInlineStyles.php');
+require_once(dirname(__DIR__) . '/vendor/autoload.php');
+require_once(dirname(__DIR__) . '/renderable.php');
+//require_once(dirname(__DIR__) . '/CssToInlineStyles/CssToInlineStyles.php');
 require_once(dirname(__FILE__) . '/subscription/subscription_filter_form.php');
-require_once($CFG->dirroot . '/mod/newsletter/guest_signup_form.php');
-require_once($CFG->dirroot . '/mod/newsletter/resubscribe_form.php');
+require_once(dirname(__DIR__) . '/guest_signup_form.php');
+require_once(dirname(__DIR__) . '/resubscribe_form.php');
 
 
 class newsletter implements renderable {
@@ -1738,10 +1740,8 @@ class newsletter implements renderable {
             }
         }
 
-        $converter = new \CssToInlineStyles();
-        $converter->setHTML(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8'));
-        $converter->setCSS($css);
-        $html = $converter->convert();
+        $converter = new  CssToInlineStyles();
+        $html = $converter->convert(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8'), $css);
 
         if (!$fulldocument) {
             if (preg_match(
@@ -2117,8 +2117,8 @@ class newsletter implements renderable {
      */
     public function subscribe_guest(string $firstname, string $lastname, string $email): bool {
         global $DB, $CFG;
-        require_once($CFG->dirroot . '/user/profile/lib.php');
-        require_once($CFG->dirroot . '/user/lib.php');
+        require_once(dirname(__FILE__) . '/user/profile/lib.php');
+        require_once(dirname(__FILE__) . '/user/lib.php');
 
         if (empty($CFG->registerauth)) {
             throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
