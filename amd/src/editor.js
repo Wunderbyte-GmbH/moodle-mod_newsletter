@@ -22,9 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import {getTinyMCE} from 'editor_tiny/loader';
+
 var M = {
     mod_newsletter: {}
 };
+
+var tinymce = null;
 
 M.mod_newsletter.collapse_subscribe_form = function() {
     var fieldset = document.querySelector('form #id_subscribe');
@@ -33,11 +37,10 @@ M.mod_newsletter.collapse_subscribe_form = function() {
     }
 };
 
-M.mod_newsletter.init_editor = function(stylesheets, selected) {
-    var tinymceEditor = document.querySelector('.mce-tinymce');
-    if (tinymceEditor === null) {
-        console.error('Error: TinyMCE editor is required for init_editor function in mod_newsletter.');
-    }
+export const loadCss = async function(stylesheets, selected) {
+    tinymce = await getTinyMCE();
+    var select = document.querySelector('#id_stylesheetid');
+
     /**
      * Changes the stylesheet based on the selected option.
      * @param {Object} e Event object containing information about the target element.
@@ -45,26 +48,20 @@ M.mod_newsletter.init_editor = function(stylesheets, selected) {
     function change_stylesheet(e) {
         var select = e.target;
         var selectedIndex = select.value;
-        document.querySelectorAll('head link').forEach(function (node) {
-            node.remove();
+        tinymce.remove();
+        tinymce.init({
+            selector: 'textarea',
+            content_css: stylesheets[selectedIndex]
         });
-        var link1 = document.createElement('link');
-        link1.type = 'text/css';
-        link1.rel = 'stylesheet';
-        link1.href = stylesheets[0];
-        document.head.appendChild(link1);
-        var link2 = document.createElement('link');
-        link2.type = 'text/css';
-        link2.rel = 'stylesheet';
-        link2.href = stylesheets[selectedIndex];
-        document.head.appendChild(link2);
     }
 
-    var select = document.querySelector('#id_stylesheetid');
+    // Execute change_stylesheet function initially
+    change_stylesheet({target: select});
+
     if (select) {
         select.addEventListener('change', change_stylesheet);
     } else {
-        setTimeout(function () {
+        setTimeout(function() {
             M.mod_newsletter.init_editor(stylesheets, selected);
         }, 100);
     }

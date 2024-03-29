@@ -142,9 +142,13 @@ class send_newsletter extends \core\task\scheduled_task {
             $fs = get_file_storage();
             $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter',
                     NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, "", false);
-            $attachment = array();
-            foreach ($files as $file) {
-                $attachment[$file->get_filename()] = $file->copy_content_to_temp();
+            $attachment = null;
+            $fname = null;
+            if (!empty($files)) {
+                foreach ($files as $file) {
+                    $attachment = $file->copy_content_to_temp();
+                    $fname = $file->get_filename();
+                }
             }
             // To ensure this link is clicked by the user we add a secret from userid and firstaccess.
             if (isset($unsublinks[$newsletter->get_instance()->id])) {
@@ -246,8 +250,8 @@ class send_newsletter extends \core\task\scheduled_task {
                     'Message-ID: ' . newsletter_get_email_message_id($issue->id, $recipient->id,
                             $hostname), 'X-Course-Id: ' . $newsletter->get_instance()->course,
                     'X-Course-Name: ' . format_string($newsletter->get_course()->fullname, true));
-                $result = newsletter_email_to_user($recipient, $userfrom, $issue->title,
-                        $plaintextuser, $htmluser, $attachment);
+                $result = email_to_user($recipient, $userfrom, $issue->title,
+                        $plaintextuser, $htmluser, $attachment, $fname);
                 if ($debugoutput) {
                     echo ($result ? "OK" : "FAILED") . "!\n";
                 }

@@ -802,11 +802,7 @@ class newsletter implements renderable {
      * @return string rendered HTML
      */
     private function view_edit_issue_page(array $params) {
-        global $CFG, $PAGE, $USER, $OUTPUT;
-        $currentext = trim(explode(',', $CFG->texteditors)[0]);
-        if ($currentext != 'tiny') {
-            redirect('/admin/settings.php?section=manageeditors', get_string('redirect_Message', 'mod_newsletter'), null, \core\output\notification::NOTIFY_ERROR);
-        }
+        global $CFG, $PAGE;
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             throw new moodle_exception (
                 'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
@@ -851,6 +847,9 @@ class newsletter implements renderable {
             $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
         }
 
+        $PAGE->requires->js_module($this->get_js_module());
+        $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss', [$options, $issue->stylesheetid]);
+
         $mform = new \mod_newsletter\issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
@@ -863,7 +862,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ATTACHMENT,
             empty($issue->id) ? null : $issue->id,
-            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context())
+            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
         );
 
         $issueid = empty($issue->id) ? null : $issue->id;
@@ -929,6 +928,7 @@ class newsletter implements renderable {
         );
         // TODO: remove ugly config hack and provide js for atto.
         $texteditors = $CFG->texteditors;
+        $CFG->texteditors = 'tiny';
         $output .= $renderer->render(
             new \newsletter_form($mform, get_string('edit_issue_title', 'mod_newsletter'))
         );
