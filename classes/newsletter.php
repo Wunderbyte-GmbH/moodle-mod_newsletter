@@ -862,7 +862,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ATTACHMENT,
             empty($issue->id) ? null : $issue->id,
-            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context())
+            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
         );
 
         $issueid = empty($issue->id) ? null : $issue->id;

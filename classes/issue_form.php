@@ -42,10 +42,10 @@ class issue_form extends moodleform {
      * @param \stdClass $newsletter
      * @return array
      */
-    public static function attachment_options($newsletter, $context) {
+    public static function attachment_options($newsletter, $context, $maxfile) {
         global $COURSE, $CFG;
         $maxbytes = get_user_max_upload_file_size($context, $CFG->maxbytes, $COURSE->maxbytes);
-        return array('subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => 10,
+        return array('subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => $maxfile,
             'accepted_types' => '*', 'return_types' => FILE_INTERNAL);
     }
 
@@ -117,7 +117,7 @@ class issue_form extends moodleform {
         $mform->setType('stylesheetid', PARAM_INT);
 
         $mform->addElement('filemanager', 'attachments', get_string('attachments', 'mod_newsletter'),
-                null, self::attachment_options($newsletter, $context));
+                null, self::attachment_options($newsletter, $context, 1));
         $mform->addHelpButton('attachments', 'attachments', 'mod_newsletter');
 
         $mform->addElement('header', 'toc_header', get_string('toc_header', 'mod_newsletter'));
