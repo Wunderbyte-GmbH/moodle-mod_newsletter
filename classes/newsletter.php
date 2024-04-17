@@ -302,16 +302,6 @@ class newsletter implements renderable {
         return $status;
     }
 
-    private function get_js_module($strings = array()) {
-        $jsmodule = array(
-            'name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/amd/src/editor.js',
-            'requires' => array('node', 'event', 'node-screen', 'panel', 'node-event-delegate'),
-            'strings' => $strings
-        );
-
-        return $jsmodule;
-    }
-
     /**
      * returns an array of localised subscription status names with according key stored in database column "health"
      *
@@ -408,7 +398,6 @@ class newsletter implements renderable {
      */
     private function display_guest_subscribe_form(array $params): string {
         global $PAGE;
-        $PAGE->requires->js_module($this->get_js_module());
         $authplugin = get_auth_plugin('email');
         if (!$authplugin->can_signup()) {
             throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
@@ -468,7 +457,6 @@ class newsletter implements renderable {
      */
     private function display_resubscribe_form(array $params): string {
         global $PAGE;
-        $PAGE->requires->js_module($this->get_js_module());
         $output = '';
         $renderer = $this->get_renderer();
 
@@ -848,8 +836,6 @@ class newsletter implements renderable {
             $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
             $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
         }
-
-        $PAGE->requires->js_module($this->get_js_module());
         $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss', [$options, $issue->stylesheetid]);
 
         $mform = new \mod_newsletter\issue_form(
