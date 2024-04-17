@@ -22,15 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {getTinyMCE} from 'editor_tiny/loader';
-
-var M = {
+var newsletter = {
     mod_newsletter: {}
 };
 
-var tinymce = null;
-
-M.mod_newsletter.collapse_subscribe_form = function() {
+newsletter.mod_newsletter.collapse_subscribe_form = function() {
     var fieldset = document.querySelector('form #id_subscribe');
     if (fieldset) {
         fieldset.classList.add('collapsed');
@@ -38,31 +34,61 @@ M.mod_newsletter.collapse_subscribe_form = function() {
 };
 
 export const loadCss = async function(stylesheets, selected) {
-    tinymce = await getTinyMCE();
     var select = document.querySelector('#id_stylesheetid');
+
+    /**
+     * Wait for tinyMCE to be loaded.
+     * @returns {Promise}
+     */
+    function waitUntilTinyMCELoaded() {
+        return new Promise((resolve) => {
+            /**
+             * Check if tinyMCE object is available
+             */
+            function checkIfLoaded() {
+                if (window.tinyMCE) {
+                    // If tinyMCE is available, resolve the promise
+                    resolve(window.tinyMCE);
+                } else {
+                    // If not, wait and check again
+                    setTimeout(checkIfLoaded, 100); // Check every 100 milliseconds
+                }
+            }
+
+            // Start checking if loaded
+            checkIfLoaded();
+        });
+    }
+    waitUntilTinyMCELoaded()
+        .then((tinyMCE) => {
+            console.log('tinyMCE is loaded:', tinyMCE);
+            change_stylesheet({target: select});
+            tinyMCE.init({
+                content_css: stylesheets[selected]
+            });
+            // Proceed with further operations using tinyMCE
+        });
+
 
     /**
      * Changes the stylesheet based on the selected option.
      * @param {Object} e Event object containing information about the target element.
      */
     function change_stylesheet(e) {
-        var select = e.target;
-        var selectedIndex = select.value;
-        tinymce.remove();
-        tinymce.init({
+        let selectedTarget = e.target;
+        let selectedIndex = selectedTarget.value;
+        tinyMCE.remove();
+        tinyMCE.init({
             selector: 'textarea',
             content_css: stylesheets[selectedIndex]
         });
     }
 
-    // Execute change_stylesheet function initially
-    change_stylesheet({target: select});
-
     if (select) {
         select.addEventListener('change', change_stylesheet);
     } else {
         setTimeout(function() {
-            M.mod_newsletter.init_editor(stylesheets, selected);
+            newsletter.mod_newsletter.init_editor(stylesheets, selected);
         }, 100);
     }
 };

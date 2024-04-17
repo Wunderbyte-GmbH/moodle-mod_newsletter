@@ -830,7 +830,7 @@ class newsletter implements renderable {
             'filename',
             false
         );
-        $options = array();
+        $options = [];
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
         foreach ($files as $file) {
             $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
