@@ -29,6 +29,7 @@ use coding_exception;
 use context_module;
 use core\event\user_created;
 use core_user;
+use editor_tiny\manager;
 use mod_newsletter_instance_store;
 use newsletter_section_list;
 use renderable;
@@ -673,7 +674,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $params[NEWSLETTER_PARAM_ISSUE],
-            \mod_newsletter\issue_form::editor_options(
+            issue_form::editor_options(
                 $this->get_context(),
                 $params[NEWSLETTER_PARAM_ISSUE]
             )
@@ -830,15 +831,50 @@ class newsletter implements renderable {
             'filename',
             false
         );
-        $options = [];
-        $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
-        foreach ($files as $file) {
-            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
-            $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
+        $cssurls = [];
+        $cssurls[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
+        if (!empty($files)) {
+            foreach ($files as $file) {
+                $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
+                $cssurls[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
+            }
         }
-        $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss', [$options, $issue->stylesheetid]);
+        $editormanager = new manager();
+        $siteconfig = get_config('editor_tiny');
+        $editorconfig = json_encode([
+                'context' => $context->id,
 
-        $mform = new \mod_newsletter\issue_form(
+            // File picker options.
+                'filepicker' => [],
+
+                'currentLanguage' => current_language(),
+
+                'branding' => property_exists($siteconfig, 'branding') ? !empty($siteconfig->branding) : true,
+
+            // Language options.
+                'language' => [
+                        'currentlang' => current_language(),
+                        'installed' => get_string_manager()->get_list_of_translations(true),
+                        'available' => get_string_manager()->get_list_of_languages()
+                ],
+
+            // Placeholder selectors.
+            // Some contents (Example: placeholder elements) are only shown in the editor, and not to users. It is unrelated to the
+            // real display. We created a list of placeholder selectors, so we can decide to or not to apply rules, styles... to
+            // these elements.
+            // The default of this list will be empty.
+            // Other plugins can register their placeholder elements to placeholderSelectors list by calling
+            // editor_tiny/options::registerPlaceholderSelectors.
+                'placeholderSelectors' => [],
+
+            // Nest menu inside parent DOM.
+                'nestedmenu' => true,
+        ]);
+        $plugins = json_encode($editormanager->get_plugin_configuration($context));
+        $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss',
+                [$cssurls, $issue->stylesheetid, $editorconfig, $plugins]);
+
+        $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
         );
@@ -850,7 +886,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ATTACHMENT,
             empty($issue->id) ? null : $issue->id,
-            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
+            issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
         );
 
         $issueid = empty($issue->id) ? null : $issue->id;
@@ -861,7 +897,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issueid,
-            \mod_newsletter\issue_form::editor_options($context, $issueid),
+            issue_form::editor_options($context, $issueid),
             $issue->htmlcontent
         );
 
@@ -887,7 +923,7 @@ class newsletter implements renderable {
             }
             // Now we set the form with the right values, before it will be rendered again.
             // As we want a static element to be rendered again, we recreate the whole form.
-            $mform = new \mod_newsletter\issue_form(
+            $mform = new issue_form(
                 null,
                 array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
             );
@@ -1413,7 +1449,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issue->id,
-            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            issue_form::editor_options($context, $issue->id),
             $data->htmlcontent['text']
         );
 
@@ -1477,7 +1513,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issue->id,
-            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            issue_form::editor_options($context, $issue->id),
             $data->htmlcontent['text']
         );
 
