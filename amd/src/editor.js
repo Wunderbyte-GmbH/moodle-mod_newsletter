@@ -14,9 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// import {setupForElementId} from 'editor_tiny/editor';
-
-export const loadCss = async function() {
+/**
+ * This is obsolete. To be deleted in the future. Maybe if Moodle does a better integration of Tiny 6, it could be used again.
+ *
+ * @param editorconfig
+ * @returns {Promise<void>}
+ */
+export const loadCss = async function(editorconfig) {
     var select = document.querySelector('#id_stylesheetid');
     if (select) {
         select.addEventListener('change', change_stylesheet);
@@ -39,7 +43,6 @@ export const loadCss = async function() {
                     setTimeout(checkIfLoaded, 100); // Check every 100 milliseconds
                 }
             }
-
             checkIfLoaded();
         });
     }
@@ -50,18 +53,14 @@ export const loadCss = async function() {
     waitUntilTinyMCELoaded()
         .then((tinyMCE) => {
             console.log('tinyMCE is loaded:', tinyMCE);
-            const existingEditor = tinyMCE.EditorManager.get('id_htmlcontent');
+            const existingEditor = tinyMCE.add('id_htmlcontent');
             if(existingEditor) {
                 console.log(existingEditor);
             }
             // Call function to change CSS for TinyMCE content
+            tinyMCE.init(editorconfig);
             change_stylesheet();
         });
-
-    // var Tiny = setupForElementId({
-    //     elementId: "id_htmlcontent",
-    //     options: {},
-    // });
 
     /**
      * Changes the stylesheet based on the selected option.

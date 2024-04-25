@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2024032900;
+$plugin->version = 2024042500;
 $plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v2.4.0-UkrainskaPravda';  // Already used names: Der Standard, Le Monde Diplomatique, NewYorkTimes.
+$plugin->release = 'v2.4.1-UkrainskaPravda';  // Already used names: Der Standard, Le Monde Diplomatique, NewYorkTimes.
 $plugin->component = 'mod_newsletter';

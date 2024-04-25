@@ -29,6 +29,7 @@ use coding_exception;
 use context_module;
 use core\event\user_created;
 use core_user;
+use editor_tiny\editor;
 use editor_tiny\manager;
 use mod_newsletter_instance_store;
 use newsletter_section_list;
@@ -831,49 +832,8 @@ class newsletter implements renderable {
             'filename',
             false
         );
-        $cssurls = [];
-        $cssurls[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
-        if (!empty($files)) {
-            foreach ($files as $file) {
-                $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
-                $cssurls[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
-            }
-        }
-        $editormanager = new manager();
-        $siteconfig = get_config('editor_tiny');
-        $editorconfig = json_encode([
-                'context' => $context->id,
-
-            // File picker options.
-                'filepicker' => [],
-
-                'currentLanguage' => current_language(),
-
-                'branding' => property_exists($siteconfig, 'branding') ? !empty($siteconfig->branding) : true,
-
-            // Language options.
-                'language' => [
-                        'currentlang' => current_language(),
-                        'installed' => get_string_manager()->get_list_of_translations(true),
-                        'available' => get_string_manager()->get_list_of_languages()
-                ],
-
-            // Placeholder selectors.
-            // Some contents (Example: placeholder elements) are only shown in the editor, and not to users. It is unrelated to the
-            // real display. We created a list of placeholder selectors, so we can decide to or not to apply rules, styles... to
-            // these elements.
-            // The default of this list will be empty.
-            // Other plugins can register their placeholder elements to placeholderSelectors list by calling
-            // editor_tiny/options::registerPlaceholderSelectors.
-                'placeholderSelectors' => [],
-
-            // Nest menu inside parent DOM.
-                'nestedmenu' => true,
-        ]);
-        $plugins = json_encode($editormanager->get_plugin_configuration($context));
-        $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss',
-                [$cssurls, $issue->stylesheetid, $editorconfig, $plugins]);
-
+        $editor = new newsletter_editor();
+        $editor->use_editor('id_htmlcontent', ['context' => $this->context], null, $issue, $files);
         $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
