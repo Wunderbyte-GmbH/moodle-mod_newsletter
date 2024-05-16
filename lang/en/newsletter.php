@@ -55,7 +55,7 @@ $string['issue_title'] = 'Issue title';
 $string['issue_title_help'] = 'Type in the title of this issue. Required.';
 
 $string['issue_htmlcontent'] = 'HTML content';
-$string['issue_stylesheet'] = 'Stylesheet file for HTML content';
+$string['issue_stylesheet'] = 'Stylesheet-Datei für HTML-Inhalte. Um korrekt gestyltes HTML beim Bearbeiten zu sehen, müssen Sie die Ausgabe zuerst speichern und dann erneut bearbeiten. Eine Änderung des Stylesheets während des Editierens ist derzeit nicht möglich.';
 
 $string['mode_group_by_year'] = 'Group issues by year';
 $string['mode_group_by_month'] = 'Group issues by month';

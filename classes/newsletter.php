@@ -29,6 +29,8 @@ use coding_exception;
 use context_module;
 use core\event\user_created;
 use core_user;
+use editor_tiny\editor;
+use editor_tiny\manager;
 use mod_newsletter_instance_store;
 use newsletter_section_list;
 use renderable;
@@ -38,15 +40,17 @@ use context;
 use moodle_url;
 use html_writer;
 use moodle_exception;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 use user_picture;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/newsletter/renderable.php');
-require_once($CFG->dirroot . '/mod/newsletter/CssToInlineStyles/CssToInlineStyles.php');
+require_once(dirname(__DIR__) . '/vendor/autoload.php');
+require_once(dirname(__DIR__) . '/renderable.php');
+//require_once(dirname(__DIR__) . '/CssToInlineStyles/CssToInlineStyles.php');
 require_once(dirname(__FILE__) . '/subscription/subscription_filter_form.php');
-require_once($CFG->dirroot . '/mod/newsletter/guest_signup_form.php');
-require_once($CFG->dirroot . '/mod/newsletter/resubscribe_form.php');
+require_once(dirname(__DIR__) . '/guest_signup_form.php');
+require_once(dirname(__DIR__) . '/resubscribe_form.php');
 
 
 class newsletter implements renderable {
@@ -300,16 +304,6 @@ class newsletter implements renderable {
         return $status;
     }
 
-    private function get_js_module($strings = array()) {
-        $jsmodule = array(
-            'name' => 'mod_newsletter', 'fullpath' => '/mod/newsletter/amd/src/editor.js',
-            'requires' => array('node', 'event', 'node-screen', 'panel', 'node-event-delegate'),
-            'strings' => $strings
-        );
-
-        return $jsmodule;
-    }
-
     /**
      * returns an array of localised subscription status names with according key stored in database column "health"
      *
@@ -406,7 +400,6 @@ class newsletter implements renderable {
      */
     private function display_guest_subscribe_form(array $params): string {
         global $PAGE;
-        $PAGE->requires->js_module($this->get_js_module());
         $authplugin = get_auth_plugin('email');
         if (!$authplugin->can_signup()) {
             throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
@@ -466,7 +459,6 @@ class newsletter implements renderable {
      */
     private function display_resubscribe_form(array $params): string {
         global $PAGE;
-        $PAGE->requires->js_module($this->get_js_module());
         $output = '';
         $renderer = $this->get_renderer();
 
@@ -683,7 +675,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $params[NEWSLETTER_PARAM_ISSUE],
-            \mod_newsletter\issue_form::editor_options(
+            issue_form::editor_options(
                 $this->get_context(),
                 $params[NEWSLETTER_PARAM_ISSUE]
             )
@@ -840,17 +832,9 @@ class newsletter implements renderable {
             'filename',
             false
         );
-        $options = array();
-        $options[NEWSLETTER_DEFAULT_STYLESHEET] = "{$CFG->wwwroot}/mod/newsletter/reset.css";
-        foreach ($files as $file) {
-            $url = "{$CFG->wwwroot}/pluginfile.php/{$file->get_contextid()}/mod_newsletter/" . NEWSLETTER_FILE_AREA_STYLESHEET;
-            $options[$file->get_id()] = $url . $file->get_filepath() . $file->get_itemid() . '/' . $file->get_filename();
-        }
-
-        $PAGE->requires->js_module($this->get_js_module());
-        $PAGE->requires->js_call_amd('mod_newsletter/editor', 'loadCss', [$options, $issue->stylesheetid]);
-
-        $mform = new \mod_newsletter\issue_form(
+        $editor = new newsletter_editor();
+        $editor->use_editor('id_htmlcontent', ['context' => $this->context], null, $issue, $files);
+        $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
         );
@@ -862,7 +846,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ATTACHMENT,
             empty($issue->id) ? null : $issue->id,
-            \mod_newsletter\issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
+            issue_form::attachment_options($newsletterconfig, $this->get_context(), 10)
         );
 
         $issueid = empty($issue->id) ? null : $issue->id;
@@ -873,7 +857,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issueid,
-            \mod_newsletter\issue_form::editor_options($context, $issueid),
+            issue_form::editor_options($context, $issueid),
             $issue->htmlcontent
         );
 
@@ -899,7 +883,7 @@ class newsletter implements renderable {
             }
             // Now we set the form with the right values, before it will be rendered again.
             // As we want a static element to be rendered again, we recreate the whole form.
-            $mform = new \mod_newsletter\issue_form(
+            $mform = new issue_form(
                 null,
                 array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
             );
@@ -1425,7 +1409,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issue->id,
-            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            issue_form::editor_options($context, $issue->id),
             $data->htmlcontent['text']
         );
 
@@ -1489,7 +1473,7 @@ class newsletter implements renderable {
             'mod_newsletter',
             NEWSLETTER_FILE_AREA_ISSUE,
             $issue->id,
-            \mod_newsletter\issue_form::editor_options($context, $issue->id),
+            issue_form::editor_options($context, $issue->id),
             $data->htmlcontent['text']
         );
 
@@ -1738,10 +1722,8 @@ class newsletter implements renderable {
             }
         }
 
-        $converter = new \CssToInlineStyles();
-        $converter->setHTML(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8'));
-        $converter->setCSS($css);
-        $html = $converter->convert();
+        $converter = new  CssToInlineStyles();
+        $html = $converter->convert(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8'), $css);
 
         if (!$fulldocument) {
             if (preg_match(
@@ -2117,8 +2099,8 @@ class newsletter implements renderable {
      */
     public function subscribe_guest(string $firstname, string $lastname, string $email): bool {
         global $DB, $CFG;
-        require_once($CFG->dirroot . '/user/profile/lib.php');
-        require_once($CFG->dirroot . '/user/lib.php');
+        require_once(dirname(__FILE__) . '/user/profile/lib.php');
+        require_once(dirname(__FILE__) . '/user/lib.php');
 
         if (empty($CFG->registerauth)) {
             throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');

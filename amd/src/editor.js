@@ -15,54 +15,57 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Loads CSS for Editor
+ * This is obsolete. To be deleted in the future. Maybe if Moodle does a better integration of Tiny 6, it could be used again.
  *
- * @module     mod_newsletter/load_CSS
- * @copyright  Wunderbyte GmbH <info@wunderbyte.at>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @param editorconfig
+ * @returns {Promise<void>}
  */
-
-import {getTinyMCE} from 'editor_tiny/loader';
-
-var M = {
-    mod_newsletter: {}
-};
-
-var tinymce = null;
-
-M.mod_newsletter.collapse_subscribe_form = function() {
-    var fieldset = document.querySelector('form #id_subscribe');
-    if (fieldset) {
-        fieldset.classList.add('collapsed');
-    }
-};
-
-export const loadCss = async function(stylesheets, selected) {
-    tinymce = await getTinyMCE();
+export const loadCss = async function(editorconfig) {
     var select = document.querySelector('#id_stylesheetid');
-
+    if (select) {
+        select.addEventListener('change', change_stylesheet);
+    }
     /**
-     * Changes the stylesheet based on the selected option.
-     * @param {Object} e Event object containing information about the target element.
+     * Function to wait until tinyMCE is loaded
+     * @returns {Promise}
      */
-    function change_stylesheet(e) {
-        var select = e.target;
-        var selectedIndex = select.value;
-        tinymce.remove();
-        tinymce.init({
-            selector: 'textarea',
-            content_css: stylesheets[selectedIndex]
+    function waitUntilTinyMCELoaded() {
+        return new Promise((resolve) => {
+            /**
+             * Check if tinyMCE object is available
+             */
+            function checkIfLoaded() {
+                if (window.tinyMCE) {
+                    // If tinyMCE is available, resolve the promise
+                    resolve(window.tinyMCE);
+                } else {
+                    // If not, wait and check again
+                    setTimeout(checkIfLoaded, 100); // Check every 100 milliseconds
+                }
+            }
+            checkIfLoaded();
         });
     }
 
-    // Execute change_stylesheet function initially
-    change_stylesheet({target: select});
+    /**
+     * Function to change CSS for the content inside TinyMCE
+     */
+    waitUntilTinyMCELoaded()
+        .then((tinyMCE) => {
+            console.log('tinyMCE is loaded:', tinyMCE);
+            const existingEditor = tinyMCE.add('id_htmlcontent');
+            if(existingEditor) {
+                console.log(existingEditor);
+            }
+            // Call function to change CSS for TinyMCE content
+            tinyMCE.init(editorconfig);
+            change_stylesheet();
+        });
 
-    if (select) {
-        select.addEventListener('change', change_stylesheet);
-    } else {
-        setTimeout(function() {
-            M.mod_newsletter.init_editor(stylesheets, selected);
-        }, 100);
+    /**
+     * Changes the stylesheet based on the selected option.
+     */
+    function change_stylesheet() {
+        console.log('config');
     }
 };
