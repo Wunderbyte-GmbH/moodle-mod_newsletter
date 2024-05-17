@@ -798,14 +798,14 @@ class newsletter implements renderable {
      * @return string rendered HTML
      */
     private function view_edit_issue_page(array $params) {
-        global $CFG, $PAGE;
+        global $CFG;
 
-        $_options = array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'changeformat' => 0,
+        $options = array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'changeformat' => 0,
         'areamaxbytes' => FILE_AREA_MAX_BYTES_UNLIMITED, 'context' => $this->get_context(), 'noclean' => 0, 'trusttext' => 0,
         'return_types' => 15, 'enable_filemanagement' => true, 'removeorphaneddrafts' => false, 'autosave' => true);
 
         $draftitemid = file_get_submitted_draft_itemid('attachments');
-        $ctx = $_options['context'];
+        $ctx = $options['context'];
 
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             throw new moodle_exception (
@@ -846,12 +846,12 @@ class newsletter implements renderable {
         );
 
         $fpoptions = array();
-        if($_options['maxfiles'] != 0 ) {
+        if($options['maxfiles'] != 0 ) {
             $args = new stdClass();
 
             // need these three to filter repositories list
             $args->accepted_types = array('web_image');
-            $args->return_types = $_options['return_types'];
+            $args->return_types = $options['return_types'];
             $args->context = $ctx;
             $args->env = 'filepicker';
 
@@ -859,8 +859,8 @@ class newsletter implements renderable {
             $image_options = initialise_filepicker($args);
             $image_options->context = $ctx;
             $image_options->client_id = uniqid();
-            $image_options->maxbytes = $_options['maxbytes'];
-            $image_options->areamaxbytes = $_options['areamaxbytes'];
+            $image_options->maxbytes = $options['maxbytes'];
+            $image_options->areamaxbytes = $options['areamaxbytes'];
             $image_options->env = 'editor';
             $image_options->itemid = $draftitemid;
 
@@ -869,8 +869,8 @@ class newsletter implements renderable {
             $media_options = initialise_filepicker($args);
             $media_options->context = $ctx;
             $media_options->client_id = uniqid();
-            $media_options->maxbytes  = $_options['maxbytes'];
-            $media_options->areamaxbytes  = $_options['areamaxbytes'];
+            $media_options->maxbytes  = $options['maxbytes'];
+            $media_options->areamaxbytes  = $options['areamaxbytes'];
             $media_options->env = 'editor';
             $media_options->itemid = $draftitemid;
 
@@ -879,8 +879,8 @@ class newsletter implements renderable {
             $link_options = initialise_filepicker($args);
             $link_options->context = $ctx;
             $link_options->client_id = uniqid();
-            $link_options->maxbytes  = $_options['maxbytes'];
-            $link_options->areamaxbytes  = $_options['areamaxbytes'];
+            $link_options->maxbytes  = $options['maxbytes'];
+            $link_options->areamaxbytes  = $options['areamaxbytes'];
             $link_options->env = 'editor';
             $link_options->itemid = $draftitemid;
 
@@ -888,19 +888,28 @@ class newsletter implements renderable {
             $subtitle_options = initialise_filepicker($args);
             $subtitle_options->context = $ctx;
             $subtitle_options->client_id = uniqid();
-            $subtitle_options->maxbytes  = $_options['maxbytes'];
-            $subtitle_options->areamaxbytes  = $_options['areamaxbytes'];
+            $subtitle_options->maxbytes  = $options['maxbytes'];
+            $subtitle_options->areamaxbytes  = $options['areamaxbytes'];
             $subtitle_options->env = 'editor';
             $subtitle_options->itemid = $draftitemid;
+
+            $args->accepted_types = ['h5p'];
+            $h5poptions = initialise_filepicker($args);
+            $h5poptions->context = $this->context;
+            $h5poptions->client_id = uniqid();
+            $h5poptions->maxbytes  = $options['maxbytes'];
+            $h5poptions->env = 'editor';
+            $h5poptions->itemid = $draftitemid;
 
             $fpoptions['image'] = $image_options;
             $fpoptions['media'] = $media_options;
             $fpoptions['link'] = $link_options;
             $fpoptions['subtitle'] = $subtitle_options;
+            $fpoptions['h5p'] = $h5poptions;
         }
         
         $editor = new newsletter_editor();
-        $editor->use_editor('id_htmlcontent', $_options, $fpoptions, $issue, $files);
+        $editor->use_editor('id_htmlcontent', $options, $fpoptions, $issue, $files);
         $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
