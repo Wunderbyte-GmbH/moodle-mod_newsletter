@@ -807,6 +807,7 @@ class newsletter implements renderable {
         $draftitemid = file_get_submitted_draft_itemid('attachments');
         $ctx = $options['context'];
 
+
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             throw new moodle_exception (
                 'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
@@ -846,15 +847,13 @@ class newsletter implements renderable {
         );
 
         $fpoptions = array();
-        if($options['maxfiles'] != 0 ) {
+        if ($options['maxfiles'] != 0 ) {          
             $args = new stdClass();
-
             // need these three to filter repositories list
             $args->accepted_types = array('web_image');
             $args->return_types = $options['return_types'];
             $args->context = $ctx;
             $args->env = 'filepicker';
-
             // advimage plugin
             $image_options = initialise_filepicker($args);
             $image_options->context = $ctx;
@@ -893,22 +892,33 @@ class newsletter implements renderable {
             $subtitle_options->env = 'editor';
             $subtitle_options->itemid = $draftitemid;
 
-            $args->accepted_types = ['h5p'];
-            $h5poptions = initialise_filepicker($args);
-            $h5poptions->context = $this->context;
-            $h5poptions->client_id = uniqid();
-            $h5poptions->maxbytes  = $options['maxbytes'];
-            $h5poptions->env = 'editor';
-            $h5poptions->itemid = $draftitemid;
+            if (has_capability('moodle/h5p:deploy', $ctx)) {
+                // Only set H5P Plugin settings if the user can deploy new H5P content.
+                // H5P plugin.
+                $args->accepted_types = array('.h5p');
+                $h5poptions = initialise_filepicker($args);
+                $h5poptions->context = $ctx;
+                $h5poptions->client_id = uniqid();
+                $h5poptions->maxbytes  = $options['maxbytes'];
+                $h5poptions->areamaxbytes  = $options['areamaxbytes'];
+                $h5poptions->env = 'editor';
+                $h5poptions->itemid = $draftitemid;
+                $fpoptions['h5p'] = $h5poptions;
+            }
 
             $fpoptions['image'] = $image_options;
             $fpoptions['media'] = $media_options;
             $fpoptions['link'] = $link_options;
             $fpoptions['subtitle'] = $subtitle_options;
-            $fpoptions['h5p'] = $h5poptions;
         }
-        
         $editor = new newsletter_editor();
+
+        // TODO Remove this in MDL-77334 for Moodle 4.6.
+        // If editor is required and tinymce, then set required_tinymce option to initalize tinymce validation.
+        if (($editor instanceof tinymce_texteditor)  && !is_null($this->getAttribute('onchange'))) {
+            $options['required'] = true;
+        }
+
         $editor->use_editor('id_htmlcontent', $options, $fpoptions, $issue, $files);
         $mform = new issue_form(
             null,

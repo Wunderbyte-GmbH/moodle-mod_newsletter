@@ -26,7 +26,7 @@ class newsletter_editor extends editor {
      *
      * @param string $elementid
      * @param array $options
-     * @param null $fpoptions
+     * @param array $fpoptions
      * @param null $issue
      */
     public function use_editor($elementid, array $options = null, $fpoptions = null, $issue = null, array $files = []) {
