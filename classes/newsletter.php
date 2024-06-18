@@ -919,7 +919,7 @@ class newsletter implements renderable {
             $options['required'] = true;
         }
 
-        $editor->use_editor('id_htmlcontent', $options, $fpoptions, $issue, $files);
+        $editor->use_editor($draftitemid, $options, $fpoptions, $issue, $files);
         $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
