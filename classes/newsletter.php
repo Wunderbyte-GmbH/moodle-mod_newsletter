@@ -40,8 +40,10 @@ use context;
 use moodle_url;
 use html_writer;
 use moodle_exception;
+use repository;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 use user_picture;
+use lib;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -51,6 +53,8 @@ require_once(dirname(__DIR__) . '/renderable.php');
 require_once(dirname(__FILE__) . '/subscription/subscription_filter_form.php');
 require_once(dirname(__DIR__) . '/guest_signup_form.php');
 require_once(dirname(__DIR__) . '/resubscribe_form.php');
+require_once($CFG->dirroot.'/repository/lib.php');
+
 
 
 class newsletter implements renderable {
@@ -794,7 +798,15 @@ class newsletter implements renderable {
      * @return string rendered HTML
      */
     private function view_edit_issue_page(array $params) {
-        global $CFG, $PAGE;
+        global $CFG;
+
+        $options = array('subdirs' => 0, 'maxbytes' => 0, 'maxfiles' => 0, 'changeformat' => 0,
+        'areamaxbytes' => FILE_AREA_MAX_BYTES_UNLIMITED, 'context' => $this->get_context(), 'noclean' => 0, 'trusttext' => 0,
+        'return_types' => 15, 'enable_filemanagement' => true, 'removeorphaneddrafts' => false, 'autosave' => true);
+
+        $draftitemid = file_get_submitted_draft_itemid('attachments');
+        $ctx = $options['context'];
+
         if (!$this->check_issue_id($params[NEWSLETTER_PARAM_ISSUE])) {
             throw new moodle_exception (
                 'Wrong ' . NEWSLETTER_PARAM_ISSUE . ' parameter value: ' . $params[NEWSLETTER_PARAM_ISSUE]
@@ -832,14 +844,73 @@ class newsletter implements renderable {
             'filename',
             false
         );
+
+        $fpoptions = array();
+        if($options['maxfiles'] != 0 ) {
+            $args = new stdClass();
+
+            $args->accepted_types = array('web_image');
+            $args->return_types = $options['return_types'];
+            $args->context = $ctx;
+            $args->env = 'filepicker';
+
+            $image_options = initialise_filepicker($args);
+            $image_options->context = $ctx;
+            $image_options->client_id = uniqid();
+            $image_options->maxbytes = $options['maxbytes'];
+            $image_options->areamaxbytes = $options['areamaxbytes'];
+            $image_options->env = 'editor';
+            $image_options->itemid = $draftitemid;
+
+            $args->accepted_types = array('video', 'audio');
+            $media_options = initialise_filepicker($args);
+            $media_options->context = $ctx;
+            $media_options->client_id = uniqid();
+            $media_options->maxbytes  = $options['maxbytes'];
+            $media_options->areamaxbytes  = $options['areamaxbytes'];
+            $media_options->env = 'editor';
+            $media_options->itemid = $draftitemid;
+
+            $args->accepted_types = '*';
+            $link_options = initialise_filepicker($args);
+            $link_options->context = $ctx;
+            $link_options->client_id = uniqid();
+            $link_options->maxbytes  = $options['maxbytes'];
+            $link_options->areamaxbytes  = $options['areamaxbytes'];
+            $link_options->env = 'editor';
+            $link_options->itemid = $draftitemid;
+
+            $args->accepted_types = array('.vtt');
+            $subtitle_options = initialise_filepicker($args);
+            $subtitle_options->context = $ctx;
+            $subtitle_options->client_id = uniqid();
+            $subtitle_options->maxbytes  = $options['maxbytes'];
+            $subtitle_options->areamaxbytes  = $options['areamaxbytes'];
+            $subtitle_options->env = 'editor';
+            $subtitle_options->itemid = $draftitemid;
+
+            $args->accepted_types = ['h5p'];
+            $h5poptions = initialise_filepicker($args);
+            $h5poptions->context = $this->context;
+            $h5poptions->client_id = uniqid();
+            $h5poptions->maxbytes  = $options['maxbytes'];
+            $h5poptions->env = 'editor';
+            $h5poptions->itemid = $draftitemid;
+
+            $fpoptions['image'] = $image_options;
+            $fpoptions['media'] = $media_options;
+            $fpoptions['link'] = $link_options;
+            $fpoptions['subtitle'] = $subtitle_options;
+            $fpoptions['h5p'] = $h5poptions;
+        }
+        
         $editor = new newsletter_editor();
-        $editor->use_editor('id_htmlcontent', ['context' => $this->context], null, $issue, $files);
+        $editor->use_editor('id_htmlcontent', $options, $fpoptions, $issue, $files);
         $mform = new issue_form(
             null,
             array('newsletter' => $this, 'issue' => $issue, 'context' => $context)
         );
 
-        $draftitemid = file_get_submitted_draft_itemid('attachments');
         file_prepare_draft_area(
             $draftitemid,
             $context->id,
