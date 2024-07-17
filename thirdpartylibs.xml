@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <libraries>
     <library>
-        <location>CssToInlineStyles/</location>
+        <location>/vendor/tijsverkoyen/css-to-inline-styles/src/CssToInlineStyles.php</location>
         <name>CSS to Inline Styles class</name>
         <version>1.3.0</version>
         <license>BSD</license>
