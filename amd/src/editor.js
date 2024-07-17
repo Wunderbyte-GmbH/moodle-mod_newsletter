@@ -17,7 +17,7 @@
 /**
  * This is obsolete. To be deleted in the future. Maybe if Moodle does a better integration of Tiny 6, it could be used again.
  *
- * @param editorconfig
+ * @param {any} editorconfig
  * @returns {Promise<void>}
  */
 export const loadCss = async function(editorconfig) {
