@@ -2170,8 +2170,8 @@ class newsletter implements renderable {
      */
     public function subscribe_guest(string $firstname, string $lastname, string $email): bool {
         global $DB, $CFG;
-        require_once(dirname(__FILE__) . '/user/profile/lib.php');
-        require_once(dirname(__FILE__) . '/user/lib.php');
+        require_once($CFG->dirroot . '/user/profile/lib.php');
+        require_once($CFG->dirroot . '/user/lib.php');
 
         if (empty($CFG->registerauth)) {
             throw new moodle_exception ('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
