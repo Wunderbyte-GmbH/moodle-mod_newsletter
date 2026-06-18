@@ -66,7 +66,6 @@ class send_newsletter extends \core\task\scheduled_task {
 
         if (!empty($ids)) {
             list($insql, $params) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('user', "id " . $insql, $params);
             $DB->delete_records_select('newsletter_subscriptions', "userid " . $insql, $params);
         }
 
