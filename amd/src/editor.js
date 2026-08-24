@@ -17,13 +17,13 @@
 /**
  * This is obsolete. To be deleted in the future. Maybe if Moodle does a better integration of Tiny 6, it could be used again.
  *
- * @param editorconfig
+ * @param {object} editorconfig The TinyMCE configuration to initialise the editor with.
  * @returns {Promise<void>}
  */
 export const loadCss = async function(editorconfig) {
     var select = document.querySelector('#id_stylesheetid');
     if (select) {
-        select.addEventListener('change', change_stylesheet);
+        select.addEventListener('change', changeStylesheet);
     }
     /**
      * Function to wait until tinyMCE is loaded
@@ -48,24 +48,26 @@ export const loadCss = async function(editorconfig) {
     }
 
     /**
-     * Function to change CSS for the content inside TinyMCE
+     * Changes the stylesheet based on the selected option.
      */
-    waitUntilTinyMCELoaded()
+    function changeStylesheet() {
+        console.log('config');
+    }
+
+    // Change the CSS for the content inside TinyMCE once the editor is available.
+    return waitUntilTinyMCELoaded()
         .then((tinyMCE) => {
             console.log('tinyMCE is loaded:', tinyMCE);
             const existingEditor = tinyMCE.add('id_htmlcontent');
-            if(existingEditor) {
+            if (existingEditor) {
                 console.log(existingEditor);
             }
-            // Call function to change CSS for TinyMCE content
+            // Call function to change CSS for TinyMCE content.
             tinyMCE.init(editorconfig);
-            change_stylesheet();
+            changeStylesheet();
+            return tinyMCE;
+        })
+        .catch((error) => {
+            console.error(error);
         });
-
-    /**
-     * Changes the stylesheet based on the selected option.
-     */
-    function change_stylesheet() {
-        console.log('config');
-    }
 };

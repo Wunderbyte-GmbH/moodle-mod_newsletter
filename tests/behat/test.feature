@@ -1,5 +1,5 @@
 @mod @mod_newsletter @test
-Feature: In a course create a newsletter instance 
+Feature: In a course create a newsletter instance
   As a teacher
   I need to add a newsletter instance to a course
 
