@@ -23,56 +23,69 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__, 3) .'/config.php');
+// This page is reached from an activation e-mail, so it must stay accessible to logged-out visitors.
+// phpcs:ignore moodle.Files.RequireLogin.Missing
+require_once(dirname(__FILE__, 3) . '/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
-$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_ALPHANUMEXT); // Formatted as: secret-userid.
+// Formatted as: secret-userid-newsletterid[-guest].
+$data = required_param(NEWSLETTER_PARAM_DATA, PARAM_ALPHANUMEXT);
 $dataelements = explode('-', $data, 4);
+
+if (count($dataelements) < 3) {
+    throw new moodle_exception('invalidactivationlink', 'mod_newsletter');
+}
+
 $secret = clean_param($dataelements[0], PARAM_ALPHANUM);
 $userid = clean_param($dataelements[1], PARAM_INT);
 $newsletterid = clean_param($dataelements[2], PARAM_INT);
-if (count($dataelements) == 4) {
-    if ($dataelements[3] == "guest") {
-        $guestuser = 1;
-    }
+$guestuser = (count($dataelements) === 4 && $dataelements[3] === 'guest');
+
+if (!$secret || !$userid || !$newsletterid) {
+    throw new moodle_exception('invalidactivationlink', 'mod_newsletter');
 }
 
-$cm = get_coursemodule_from_instance('newsletter', $newsletterid);
+$cm = get_coursemodule_from_instance('newsletter', $newsletterid, 0, false, MUST_EXIST);
 $context = context_module::instance($cm->id);
-$PAGE->set_context($context);
+$viewurl = new moodle_url('/mod/newsletter/view.php', ['id' => $cm->id]);
 
-if ($secret && $userid) {
-    if (!$user = get_complete_user_data('id', $userid)) {
-        throw new \moodle_exception("Cannot find user!");
-    }
-    if ($user->confirmed) {
-        redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)),
-                "You are already registered and subscribed!", 5);
-        // TODO: user/editadvanced.php?id=2.
-    } else {
-        if ($secret === $user->secret) {
-            global $DB;
-            $DB->set_field('user', 'confirmed', 1, array('id' => $user->id));
-            complete_user_login($user);
-            if (!isset($guestuser)) {
-                if (!$welcomemessage = $DB->get_field('newsletter', 'welcomemessage',
-                        array('id' => $newsletterid))) {
-                    $welcomemessage = get_string('welcometonewsletter', 'mod_newsletter');
-                }
-            } else {
-                if (!$welcomemessage = $DB->get_field('newsletter', 'welcomemessageguestuser',
-                        array('id' => $newsletterid))) {
-                    $welcomemessage = get_string('welcometonewsletter_guestsubscription',
-                            'mod_newsletter');
-                }
-            }
-            redirect(new moodle_url('/mod/newsletter/view.php', array('id' => $cm->id)),
-                    $welcomemessage, 15);
-            // TODO: user/editadvanced.php?id=2.
-        } else {
-            throw new \moodle_exception('The link you followed is invalid.');
-        }
-    }
-} else {
-    throw new \moodle_exception('The link you followed is invalid.');
+$PAGE->set_context($context);
+$PAGE->set_url('/mod/newsletter/confirm.php', [NEWSLETTER_PARAM_DATA => $data]);
+
+if (!$user = get_complete_user_data('id', $userid)) {
+    throw new moodle_exception('invalidactivationlink', 'mod_newsletter');
 }
+
+if ($user->confirmed) {
+    redirect($viewurl, get_string('accountalreadyconfirmed', 'mod_newsletter'), 5);
+}
+
+// Guest signup links expire, and the cleanup task removes the account once they do. Refuse a stale link
+// explicitly instead of letting it work right up until the moment cron happens to run. The timeout is
+// measured from account creation, so it only makes sense for the accounts this module created itself.
+if ($guestuser) {
+    $timeout = get_config('mod_newsletter', 'activation_timeout');
+    $timeout = !empty($timeout) ? (int) $timeout : DAYSECS;
+    if (!empty($user->timecreated) && (time() - $user->timecreated) > $timeout) {
+        throw new moodle_exception('activationlinkexpired', 'mod_newsletter');
+    }
+}
+
+// Let the auth plugin confirm the account rather than writing to the user table directly.
+$authplugin = get_auth_plugin($user->auth);
+if ($authplugin->user_confirm($user->username, $secret) !== AUTH_CONFIRM_OK) {
+    throw new moodle_exception('invalidactivationlink', 'mod_newsletter');
+}
+
+$user = get_complete_user_data('id', $userid);
+complete_user_login($user);
+
+if ($guestuser) {
+    $welcomemessage = $DB->get_field('newsletter', 'welcomemessageguestuser', ['id' => $newsletterid]);
+    $default = get_string('welcometonewsletter_guestsubscription', 'mod_newsletter');
+} else {
+    $welcomemessage = $DB->get_field('newsletter', 'welcomemessage', ['id' => $newsletterid]);
+    $default = get_string('welcometonewsletter', 'mod_newsletter');
+}
+
+redirect($viewurl, !empty($welcomemessage) ? $welcomemessage : $default, 15);

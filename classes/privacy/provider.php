@@ -17,15 +17,13 @@
 /**
  * Privacy provider implementation for mod_newsletter.
  *
- * @package newsletter
+ * @package mod_newsletter
  * @copyright 2018 Michael Pollak <moodle@michaelpollak.org>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_newsletter\privacy;
-defined('MOODLE_INTERNAL') || die();
 
-// TODO: Which are needed?
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
 use core_privacy\local\request\contextlist;
@@ -34,6 +32,13 @@ use core_privacy\local\request\transform;
 use core_privacy\local\request\writer;
 use core_privacy\manager;
 
+/**
+ * Privacy API implementation for the newsletter module.
+ *
+ * @package    mod_newsletter
+ * @copyright  2018 onwards David Bogner <info@edulabs.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class provider implements
     // This plugin stores personal data.
     \core_privacy\local\metadata\provider,
@@ -46,7 +51,7 @@ class provider implements
      * @param collection $collection a reference to the collection to use to store the metadata.
      * @return collection the updated collection of metadata items.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
 
         $collection->add_database_table(
             'newsletter_subscriptions',
@@ -59,6 +64,7 @@ class provider implements
                 'subscriberid' => 'privacy:metadata:newsletter_subscriptions:subscriberid',
                 'unsubscriberid' => 'privacy:metadata:newsletter_subscriptions:unsubscriberid',
                 'sentnewsletters' => 'privacy:metadata:newsletter_subscriptions:sentnewsletters',
+                'guestsignup' => 'privacy:metadata:newsletter_subscriptions:guestsignup',
             ],
             'privacy:metadata:newsletter_subscriptions'
         );
@@ -94,7 +100,7 @@ class provider implements
      * @param int $userid the userid.
      * @return contextlist the list of contexts containing user info for the user.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
 
         // Fetch all information relevant to the user.
         $sql = "SELECT c.id
@@ -127,7 +133,7 @@ class provider implements
 
         $user = $contextlist->get_user();
 
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT  cm.id AS cmid,
                         news.name AS newslettername,
@@ -174,7 +180,6 @@ class provider implements
             $context = \context_module::instance($lastcmid);
             self::export_newsletter($newsletterdata, $context, $user);
         }
-
     }
 
     /**
@@ -210,7 +215,6 @@ class provider implements
 
         $userid = $contextlist->get_user()->id;
         foreach ($contextlist->get_contexts() as $context) {
-
             if (!$context instanceof \context_module) {
                 continue;
             }
@@ -238,5 +242,4 @@ class provider implements
         // Write generic module intro files.
         helper::export_context_files($context, $user);
     }
-
 }

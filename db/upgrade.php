@@ -30,21 +30,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Execute newsletter upgrade from the given old version
  *
  * @param int $oldversion
  * @return bool
  */
-function xmldb_newsletter_upgrade($oldversion)
-{
+function xmldb_newsletter_upgrade($oldversion) {
     global $DB;
 
     $dbman = $DB->get_manager();
     if ($oldversion < 2015041400) {
-
         // Change status to be allowed to be null.
         $table = new xmldb_table('newsletter_issues');
         $field = new xmldb_field('status', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'publishon');
@@ -59,7 +55,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015041401) {
-
         // Change status to be allowed to be null.
         $table = new xmldb_table('newsletter_issues');
         $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'status');
@@ -74,7 +69,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015053000) {
-
         // Add field.
         $table = new xmldb_table('newsletter_subscriptions');
 
@@ -106,7 +100,6 @@ function xmldb_newsletter_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2015053000, 'newsletter');
     }
     if ($oldversion < 2015061201) {
-
         // Add table.
         $table = new xmldb_table('newsletter_bounces');
         // Conditionally add field.
@@ -117,9 +110,9 @@ function xmldb_newsletter_upgrade($oldversion)
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'statuscode');
         $table->add_field('type', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timecreated');
         $table->add_field('timereceived', XMLDB_TYPE_INTEGER, '10', null, null, null, '0', 'type');
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('issueid', XMLDB_KEY_FOREIGN, array('issueid'), 'newsletter_issues', array('id'));
-        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('issueid', XMLDB_KEY_FOREIGN, ['issueid'], 'newsletter_issues', ['id']);
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
 
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
@@ -128,7 +121,6 @@ function xmldb_newsletter_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2015061201, 'newsletter');
     }
     if ($oldversion < 2015061500) {
-
         // Add field.
         $table = new xmldb_table('newsletter_subscriptions');
 
@@ -142,7 +134,6 @@ function xmldb_newsletter_upgrade($oldversion)
         upgrade_mod_savepoint(true, 2015061500, 'newsletter');
     }
     if ($oldversion < 2015061601) {
-
         // Add field.
         $table = new xmldb_table('newsletter_issues');
 
@@ -158,9 +149,9 @@ function xmldb_newsletter_upgrade($oldversion)
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
         $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
         $table->add_field('issueid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid');
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('issueid', XMLDB_KEY_FOREIGN, array('issueid'), 'newsletter_issues', array('id'));
-        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('issueid', XMLDB_KEY_FOREIGN, ['issueid'], 'newsletter_issues', ['id']);
+        $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
 
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
@@ -171,7 +162,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015081400) {
-
         // Conditionally add field.
         $table = new xmldb_table('newsletter_issues');
         $field = new xmldb_field('toc', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'delivered');
@@ -184,7 +174,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015081500) {
-
         // Conditionally add field.
         $table = new xmldb_table('newsletter_deliveries');
         $field = new xmldb_field('delivered', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'issueid');
@@ -197,14 +186,13 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015081900) {
-
         // Conditionally add field.
         $table = new xmldb_table('newsletter_deliveries');
         $field = new xmldb_field('newsletterid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'issueid');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        $table->add_key('newsletterid', XMLDB_KEY_FOREIGN, array('newsletterid'), 'newsletter', array('id'));
+        $table->add_key('newsletterid', XMLDB_KEY_FOREIGN, ['newsletterid'], 'newsletter', ['id']);
 
         $sql = 'UPDATE {newsletter_deliveries} nd
                 INNER JOIN {newsletter_issues} ni
@@ -216,7 +204,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2015082504) {
-
         $table = new xmldb_table('newsletter_deliveries');
 
         // Change to XMLDB_NOTNULL.
@@ -232,11 +219,19 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2016061700) {
-
         $table = new xmldb_table('newsletter');
 
         // New field allowguestusersubscriptions in newsletter.
-        $field = new xmldb_field('allowguestusersubscriptions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'subscriptionmode');
+        $field = new xmldb_field(
+            'allowguestusersubscriptions',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'subscriptionmode'
+        );
 
         // Add new field.
         if (!$dbman->field_exists($table, $field)) {
@@ -246,7 +241,7 @@ function xmldb_newsletter_upgrade($oldversion)
         // New field welcomemessage in newsletter.
         $field = new xmldb_field('welcomemessage', XMLDB_TYPE_TEXT, 'big', null, null, null, null, 'allowguestusersubscriptions');
 
-        // add new field
+        // Add new field.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -310,7 +305,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2021030900) {
-
         $table = new xmldb_table('newsletter_deliveries');
         // Conditionally add index.
         $table->add_index('userid-delivered', XMLDB_INDEX_NOTUNIQUE, ['userid', 'delivered']);
@@ -342,7 +336,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2022090800) {
-
         // Define field userfilter to be added to newsletter_issues.
         $table = new xmldb_table('newsletter_issues');
         $field = new xmldb_field('userfilter', XMLDB_TYPE_TEXT, null, null, null, null, null, 'toc');
@@ -357,7 +350,6 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2022091400) {
-
         // Define field timecreated to be added to newsletter_issues.
         $table = new xmldb_table('newsletter_issues');
         $field1 = new xmldb_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'userfilter');
@@ -375,10 +367,18 @@ function xmldb_newsletter_upgrade($oldversion)
     }
 
     if ($oldversion < 2023071307) {
-
         // Define field id to be added to newsletter.
         $table = new xmldb_table('newsletter');
-        $field = new xmldb_field('aboprofilefield', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'welcomemessageguestuser');
+        $field = new xmldb_field(
+            'aboprofilefield',
+            XMLDB_TYPE_INTEGER,
+            '10',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'welcomemessageguestuser'
+        );
 
         // Conditionally launch add field id.
         if (!$dbman->field_exists($table, $field)) {
@@ -388,5 +388,30 @@ function xmldb_newsletter_upgrade($oldversion)
         // Newsletter savepoint reached.
         upgrade_mod_savepoint(true, 2023071307, 'newsletter');
     }
+
+    // Mark subscriptions whose user account was created by the guest signup form, #47.
+    if ($oldversion < 2026081900) {
+        // Define field guestsignup to be added to newsletter_subscriptions.
+        $table = new xmldb_table('newsletter_subscriptions');
+        $field = new xmldb_field(
+            'guestsignup',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            '0',
+            'nounsublink'
+        );
+
+        // Conditionally launch add field guestsignup.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Newsletter savepoint reached.
+        upgrade_mod_savepoint(true, 2026081900, 'newsletter');
+    }
+
     return true;
 }

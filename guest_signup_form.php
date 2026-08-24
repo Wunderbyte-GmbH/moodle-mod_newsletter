@@ -31,8 +31,14 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
+/**
+ * Signup form shown to visitors who subscribe to a newsletter without an account.
+ *
+ * @package    mod_newsletter
+ * @copyright  2015 onwards David Bogner <info@edulabs.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_newsletter_guest_signup_form extends moodleform {
-
     /**
      * Defines forms elements
      */
@@ -49,17 +55,17 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
-        $mform->addElement('text', 'firstname', get_string('firstname'), array('size' => '64'));
+        $mform->addElement('text', 'firstname', get_string('firstname'), ['size' => '64']);
         $mform->setType('firstname', PARAM_TEXT);
         $mform->addRule('firstname', null, 'required', null, 'client');
         $mform->addRule('firstname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('text', 'lastname', get_string('lastname'), array('size' => '64'));
+        $mform->addElement('text', 'lastname', get_string('lastname'), ['size' => '64']);
         $mform->setType('lastname', PARAM_TEXT);
         $mform->addRule('lastname', null, 'required', null, 'client');
         $mform->addRule('lastname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('text', 'email', get_string('email'), array('size' => '64'));
+        $mform->addElement('text', 'email', get_string('email'), ['size' => '64']);
         $mform->setType('email', PARAM_EMAIL);
         $mform->addRule('email', null, 'required', null, 'client');
         $mform->addRule('email', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
@@ -73,6 +79,11 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $this->add_action_buttons(true, get_string('subscribe', 'mod_newsletter'));
     }
 
+    /**
+     * Normalise the submitted values before validation runs.
+     *
+     * @return void
+     */
     public function definition_after_data() {
         $mform = $this->_form;
         $mform->applyFilter('firstname', 'trim');
@@ -81,20 +92,30 @@ class mod_newsletter_guest_signup_form extends moodleform {
         $mform->applyFilter('email', 'strtolower');
     }
 
+    /**
+     * Validate the submitted name and e-mail address.
+     *
+     * @param array $usernew submitted form data
+     * @param array $files submitted files
+     * @return array error messages keyed by element name
+     */
     public function validation($usernew, $files) {
         global $CFG, $DB;
-        $err = array();
+        $err = [];
         $usernew = (object) $usernew;
 
-        $user = $DB->get_record('user', array('id' => $usernew->id));
-        if (!$user || $user->email !== $usernew->email) {
-            if (!validate_email($usernew->email)) {
-                $err['email'] = get_string('invalidemail');
-            } else if ($DB->record_exists('user',
-                    array('email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id))) {
-                $a = get_string('forgotten');
-                $err['email'] = get_string('emailexists', 'mod_newsletter', $a);
-            }
+        // The form's "id" element is the course module id, not a user id, so there is no existing
+        // account to exempt here - every submitted address has to be validated from scratch.
+        if (!validate_email($usernew->email)) {
+            $err['email'] = get_string('invalidemail');
+        } else if (
+            $DB->record_exists(
+                'user',
+                ['email' => $usernew->email, 'mnethostid' => $CFG->mnet_localhost_id]
+            )
+        ) {
+            $a = get_string('forgotten');
+            $err['email'] = get_string('emailexists', 'mod_newsletter', $a);
         }
 
         // Next the customisable profile fields.

@@ -32,19 +32,33 @@ use stdClass;
 use mod_newsletter\newsletter;
 use moodle_url;
 
-require_once($CFG->dirroot . '/mod/newsletter/lib.php');
-
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Scheduled task that delivers the pending newsletter issues.
+ *
+ * @package   mod_newsletter
+ * @copyright 2018 David Bogner
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class send_newsletter extends \core\task\scheduled_task {
-
+    /**
+     * Name of the task as shown in the admin screens.
+     *
+     * @return string
+     */
     public function get_name() {
-        // Shown in admin screens.
         return get_string('send_newsletter', 'mod_newsletter');
     }
 
+    /**
+     * Deliver the issues that are due.
+     *
+     * @return void
+     */
     public function execute() {
         global $DB, $CFG;
+
+        require_once($CFG->dirroot . '/mod/newsletter/lib.php');
+
         $config = get_config('mod_newsletter');
 
         $debugoutput = $config->debug;
@@ -52,30 +66,13 @@ class send_newsletter extends \core\task\scheduled_task {
             mtrace("\n");
         }
 
-        if ($debugoutput) {
-            mtrace("Deleting expired inactive user accounts...\n");
-        }
+        // Deletion of unconfirmed guest signup accounts used to live here. It ran every minute, hard-deleted
+        // rows straight out of {user} and caught every unconfirmed subscriber rather than only the accounts
+        // this module created. It now lives in \mod_newsletter\task\delete_unconfirmed_subscribers.
 
-        $query = "SELECT u.id
-                FROM {user} u
-               INNER JOIN {newsletter_subscriptions} ns ON u.id = ns.userid
-               WHERE u.confirmed = 0
-                 AND :now - u.timecreated > :limit";
-        $ids = $DB->get_fieldset_sql($query,
-                array('now' => time(), 'limit' => $config->activation_timeout));
-
-        if (!empty($ids)) {
-            list($insql, $params) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('user', "id " . $insql, $params);
-            $DB->delete_records_select('newsletter_subscriptions', "userid " . $insql, $params);
-        }
-
-        if ($debugoutput) {
-            mtrace("Done.\n");
-        }
         cron_helper::lock();
 
-        $unsublinks = array();
+        $unsublinks = [];
         if ($debugoutput) {
             mtrace("Starting scheduled task: Send newsletter...\n");
             mtrace("Collecting data...\n");
@@ -87,15 +84,21 @@ class send_newsletter extends \core\task\scheduled_task {
             $sendinglimit = $config->sendinglimit;
         }
 
-        $nounsublink = array(); // Store userids that don't receive unsublinks in an array.
-        $issues = $DB->get_records('newsletter_issues',
-                array('delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN));
+        $nounsublink = []; // Store userids that don't receive unsublinks in an array.
+        $issues = $DB->get_records(
+            'newsletter_issues',
+            ['delivered' => NEWSLETTER_DELIVERY_STATUS_UNKNOWN]
+        );
         foreach ($issues as $issue) {
-            if ($issue->publishon <= time() && !$DB->record_exists('newsletter_deliveries',
-                    array('issueid' => $issue->id))) {
+            if (
+                $issue->publishon <= time() && !$DB->record_exists(
+                    'newsletter_deliveries',
+                    ['issueid' => $issue->id]
+                )
+            ) {
                 // Populate the deliveries table.
                 $recipients = newsletter_get_all_valid_recipients($issue->newsletterid, $issue->userfilter);
-                $subscriptionobjects = array();
+                $subscriptionobjects = [];
                 foreach ($recipients as $recipient) {
                     $sub = new stdClass();
                     $sub->userid = $recipient->userid;
@@ -122,8 +125,12 @@ class send_newsletter extends \core\task\scheduled_task {
             mtrace("Data collection complete. Delivering...");
         }
 
-        $issuestodeliver = $DB->get_records('newsletter_issues',
-                array('delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS), null, 'id, newsletterid');
+        $issuestodeliver = $DB->get_records(
+            'newsletter_issues',
+            ['delivered' => NEWSLETTER_DELIVERY_STATUS_INPROGRESS],
+            null,
+            'id, newsletterid'
+        );
         foreach ($issuestodeliver as $issueid => $issue) {
             $urlinfo = parse_url($CFG->wwwroot);
             $hostname = $urlinfo['host'];
@@ -131,17 +138,26 @@ class send_newsletter extends \core\task\scheduled_task {
             $issue = $newsletter->get_issue($issue->id);
 
             if ($newsletter->get_instance()->subscriptionmode != NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
-                $url = new moodle_url('/mod/newsletter/subscribe.php',
-                        array('id' => $newsletter->get_course_module()->id));
+                $url = new moodle_url(
+                    '/mod/newsletter/subscribe.php',
+                    ['id' => $newsletter->get_course_module()->id]
+                );
                 $unsublinks[$newsletter->get_instance()->id] = $url;
             }
             if ($debugoutput) {
                 mtrace(
-                        "Processing newsletter (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})...");
+                    "Processing newsletter (id = {$issue->newsletterid}), issue \"{$issue->title}\" (id = {$issue->id})..."
+                );
             }
             $fs = get_file_storage();
-            $files = $fs->get_area_files($newsletter->get_context()->id, 'mod_newsletter',
-                    NEWSLETTER_FILE_AREA_ATTACHMENT, $issue->id, "", false);
+            $files = $fs->get_area_files(
+                $newsletter->get_context()->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_ATTACHMENT,
+                $issue->id,
+                "",
+                false
+            );
             $attachment = null;
             $fname = null;
             if (!empty($files)) {
@@ -157,11 +173,15 @@ class send_newsletter extends \core\task\scheduled_task {
                 $url->param(NEWSLETTER_PARAM_HASH, 'replacewithsecret');
                 // The id in the html elements are used to better remove them later when no
                 // unsubscription link should be sent.
-                $issue->htmlcontent .= html_writer::start_div('',
-                        array('id' => 'unsubscriptionlink'));
+                $issue->htmlcontent .= html_writer::start_div(
+                    '',
+                    ['id' => 'unsubscriptionlink']
+                );
                 $issue->htmlcontent .= html_writer::empty_tag('hr');
-                $issue->htmlcontent .= html_writer::link($url,
-                        get_string('unsubscribe_link_text', 'mod_newsletter'));
+                $issue->htmlcontent .= html_writer::link(
+                    $url,
+                    get_string('unsubscribe_link_text', 'mod_newsletter')
+                );
                 $issue->htmlcontent .= html_writer::end_div();
             }
 
@@ -169,13 +189,21 @@ class send_newsletter extends \core\task\scheduled_task {
             $parsedhtml = new issue_parser($issue, true);
             $issue->htmlcontent = $parsedhtml->get_parsed_html();
 
-            $issue->htmlcontent = file_rewrite_pluginfile_urls($issue->htmlcontent, 'pluginfile.php',
-                    $newsletter->get_context()->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ISSUE,
-                    $issue->id, issue_form::editor_options($newsletter->get_context(), $issue->id));
+            $issue->htmlcontent = file_rewrite_pluginfile_urls(
+                $issue->htmlcontent,
+                'pluginfile.php',
+                $newsletter->get_context()->id,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_ISSUE,
+                $issue->id,
+                issue_form::editor_options($newsletter->get_context(), $issue->id)
+            );
             $plaintexttmp = format_text_email($issue->htmlcontent, FORMAT_HTML);
             $htmltmp = $newsletter->inline_css($issue->htmlcontent, $issue->stylesheetid);
-            $deliveries = $DB->get_records('newsletter_deliveries',
-                    array('issueid' => $issueid, 'delivered' => 0));
+            $deliveries = $DB->get_records(
+                'newsletter_deliveries',
+                ['issueid' => $issueid, 'delivered' => 0]
+            );
 
             // Configure the $userfrom. All mails are sent from the support user (but as return path for
             // bounce processing, the address in the newsletter admin settings is used.
@@ -190,7 +218,7 @@ class send_newsletter extends \core\task\scheduled_task {
                 break;
             }
             foreach ($deliveries as $deliveryid => $delivery) {
-                $recipient = $DB->get_record('user', array('id' => $delivery->userid));
+                $recipient = $DB->get_record('user', ['id' => $delivery->userid]);
                 if ($debugoutput) {
                     mtrace("Sending message to {$recipient->email}... ");
                 }
@@ -200,8 +228,12 @@ class send_newsletter extends \core\task\scheduled_task {
                 $plaintextuser = $plaintexttmp;
 
                 // Remove unsub link.
-                if (isset($nounsublink[$issueid]) && in_array($delivery->userid,
-                        $nounsublink[$issueid])) {
+                if (
+                    isset($nounsublink[$issueid]) && in_array(
+                        $delivery->userid,
+                        $nounsublink[$issueid]
+                    )
+                ) {
                     if ($debugoutput) {
                         mtrace("Sending no unsublink to {$recipient->email} for {$issueid}");
                     }
@@ -216,13 +248,13 @@ class send_newsletter extends \core\task\scheduled_task {
                 }
 
                 // Replace user specific data here.
-                $toreplace = array();
-                $replacement = array();
+                $toreplace = [];
+                $replacement = [];
 
                 $tags = $parsedhtml->get_supported_tags();
                 foreach ($tags as $name) {
                     $toreplace[$name] = "news://" . $name . "/";
-                    if ($name == 'lastname' or $name == 'firstname') {
+                    if ($name == 'lastname' || $name == 'firstname') {
                         $replacement[$name] = $recipient->$name;
                     } else if ($name == 'fullname') {
                         $replacement[$name] = fullname($recipient);
@@ -237,33 +269,48 @@ class send_newsletter extends \core\task\scheduled_task {
                 // Unsubscribe link.
                 $toreplace['replacewithsecret'] = 'replacewithsecret';
                 $replacement['replacewithsecret'] = md5(
-                        $recipient->id . "+" . $recipient->firstaccess);
+                    $recipient->id . "+" . $recipient->firstaccess
+                );
 
                 $plaintextuser = str_replace($toreplace, $replacement, $plaintextuser);
                 $htmluser = str_replace($toreplace, $replacement, $htmluser);
 
-                $userfrom->customheaders = array( // Headers to make emails easier to track.
+                $userfrom->customheaders = [ // Headers to make emails easier to track.
                 'Precedence: Bulk',
-                    'List-Id: "' . $newsletter->get_instance()->name . '" <newsletter' . $newsletter->get_course_module()->instance .
-                                '@' . $hostname . '>',
+                    'List-Id: "' . $newsletter->get_instance()->name . '" <newsletter' .
+                                $newsletter->get_course_module()->instance . '@' . $hostname . '>',
                     'List-Help: ' . $CFG->wwwroot . '/mod/newsletter/view.php?id=' . $newsletter->get_context()->instanceid,
-                    'Message-ID: ' . newsletter_get_email_message_id($issue->id, $recipient->id,
-                            $hostname), 'X-Course-Id: ' . $newsletter->get_instance()->course,
-                    'X-Course-Name: ' . format_string($newsletter->get_course()->fullname, true));
-                $result = email_to_user($recipient, $userfrom, $issue->title,
-                        $plaintextuser, $htmluser, $attachment, $fname);
+                    'Message-ID: ' . newsletter_get_email_message_id(
+                        $issue->id,
+                        $recipient->id,
+                        $hostname
+                    ), 'X-Course-Id: ' . $newsletter->get_instance()->course,
+                    'X-Course-Name: ' . format_string($newsletter->get_course()->fullname, true)];
+                $result = email_to_user(
+                    $recipient,
+                    $userfrom,
+                    $issue->title,
+                    $plaintextuser,
+                    $htmluser,
+                    $attachment,
+                    $fname
+                );
                 if ($debugoutput) {
                     echo ($result ? "OK" : "FAILED") . "!\n";
                 }
-                $DB->set_field('newsletter_deliveries', 'deliverytime', time(), array('id' => $deliveryid));
-                $DB->set_field('newsletter_deliveries', 'delivered', 1, array('id' => $deliveryid));
+                $DB->set_field('newsletter_deliveries', 'deliverytime', time(), ['id' => $deliveryid]);
+                $DB->set_field('newsletter_deliveries', 'delivered', 1, ['id' => $deliveryid]);
                 $sql = "UPDATE {newsletter_subscriptions} SET sentnewsletters = sentnewsletters + 1
                     WHERE newsletterid = :newsletterid AND userid = :userid ";
-                $params = array('newsletterid' => $issue->newsletterid,
-                    'userid' => $delivery->userid);
+                $params = ['newsletterid' => $issue->newsletterid,
+                    'userid' => $delivery->userid];
                 $DB->execute($sql, $params);
-                if (!$DB->record_exists('newsletter_deliveries',
-                        array('issueid' => $issue->id, 'delivered' => 0))) {
+                if (
+                    !$DB->record_exists(
+                        'newsletter_deliveries',
+                        ['issueid' => $issue->id, 'delivered' => 0]
+                    )
+                ) {
                     $data = new stdClass();
                     $data->id = $issueid;
                     $data->timemodified = time();

@@ -21,13 +21,11 @@
  * @copyright 2015 David Bogner, edulabs.org <info@edulabs.org>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event observer for mod_newsletter.
  */
 class mod_newsletter_observer {
-
     /**
      * subscribe or unsubscribe user to newsletters
      *
@@ -47,34 +45,36 @@ class mod_newsletter_observer {
             JOIN {user_info_field} uif
             ON uif.id = n.aboprofilefield
             JOIN {user_info_data} uid
-            ON uid.fieldid = uif.id 
+            ON uid.fieldid = uif.id
             JOIN {user} u
             ON u.id = uid.userid
             WHERE n.course = :courseid
             AND m.name = 'newsletter'
             AND u.id = :userid";
-            
-        $params = array('courseid' => $courseid, 'userid' => $userid);
+
+        $params = ['courseid' => $courseid, 'userid' => $userid];
 
         $newsletters = $DB->get_records_sql($sql, $params);
         foreach ($newsletters as $newsletter) {
-            if($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT || 
-            $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED) {
+            if (
+                $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_OUT ||
+                $newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_FORCED
+            ) {
                 $newsletterobject = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
                 $newsletterobject->subscribe($userid);
-            } else if($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN) {
-                    $newsletterobject = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
-                    if($newsletter->subscription == 1) {
-                        $newsletterobject->subscribe($userid);
-                    } else {
-                        $subid = $newsletterobject->get_subid($userid);
-                        if($subid) {
-                            $newsletterobject->delete_subscription($subid); 
-                        }
+            } else if ($newsletter->subscriptionmode == NEWSLETTER_SUBSCRIPTION_MODE_OPT_IN) {
+                $newsletterobject = mod_newsletter\newsletter::get_newsletter_by_instance($newsletter->id);
+                if ($newsletter->subscription == 1) {
+                    $newsletterobject->subscribe($userid);
+                } else {
+                    $subid = $newsletterobject->get_subid($userid);
+                    if ($subid) {
+                        $newsletterobject->delete_subscription($subid);
                     }
+                }
             }
         }
-    } 
+    }
 
     /**
      * Triggered via user_created event. Subscribes user to newsletter on frontpage
@@ -87,17 +87,15 @@ class mod_newsletter_observer {
     }
 
     /**
-     * Triggered via user_created event. Subscribes user to newsletter on frontpage
+     * Triggered via user_updated event. Subscribes user to newsletter on frontpage
      *
-     * @param \core\event\user_created $event
+     * @param \core\event\user_updated $event
      */
     public static function user_updated(\core\event\user_updated $event) {
         $user = $event->get_record_snapshot('user', $event->objectid);
         self::subscribe($user->id, 1);
     }
 
-
-    
     /**
      * Triggered via user_enrolment_deleted event.
      *
@@ -110,10 +108,12 @@ class mod_newsletter_observer {
         // Get user enrolment info from event.
         $cp = (object) $event->other['userenrolment'];
         if ($cp->lastenrol) {
-            $params = array('userid' => $cp->userid, 'courseid' => $cp->courseid);
-            $DB->delete_records_select('newsletter_subscriptions',
-                    'userid = :userid AND newsletterid IN (SELECT n.id FROM {newsletter} n WHERE n.course = :courseid)',
-                    $params);
+            $params = ['userid' => $cp->userid, 'courseid' => $cp->courseid];
+            $DB->delete_records_select(
+                'newsletter_subscriptions',
+                'userid = :userid AND newsletterid IN (SELECT n.id FROM {newsletter} n WHERE n.course = :courseid)',
+                $params
+            );
         }
     }
 
@@ -141,7 +141,7 @@ class mod_newsletter_observer {
     public static function user_deleted(\core\event\user_deleted $event) {
         global $DB;
 
-        $params = array('userid' => $event->relateduserid);
+        $params = ['userid' => $event->relateduserid];
         $DB->delete_records_select('newsletter_subscriptions', 'userid = :userid', $params);
     }
 }

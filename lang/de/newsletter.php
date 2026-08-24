@@ -17,7 +17,7 @@
 /**
  * Strings for component 'newsletter', language 'de', branch 'MOODLE_30_STABLE'
  *
- * @package   newsletter
+ * @package   mod_newsletter
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,13 @@ $string['attachments_help'] = 'Laden Sie hier Dateien hoch, die Sie als Anhang m
 $string['attachments_no'] = 'Keine Anhänge vorhanden.';
 $string['cohortmanagement'] = 'Globale Gruppen an/abmelden';
 $string['cohortsavailable'] = 'Verfügbare Globale Gruppen';
-$string['config_activation_timeout_desc'] = 'Wählen Sie hier, für wie viele Tage der per Email versendete Aktivierungslink gültig sein soll.';
+$string['config_activation_timeout_desc'] = 'Wählen Sie hier, für wie viele Tage der per E-Mail versendete Aktivierungslink gültig sein soll. Konten, die über das Newsletter-Anmeldeformular für Gäste erstellt und innerhalb dieses Zeitraums nicht aktiviert wurden, werden gelöscht, sofern "Unbestätigte Gast-Abonnements löschen" aktiviert ist.';
+$string['config_deleteunconfirmedguests_label'] = 'Unbestätigte Gast-Abonnements löschen';
+$string['config_deleteunconfirmedguests_desc'] = 'Wenn aktiviert, werden Nutzerkonten, die über das Newsletter-Anmeldeformular für Gäste erstellt und innerhalb der oben eingestellten Frist nicht aktiviert wurden, durch die geplante Aufgabe "Unbestätigte Newsletter-Gastkonten löschen" gelöscht. Betroffen sind ausschließlich über dieses Formular erstellte Konten; Konten, die lediglich einen Newsletter abonniert haben, bleiben der Moodle-Kerneinstellung "Unbestätigte Nutzer/innen löschen" überlassen. Die Löschung erfolgt über die Standard-Löschfunktion von Moodle, das Konto wird also anonymisiert und als gelöscht markiert, aber nicht physisch entfernt.';
+$string['taskdeleteunconfirmedsubscribers'] = 'Unbestätigte Newsletter-Gastkonten löschen';
+$string['accountalreadyconfirmed'] = 'Ihr Konto wurde bereits aktiviert. Sie werden zum Newsletter weitergeleitet.';
+$string['invalidactivationlink'] = 'Der aufgerufene Aktivierungslink ist ungültig.';
+$string['activationlinkexpired'] = 'Der aufgerufene Aktivierungslink ist abgelaufen. Bitte melden Sie sich erneut zum Newsletter an.';
 $string['config_activation_timeout_label'] = 'Ablaufzeitpunkt für Aktivierungslinks';
 $string['config_bounce_email'] = 'Die E-Mail-Adresse an die die Bounces geschickt werden sollen. Benutzen Sie diese E-Mailadresse ausschließlich zum Bounce Handling.';
 $string['config_bounce_enable'] = 'Bounce Processing für das Newslettermodul aktivieren';
@@ -71,7 +77,7 @@ $string['edit_subscription_title'] = 'Abonnement bearbeiten';
 $string['emailexists'] = 'Es existiert bereits ein Benutzeraccount mit dieser E-Mailadresse, eine erneute Anlage ist daher nicht nötig. Bitte loggen Sie sich ein, um diesen Newsletter zu abonnieren.
 Sollten Sie Ihre Zugangsdaten vergessen haben, benutzen Sie bitte den {$a} Link auf der Login-Seite um Ihr Passwort zurücksetzen zu lassen.';
 $string['aboprofilefield'] = "Nutzerprofilfeld für das Newsletterabonnement";
-$string['aboprofilefield_help'] = 'Hier können Sie auswählen, welche Userprofilfeld für das Newsletter Abonnement verwendet werden soll. 
+$string['aboprofilefield_help'] = 'Hier können Sie auswählen, welche Userprofilfeld für das Newsletter Abonnement verwendet werden soll.
 Es können nur Userprofilfelder vom Typ Checkbox verwendet werden. Diese können unter Website Administration -> Nutzer/innen -> Profilfelder
 angelegt werden. User müssen dann dieses Profilfeld auswählen, um den Newsletter bei der Registrierung zu abonnieren.';
 $string['entries_per_page'] = 'Angezeigte Einträge pro Seite';
@@ -236,6 +242,7 @@ $string['privacy:metadata:newsletter_subscriptions:timestatuschanged'] = 'Letzte
 $string['privacy:metadata:newsletter_subscriptions:subscriberid'] = 'ID des/der Nutzer/in, die das Newsletter-Abo erhalten hat';
 $string['privacy:metadata:newsletter_subscriptions:unsubscriberid'] = 'ID des/der Nutzer/in, die das Abo gekündigt hat';
 $string['privacy:metadata:newsletter_subscriptions:sentnewsletters'] = 'Anzahl der an die Person gesendeten Newsletter';
+$string['privacy:metadata:newsletter_subscriptions:guestsignup'] = 'Gibt an, ob das Konto über das Newsletter-Anmeldeformular für Gäste erstellt wurde';
 $string['privacy:metadata:newsletter_bounces'] = 'Newsletter deren Zustellung verweigert wurde';
 $string['privacy:metadata:newsletter_bounces:userid'] = 'Nutzer/in die/der den Eintrag erstellt hat';
 $string['privacy:metadata:newsletter_bounces:issueid'] = 'Newsletterausgabe, die zurückgewiesen wurde';
