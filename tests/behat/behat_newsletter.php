@@ -17,7 +17,7 @@
 /**
  * Defines message providers (types of messages being sent)
  *
- * @package mod_booking
+ * @package mod_newsletter
  * @copyright 2023 Wunderbyte GmbH <info@wunderbyte.at>
  * @author Georg Maißer
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,6 @@ use mod_newsletter\newsletter;
  * To create booking specific behat scearios.
  */
 class behat_newsletter extends behat_base {
-
     /**
      * Create booking option in booking instance
      * @Given /^I create newsletter instance "(?P<optionname_string>(?:[^"]|\\")*)" in "(?P<instancename_string>(?:[^"]|\\")*)"$/

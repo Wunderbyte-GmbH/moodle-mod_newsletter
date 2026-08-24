@@ -118,6 +118,11 @@ class mod_newsletter_guest_signup_form extends moodleform {
             $err['email'] = get_string('emailexists', 'mod_newsletter', $a);
         }
 
+        // Honour the site's allowed/denied e-mail domain lists, exactly as core signup does.
+        if (!isset($err['email']) && ($notallowed = email_is_not_allowed($usernew->email))) {
+            $err['email'] = $notallowed;
+        }
+
         // Next the customisable profile fields.
         $err += profile_validation($usernew, $files);
         return $err;

@@ -2211,6 +2211,12 @@ class newsletter implements renderable {
             throw new moodle_exception('notlocalisederrormessage', 'error', '', 'Sorry, you may not use this page.');
         }
 
+        // The signup form checks this too, but this method is public, so never create an account for an
+        // address the site's allowemailaddresses/denyemailaddresses settings reject.
+        if ($notallowed = email_is_not_allowed($email)) {
+            throw new moodle_exception('notlocalisederrormessage', 'error', '', $notallowed);
+        }
+
         // Generate username. If already exists try to find another one, repeat until username found.
         if ($CFG->extendedusernamechars) {
             $newusername = $email;
