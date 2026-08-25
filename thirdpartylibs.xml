@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <libraries>
     <library>
-        <location>/vendor/tijsverkoyen/css-to-inline-styles/src/CssToInlineStyles.php</location>
-        <name>CSS to Inline Styles class</name>
-        <version>1.3.0</version>
+        <location>/vendor/tijsverkoyen/css-to-inline-styles</location>
+        <name>CSS to Inline Styles</name>
+        <version>2.2.7</version>
         <license>BSD</license>
+        <licenseversion>3</licenseversion>
+    </library>
+    <library>
+        <location>/vendor/symfony/css-selector</location>
+        <name>Symfony CssSelector Component</name>
+        <version>6.4.3</version>
+        <license>MIT</license>
         <licenseversion></licenseversion>
     </library>
         <library>

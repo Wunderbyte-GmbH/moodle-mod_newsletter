@@ -1809,8 +1809,11 @@ class newsletter implements renderable {
             }
         }
 
-        $converter = new  CssToInlineStyles();
-        $html = $converter->convert(mb_convert_encoding($htmlcontent, 'HTML-ENTITIES', 'UTF-8'), $css);
+        // No pre-encoding here: CssToInlineStyles::createDomDocumentFromHtml() already runs the html
+        // through mb_encode_numericentity() before handing it to DOMDocument. The mb_convert_encoding()
+        // call this replaces used the 'HTML-ENTITIES' target, which PHP 8.2 deprecates.
+        $converter = new CssToInlineStyles();
+        $html = $converter->convert($htmlcontent, $css);
 
         if (!$fulldocument) {
             if (
