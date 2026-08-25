@@ -145,10 +145,13 @@ Um deine Anmeldung zu bestätigen, klicke auf folgenden Link:
 
 {$a->link}
 
-Um alle Einstellungen zu verwalten, verwende folgende Zugangsdaten:
+Für dich wurde ein Konto mit dem Anmeldenamen {$a->username} angelegt.
+Du brauchst es nicht, um den Newsletter zu lesen - der Link oben meldet dich an.
 
-Anmeldename: {$a->username}
-Passwort: {$a->password}
+Wenn du dich später auf der Website anmelden möchtest, vergib über den Link
+"Kennwort vergessen" ein Passwort:
+
+{$a->forgotpasswordlink}
 
 Wenn Sie Hilfe benötigen, kontaktieren Sie bitte den/die Administrator/in der Website,
 {$a->admin}';

@@ -147,10 +147,13 @@ Please confirm your subscription by clicking on the following link:
 
 {$a->link}
 
-You can change your settings anytime using these credentials:
+An account has been created for you with the username {$a->username}.
+You do not need it to read the newsletter - the link above signs you in.
 
-Username: {$a->username}
-Password: {$a->password}
+If you would like to log in to the site later on, set a password using the
+forgotten password link:
+
+{$a->forgotpasswordlink}
 
 
 If you need help, please contact the site administrator,

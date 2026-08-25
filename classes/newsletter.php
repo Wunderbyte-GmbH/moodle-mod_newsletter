@@ -2248,7 +2248,7 @@ class newsletter implements renderable {
         $usernew->auth = $CFG->registerauth;
         $usernew->confirmed = 0;
         $usernew->deleted = 0;
-        $usernew->password = $password = generate_password();
+        $usernew->password = generate_password();
         $usernew->mailformat = 1;
         $usernew->lang = current_language();
         // Not a real first access, but the unsubscribe token is md5($user->id . '+' . $user->firstaccess)
@@ -2286,10 +2286,15 @@ class newsletter implements renderable {
         );
 
         $site = get_site();
+        // The activation link logs the user in, so the mail never carries a password. Anyone who wants a
+        // conventional login sets one through the forgotten password flow, which works because the
+        // address is confirmed by then.
+        $forgotpasswordurl = new moodle_url('/login/forgot_password.php');
         $a = [
             'fullname' => fullname($user), 'newslettername' => $newslettername,
             'sitename' => format_string($site->fullname), 'email' => $email,
-            'username' => $user->username, 'password' => $password,
+            'username' => $user->username,
+            'forgotpasswordlink' => $forgotpasswordurl->out(false),
             'link' => $activateurl->__toString(), 'admin' => generate_email_signoff(),
         ];
 
