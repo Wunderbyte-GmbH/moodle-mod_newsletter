@@ -3,132 +3,51 @@ name: Moodle Plugin CI
 on: [push, pull_request]
 
 jobs:
-  test:
-    runs-on: ubuntu-22.04
+  ci:
+    uses: Wunderbyte-GmbH/catalyst-moodle-workflows/.github/workflows/ci.yml@main
+    with:
+      # Change these based on your plugin's requirements
 
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: 'postgres'
-          POSTGRES_HOST_AUTH_METHOD: 'trust'
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
-      mariadb:
-        image: mariadb:10
-        env:
-          MYSQL_USER: 'root'
-          MYSQL_ALLOW_EMPTY_PASSWORD: "true"
-          MYSQL_CHARACTER_SET_SERVER: "utf8mb4"
-          MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
-          CODECHECKER_IGNORE_PATHS: CssToInlineStyles, emls, lib/Models, lib/CwsDebug.php, lib/CwsDump.php, lib/Handler.php
-          PHPDOCCHECKER_IGNORE_PATHS: CssToInlineStyles, emls, lib/Models, lib/CwsDebug.php, lib/CwsDump.php, lib/Handler.php
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+      disable_release: true  # Use true if using the tag-based release workflow
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - php: 8.0
-          moodle-branch: master
-          database: pgsql
-        - php: 8.1
-          moodle-branch: master
-          database: mariadb
-        - php: 8.1
-          moodle-branch: MOODLE_401_STABLE
-          database: pgsql
-        - php: 8.1
-          moodle-branch: MOODLE_401_STABLE
-          database: mariadb
-        - php: 7.4
-          moodle-branch: MOODLE_401_STABLE
-          database: pgsql
-        - php: 7.4
-          moodle-branch: MOODLE_401_STABLE
-          database: mariadb
-        - php: 8.0
-          moodle-branch: MOODLE_400_STABLE
-          database: mariadb
-        - php: 7.4
-          moodle-branch: MOODLE_400_STABLE
-          database: pgsql
+      # moodle_branches: "MOODLE_401_STABLE MOODLE_402_STABLE"  # Optional: Only test specific Moodle versions
+      # min_php: "7.4"  # Optional: Set minimum PHP version
 
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-        with:
-          path: plugin
+      # Command to install more dependencies
+      # This plugin has no dependencies, see $plugin->dependencies in version.php.
+      # extra_plugin_runners: |
+      #   moodle-plugin-ci add-plugin --branch main Wunderbyte-GmbH/moodle-local_wunderbyte_table
 
-      - name: Setup PHP ${{ matrix.php }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ${{ matrix.extensions }}
-          ini-values: max_input_vars=5000
-          coverage: none
+      # If you need to ignore specific paths (third-party libraries are ignored by default)
+      # thirdpartylibs.xml only declares single files, so the bundled trees are listed here in full:
+      # vendor (symfony/css-selector, tijsverkoyen/css-to-inline-styles), lib (CwsMailBounceHandler)
+      # and emls (bounce message fixtures).
+      ignore_paths: 'vendor/,lib/,emls/'
 
-      - name: Initialise moodle-plugin-ci
-        run: |
-          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
-          echo $(cd ci/bin; pwd) >> $GITHUB_PATH
-          echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
-          sudo locale-gen en_AU.UTF-8
-          echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+      # If you need to ignore specific names (third-party libraries are ignored by default)
+      # ignore_names: '*.txt,fallback.css'
 
-      - name: Install moodle-plugin-ci
-        run: |
-          moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
-        env:
-          DB: ${{ matrix.database }}
-          IGNORE_PATHS: moodle/tests/fixtures,moodle/Sniffs
-          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+      # Specify paths to ignore for mustache lint
+      # mustache_ignore_names: 'cashier.mustache,shopping_cart_item.mustache'
 
-      - name: PHP Lint
-        if: ${{ always() }}
-        run: moodle-plugin-ci phplint
+      # Specify paths to ignore for code checker
+      codechecker_ignore_paths: 'vendor/,lib/,emls/'
 
-      - name: PHP Copy/Paste Detector
-        continue-on-error: true # This step will show errors but will not fail
-        if: ${{ always() }}
-        run: moodle-plugin-ci phpcpd
+      # Specify paths to ignore for PHPDoc checker
+      phpdocchecker_ignore_paths: 'vendor/,lib/,emls/'
 
-      - name: PHP Mess Detector
-        continue-on-error: true # This step will show errors but will not fail
-        if: ${{ always() }}
-        run: moodle-plugin-ci phpmd
+      # If you need to disable specific tests
+      # disable_phpunit: true
+      # disable_behat: true
+      # disable_grunt: true
+      # disable_phpdoc: true
+      # disable_phpcs: true
+      # disable_phplint: true
+      # disable_mustache: true
+      # disable_ci_validate: true
 
-      - name: Moodle Code Checker
-        if: ${{ always() }}
-        run: moodle-plugin-ci codechecker --max-warnings 0
+      # If you need to enable PHPMD
+      enable_phpmd: true
 
-      - name: Moodle PHPDoc Checker
-        if: ${{ always() }}
-        run: moodle-plugin-ci phpdoc || true
-
-      - name: Validating
-        if: ${{ always() }}
-        run: moodle-plugin-ci validate
-
-      - name: Check upgrade savepoints
-        if: ${{ always() }}
-        run: moodle-plugin-ci savepoints
-
-      - name: Mustache Lint
-        if: ${{ always() }}
-        run: moodle-plugin-ci mustache
-
-      - name: Grunt
-        if: ${{ always() }}
-        run: moodle-plugin-ci grunt --max-lint-warnings 0
-
-      - name: PHPUnit tests
-        if: ${{ always() }}
-        run: moodle-plugin-ci phpunit
-
-      - name: Behat features
-        if: ${{ always() }}
-        run: moodle-plugin-ci behat --profile chrome
+      # For strict code quality checks
+      codechecker_max_warnings: 0
