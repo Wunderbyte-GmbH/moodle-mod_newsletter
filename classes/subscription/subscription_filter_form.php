@@ -28,8 +28,14 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 
+/**
+ * Filter form shown above the subscription management table.
+ *
+ * @package   mod_newsletter
+ * @copyright 2013 Ivan Sakic <ivan.sakic3@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_newsletter_subscription_filter_form extends \moodleform {
-
     /**
      * Defines forms elements
      */
@@ -50,26 +56,38 @@ class mod_newsletter_subscription_filter_form extends \moodleform {
         $mform->setType('search', PARAM_RAW);
 
         // Filter by subscription status.
-        $options = array(10 => get_string('all'));
+        $options = [10 => get_string('all')];
         $options += (array) $newsletter->get_subscription_statuslist();
-        $mform->addElement('select', 'status', get_string('header_health', 'mod_newsletter'),
-                $options);
+        $mform->addElement(
+            'select',
+            'status',
+            get_string('header_health', 'mod_newsletter'),
+            $options
+        );
         $mform->setType('status', PARAM_INT);
         $mform->setDefault('status', 10);
 
-        $mform->addElement('select', 'count', get_string('entries_per_page', 'mod_newsletter'),
-                array(10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000));
+        $mform->addElement(
+            'select',
+            'count',
+            get_string('entries_per_page', 'mod_newsletter'),
+            [10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000]
+        );
         $mform->setType('count', PARAM_INT);
         $mform->setDefault('count', 50);
 
-        $mform->addElement('select', 'orderby', get_string('sortby'),
-                array('lastname' => get_string('lastname'), 'firstname' => get_string('firstname'),
-                    'email' => get_string('email')));
+        $mform->addElement(
+            'select',
+            'orderby',
+            get_string('sortby'),
+            ['lastname' => get_string('lastname'), 'firstname' => get_string('firstname'),
+            'email' => get_string('email')]
+        );
 
         // Submit button does not use add_action_buttons because that adds
         // another fieldset which causes the CSS style to break in an unfixable
         // way due to fieldset quirks.
-        $group = array();
+        $group = [];
         $group[] = $mform->createElement('submit', 'submitbutton', get_string('filter'));
         $group[] = $mform->createElement('submit', 'resetbutton', get_string('reset'));
         $mform->addGroup($group, 'buttons', '', ' ', false);

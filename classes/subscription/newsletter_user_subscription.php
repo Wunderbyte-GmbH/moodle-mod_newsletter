@@ -17,7 +17,7 @@
 /**
  * class used by newsletter subscriber selection controls
  *
- * @package mod-newsletter
+ * @package mod_newsletter
  * @copyright 2015 David Bogner
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,8 +30,17 @@ require_once($CFG->dirroot . '/user/selector/lib.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
-class mod_newsletter_potential_subscribers extends user_selector_base {
+// Both selectors of the subscription management screen belong together and share their base class.
+// phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClasses
 
+/**
+ * Users who could still be subscribed to the newsletter.
+ *
+ * @package   mod_newsletter
+ * @copyright 2013 Ivan Sakic <ivan.sakic3@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class mod_newsletter_potential_subscribers extends user_selector_base {
     /**
      *
      * @var int newsletterid
@@ -40,7 +49,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 
     /**
      *
-     * @var integer
+     * @var int
      */
     protected $courseid;
 
@@ -80,7 +89,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 
         $fields = 'SELECT ' . $this->required_fields_sql('u');
         $countfields = 'SELECT COUNT(1)';
-        list($wherecondition, $params) = $this->search_sql($search, 'u');
+        [$wherecondition, $params] = $this->search_sql($search, 'u');
 
         $params['newsletterid'] = $this->newsletterid;
         if ($this->courseid == 1) {
@@ -89,7 +98,7 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 						WHERE $wherecondition
 						AND ns.id IS NULL";
         } else { // Only enrolled users selectable.
-            $eparams = array();
+            $eparams = [];
             $eparams['courseid'] = $this->courseid;
             $eparams['now1'] = $eparams['now2'] = strtotime("now");
             $enrolsql = "	SELECT DISTINCT u.id FROM {user} u
@@ -103,11 +112,12 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
 							AND (ue.timeend = 0 OR ue.timeend > :now2)";
             $params = array_merge($params, $eparams);
             $sql = "	FROM {user} u INNER JOIN ($enrolsql) enrolled_users_view ON u.id = enrolled_users_view.id
-						LEFT JOIN {newsletter_subscriptions} ns ON (ns.userid = enrolled_users_view.id AND ns.newsletterid = :newsletterid)
+                        LEFT JOIN {newsletter_subscriptions} ns
+                            ON (ns.userid = enrolled_users_view.id AND ns.newsletterid = :newsletterid)
 						WHERE ns.id IS NULL";
         }
 
-        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        [$sort, $sortparams] = users_order_by_sql('u', $search, $this->accesscontext);
         $order = ' ORDER BY ' . $sort;
 
         // Check to see if there are too many to show sensibly.
@@ -118,11 +128,13 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
             }
         }
 
-        $availableusers = $DB->get_records_sql($fields . $sql . $order,
-                array_merge($params, $sortparams));
+        $availableusers = $DB->get_records_sql(
+            $fields . $sql . $order,
+            array_merge($params, $sortparams)
+        );
 
         if (empty($availableusers)) {
-            return array();
+            return [];
         }
 
         if ($search) {
@@ -130,22 +142,34 @@ class mod_newsletter_potential_subscribers extends user_selector_base {
         } else {
             $groupname = get_string('subscribercandidates', 'mod_newsletter');
         }
-        return array($groupname => $availableusers);
+        return [$groupname => $availableusers];
     }
 }
 
 
 /**
  * Subscribed users.
+ *
+ * @package   mod_newsletter
+ * @copyright 2013 Ivan Sakic <ivan.sakic3@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_newsletter_existing_subscribers extends user_selector_base {
-
+    /** @var int the course the newsletter lives in */
     protected $courseid;
 
+    /** @var int the newsletter instance id */
     protected $newsletterid;
 
+    /** @var stdClass the newsletter record */
     protected $newsletter;
 
+    /**
+     * Constructor
+     *
+     * @param string $name the name of the selector
+     * @param array $options the selector options, including newsletterid and newsletter
+     */
     public function __construct($name, $options) {
         $this->newsletterid = $options['newsletterid'];
         $this->newsletter = $options['newsletter'];
@@ -161,7 +185,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
     public function find_users($search) {
         global $DB;
         // By default wherecondition retrieves all users except the deleted, not confirmed and guest.
-        list($wherecondition, $params) = $this->search_sql($search, 'u');
+        [$wherecondition, $params] = $this->search_sql($search, 'u');
         $params['newsletterid'] = $this->newsletterid;
 
         $fields = 'SELECT ' . $this->required_fields_sql('u') . ', ns.health, ns.id as subid ';
@@ -171,7 +195,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
 		JOIN {newsletter_subscriptions} ns ON (ns.userid = u.id AND ns.newsletterid = :newsletterid)
 		WHERE $wherecondition";
 
-        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        [$sort, $sortparams] = users_order_by_sql('u', $search, $this->accesscontext);
         $order = ' ORDER BY ' . $sort;
 
         if (!$this->is_validating()) {
@@ -181,11 +205,13 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
             }
         }
 
-        $availableusers = $DB->get_records_sql($fields . $sql . $order,
-                array_merge($params, $sortparams));
+        $availableusers = $DB->get_records_sql(
+            $fields . $sql . $order,
+            array_merge($params, $sortparams)
+        );
 
         if (empty($availableusers)) {
-            return array();
+            return [];
         }
 
         if ($search) {
@@ -194,7 +220,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
             $groupname = get_string('subscribedusers', 'mod_newsletter');
         }
 
-        return array($groupname => $availableusers);
+        return [$groupname => $availableusers];
     }
 
     /**
@@ -223,7 +249,7 @@ class mod_newsletter_existing_subscribers extends user_selector_base {
         }
         $out .= fullname($user);
         if ($this->extrafields) {
-            $displayfields = array();
+            $displayfields = [];
             foreach ($this->extrafields as $field) {
                 $displayfields[] = $user->{$field};
             }

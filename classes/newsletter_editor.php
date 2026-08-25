@@ -19,6 +19,10 @@ use editor_tiny\editor;
 
 /**
  * Add custom css to the default editor. This is quite a hack due to the hacky implementation of Tiny 6 editor in Moodle.
+ *
+ * @package   mod_newsletter
+ * @copyright 2015 onwards David Bogner <info@edulabs.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class newsletter_editor extends editor {
     /**
@@ -75,22 +79,23 @@ class newsletter_editor extends editor {
                 'language' => [
                         'currentlang' => current_language(),
                         'installed' => get_string_manager()->get_list_of_translations(true),
-                        'available' => get_string_manager()->get_list_of_languages()
+                        'available' => get_string_manager()->get_list_of_languages(),
                 ],
 
-            // Placeholder selectors.
-            // Some contents (Example: placeholder elements) are only shown in the editor, and not to users. It is unrelated to the
-            // real display. We created a list of placeholder selectors, so we can decide to or not to apply rules, styles... to
-            // these elements.
-            // The default of this list will be empty.
-            // Other plugins can register their placeholder elements to placeholderSelectors list by calling
-            // editor_tiny/options::registerPlaceholderSelectors.
+                // Placeholder selectors.
+                // Some contents (example: placeholder elements) are only shown in the editor, and not to
+                // users. It is unrelated to the
+                // real display. We created a list of placeholder selectors, so we can decide to or not to apply rules, styles... to
+                // these elements.
+                // The default of this list will be empty.
+                // Other plugins can register their placeholder elements to placeholderSelectors list by calling
+                // editor_tiny/options::registerPlaceholderSelectors.
                 'placeholderSelectors' => [],
 
-            // Plugin configuration.
+                // Plugin configuration.
                 'plugins' => $this->manager->get_plugin_configuration($context, $options, $fpoptions, $this),
 
-            // Nest menu inside parent DOM.
+                // Nest menu inside parent DOM.
                 'nestedmenu' => true,
         ];
 

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  *
  * @package mod_newsletter
@@ -27,9 +25,8 @@ defined('MOODLE_INTERNAL') || die();
  * Instance store for newsletter manager classes.
  */
 class mod_newsletter_instance_store {
-
     /** @var array List of stored instances. */
-    protected static $instances = array();
+    protected static $instances = [];
 
     /**
      * Returns an instance from local store, null otherwise.
@@ -55,7 +52,7 @@ class mod_newsletter_instance_store {
      */
     public static function register($newsletterid, $typename, $instance) {
         if (empty(self::$instances[$newsletterid])) {
-            self::$instances[$newsletterid] = array();
+            self::$instances[$newsletterid] = [];
         }
         self::$instances[$newsletterid][$typename] = $instance;
     }
@@ -69,7 +66,7 @@ class mod_newsletter_instance_store {
      */
     public static function unregister($newsletterid = 0, $typename = null) {
         if (!$newsletterid) {
-            self::$instances = array();
+            self::$instances = [];
         } else if (!$typename) {
             unset(self::$instances[$newsletterid]);
         } else {

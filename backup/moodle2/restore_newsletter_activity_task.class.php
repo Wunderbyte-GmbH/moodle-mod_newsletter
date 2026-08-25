@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore task definition for the newsletter activity.
+ *
  * @package    mod_newsletter
  * @subpackage backup-moodle2
  * @copyright  2018 onwards David Bogner {@link http://www.edulabs.org}
@@ -30,7 +32,6 @@ require_once($CFG->dirroot . '/mod/newsletter/backup/moodle2/restore_newsletter_
  * complete restore of the activity
  */
 class restore_newsletter_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -50,11 +51,15 @@ class restore_newsletter_activity_task extends restore_activity_task {
      * Define the contents in the activity that must be
      * processed by the link decoder
      */
-    static public function define_decode_contents() {
-        $contents = array();
+    public static function define_decode_contents() {
+        $contents = [];
 
-        $contents[] = new restore_decode_content('newsletter', array('intro', 'welcomemessage', 'welcomemessageguestuser'), 'newsletter');
-        $contents[] = new restore_decode_content('newsletter_issues', array('htmlcontent'), 'newsletter_issue');
+        $contents[] = new restore_decode_content(
+            'newsletter',
+            ['intro', 'welcomemessage', 'welcomemessageguestuser'],
+            'newsletter'
+        );
+        $contents[] = new restore_decode_content('newsletter_issues', ['htmlcontent'], 'newsletter_issue');
         return $contents;
     }
 
@@ -62,18 +67,21 @@ class restore_newsletter_activity_task extends restore_activity_task {
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
-    static public function define_decode_rules() {
-        $rules = array();
+    public static function define_decode_rules() {
+        $rules = [];
 
         // List of newsletters in course.
         $rules[] = new restore_decode_rule('NEWSLETTERINDEX', '/mod/newsletter/index.php?id=$1', 'course');
-        // newsletter by cm->id and newsletter->id.
+        // Newsletter by cm->id and newsletter->id.
         $rules[] = new restore_decode_rule('NEWSLETTERVIEWBYID', '/mod/newsletter/view.php?id=$1', 'course_module');
         // Link to newsletter issue.
         $rules[] = new restore_decode_rule('NEWSLETTERISSUE', '/mod/newsletter/issue.php?d=$1', 'newsletter_issue');
         // Link to issue with action specified.
-        $rules[] = new restore_decode_rule('NEWSLETTERREADISSUE', '/mod/newsletter/discuss.php?id=$1&action=readissue&issue=$2',
-                                           array('newsletter', 'newsletter_issue'));
+        $rules[] = new restore_decode_rule(
+            'NEWSLETTERREADISSUE',
+            '/mod/newsletter/discuss.php?id=$1&action=readissue&issue=$2',
+            ['newsletter', 'newsletter_issue']
+        );
         return $rules;
     }
 
@@ -83,8 +91,8 @@ class restore_newsletter_activity_task extends restore_activity_task {
      * newsletter logs. It must return one array
      * of {@link restore_log_rule} objects
      */
-    static public function define_restore_log_rules() {
-        $rules = array();
+    public static function define_restore_log_rules() {
+        $rules = [];
 
         $rules[] = new restore_log_rule('newsletter', 'add', 'view.php?id={course_module}', '{newsletter}');
         $rules[] = new restore_log_rule('newsletter', 'update', 'view.php?id={course_module}', '{newsletter}');
@@ -93,7 +101,12 @@ class restore_newsletter_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('newsletter', 'issue viewed', 'issue.php?id={newsletter}', '{newsletter}');
         $rules[] = new restore_log_rule('newsletter', 'subscribe', 'view.php?id={newsletter}&action=subscribe', '{newsletter}');
         $rules[] = new restore_log_rule('newsletter', 'unsubscribe', 'view.php?f={newsletter}&action=unsubscribe', '{newsletter}');
-        $rules[] = new restore_log_rule('newsletter', 'view subscribers', 'subscribers.php?id={newsletter}&action=managesubscriptions', '{newsletter}');
+        $rules[] = new restore_log_rule(
+            'newsletter',
+            'view subscribers',
+            'subscribers.php?id={newsletter}&action=managesubscriptions',
+            '{newsletter}'
+        );
         return $rules;
     }
 
@@ -107,8 +120,8 @@ class restore_newsletter_activity_task extends restore_activity_task {
      * by the restore final task, but are defined here at
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
-    static public function define_restore_log_rules_for_course() {
-        $rules = array();
+    public static function define_restore_log_rules_for_course() {
+        $rules = [];
         $rules[] = new restore_log_rule('newsletter', 'view newsletters', 'index.php?id={course}', null);
         return $rules;
     }

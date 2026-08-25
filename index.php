@@ -26,12 +26,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 $id = required_param('id', PARAM_INT);
 
-if (!$course = $DB->get_record("course", array("id" => $id))) {
+if (!$course = $DB->get_record("course", ["id" => $id])) {
     throw new \moodle_exception('invalidcourseid');
 }
 require_login($course);

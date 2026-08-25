@@ -32,7 +32,6 @@ require_once($CFG->dirroot . '/mod/newsletter/backup/moodle2/backup_newsletter_s
  * Provides the steps to perform one complete backup of the newsletter instance
  */
 class backup_newsletter_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */
@@ -53,7 +52,7 @@ class backup_newsletter_activity_task extends backup_activity_task {
      *        scripts
      * @return string the content with the URLs encoded
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         global $CFG;
 
         $base = preg_quote($CFG->wwwroot, "/");

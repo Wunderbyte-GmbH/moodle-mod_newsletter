@@ -24,29 +24,32 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['AND'] = "Und";
+$string['OR'] = "Oder";
+$string['aboprofilefield'] = "Nutzerprofilfeld für das Newsletterabonnement";
+$string['aboprofilefield_help'] = 'Hier können Sie auswählen, welche Userprofilfeld für das Newsletter Abonnement verwendet werden soll.
+Es können nur Userprofilfelder vom Typ Checkbox verwendet werden. Diese können unter Website Administration -> Nutzer/innen -> Profilfelder
+angelegt werden. User müssen dann dieses Profilfeld auswählen, um den Newsletter bei der Registrierung zu abonnieren.';
 $string['account_already_confirmed'] = 'Ihr Account wurde bereits aktiviert. Um zum Newsletter zu gelangen, klicken Sie bitte auf folgenden Link:  {$a->newsletterlink}.';
 $string['account_confirmed'] = 'Willkommen bei {$a->sitename}, {$a->fullname}!
 
 Ihr Account {$a->username} wurde aktiviert.
 Um Ihre Profildetails zu bearbeiten, klicken Sie bitte auf folgenden Link: {$a->editlink}.
 Um zum Newsletter zu gelangen, klicken Sie bitte auf folgenden Link:  {$a->newsletterlink}.';
-$string['allowguestusersubscriptions_help'] = 'Erlauben Sie Gastnutzer/innen, Newsletter auf dieser Seite zu abonnieren. Dazu ist es erforderlich, dass Sie das Anlegen von Gastzugängen in den Moodleeinstellungen erlauben.';
+$string['accountalreadyconfirmed'] = 'Ihr Konto wurde bereits aktiviert. Sie werden zum Newsletter weitergeleitet.';
+$string['activationlinkexpired'] = 'Der aufgerufene Aktivierungslink ist abgelaufen. Bitte melden Sie sich erneut zum Newsletter an.';
 $string['allowguestusersubscriptions'] = 'Gasteinschreibungen erlauben';
-$string['header_profilefield'] = 'Profilfeld für Anmeldung';
+$string['allowguestusersubscriptions_help'] = 'Erlauben Sie Gastnutzer/innen, Newsletter auf dieser Seite zu abonnieren. Dazu ist es erforderlich, dass Sie das Anlegen von Gastzugängen in den Moodleeinstellungen erlauben.';
 $string['allusers'] = 'Nutzer/innen (inklusive Abgemeldete):';
 $string['already_published'] = 'Die Ausgabe wurde veröffentlicht.';
 $string['attachments'] = 'Anhänge';
 $string['attachments_help'] = 'Laden Sie hier Dateien hoch, die Sie als Anhang mit dieser Ausgabe versenden möchten.';
 $string['attachments_no'] = 'Keine Anhänge vorhanden.';
+$string['biggerthan'] = 'ist größer als (Zahl)';
+$string['calculateusers'] = 'Berechne die Zahl der gefilterten EmpfängerInnen.';
 $string['cohortmanagement'] = 'Globale Gruppen an/abmelden';
 $string['cohortsavailable'] = 'Verfügbare Globale Gruppen';
 $string['config_activation_timeout_desc'] = 'Wählen Sie hier, für wie viele Tage der per E-Mail versendete Aktivierungslink gültig sein soll. Konten, die über das Newsletter-Anmeldeformular für Gäste erstellt und innerhalb dieses Zeitraums nicht aktiviert wurden, werden gelöscht, sofern "Unbestätigte Gast-Abonnements löschen" aktiviert ist.';
-$string['config_deleteunconfirmedguests_label'] = 'Unbestätigte Gast-Abonnements löschen';
-$string['config_deleteunconfirmedguests_desc'] = 'Wenn aktiviert, werden Nutzerkonten, die über das Newsletter-Anmeldeformular für Gäste erstellt und innerhalb der oben eingestellten Frist nicht aktiviert wurden, durch die geplante Aufgabe "Unbestätigte Newsletter-Gastkonten löschen" gelöscht. Betroffen sind ausschließlich über dieses Formular erstellte Konten; Konten, die lediglich einen Newsletter abonniert haben, bleiben der Moodle-Kerneinstellung "Unbestätigte Nutzer/innen löschen" überlassen. Die Löschung erfolgt über die Standard-Löschfunktion von Moodle, das Konto wird also anonymisiert und als gelöscht markiert, aber nicht physisch entfernt.';
-$string['taskdeleteunconfirmedsubscribers'] = 'Unbestätigte Newsletter-Gastkonten löschen';
-$string['accountalreadyconfirmed'] = 'Ihr Konto wurde bereits aktiviert. Sie werden zum Newsletter weitergeleitet.';
-$string['invalidactivationlink'] = 'Der aufgerufene Aktivierungslink ist ungültig.';
-$string['activationlinkexpired'] = 'Der aufgerufene Aktivierungslink ist abgelaufen. Bitte melden Sie sich erneut zum Newsletter an.';
 $string['config_activation_timeout_label'] = 'Ablaufzeitpunkt für Aktivierungslinks';
 $string['config_bounce_email'] = 'Die E-Mail-Adresse an die die Bounces geschickt werden sollen. Benutzen Sie diese E-Mailadresse ausschließlich zum Bounce Handling.';
 $string['config_bounce_enable'] = 'Bounce Processing für das Newslettermodul aktivieren';
@@ -56,6 +59,8 @@ Die Verwendung der VERP Moodle Methode ist nicht auf jedem System möglich und d
 $string['config_bounceprocessing'] = 'Einstellungen für Bounce Handling: Geben Sie hier die Logindaten der Bounce-Mailadresse an.';
 $string['config_debug_desc'] = 'Aktivieren Sie diese Checkbox, um den Debug-Output im Cronjob anzuzeigen.';
 $string['config_debug_label'] = 'Cron Debug Modus';
+$string['config_deleteunconfirmedguests_desc'] = 'Wenn aktiviert, werden Nutzerkonten, die über das Newsletter-Anmeldeformular für Gäste erstellt und innerhalb der oben eingestellten Frist nicht aktiviert wurden, durch die geplante Aufgabe "Unbestätigte Newsletter-Gastkonten löschen" gelöscht. Betroffen sind ausschließlich über dieses Formular erstellte Konten; Konten, die lediglich einen Newsletter abonniert haben, bleiben der Moodle-Kerneinstellung "Unbestätigte Nutzer/innen löschen" überlassen. Die Löschung erfolgt über die Standard-Löschfunktion von Moodle, das Konto wird also anonymisiert und als gelöscht markiert, aber nicht physisch entfernt.';
+$string['config_deleteunconfirmedguests_label'] = 'Unbestätigte Gast-Abonnements löschen';
 $string['config_host'] = 'Mailserver (ex. mail.yourserver.com)';
 $string['config_password'] = 'Mailbox Passwort';
 $string['config_port'] = 'Der Port über den Sie sich mit der Mailbox verbinden; Standard: 143, andere gängige Möglichkeiten sind 110 (POP3), 995 (Gmail)';
@@ -64,6 +69,8 @@ $string['config_send_notifications_label'] = 'Benachrichtigungen senden';
 $string['config_service'] = 'zu benutzendes Protokoll';
 $string['config_service_option'] = 'Verschlüsselung (keine, tls, notls, ssl)';
 $string['config_username'] = 'Mailbox Benutzername';
+$string['contains'] = 'beinhaltet (Text)';
+$string['containsnot'] = 'beinhaltet nicht (Text)';
 $string['create_new_issue'] = 'Neue Newsletter-Ausgabe erstellen';
 $string['default_stylesheet'] = 'Standard-Stylesheet';
 $string['delete_all_subscriptions'] = 'Alle Abonnements löschen';
@@ -71,16 +78,13 @@ $string['delete_issue'] = 'Diese Newsletter-Ausgabe löschen';
 $string['delete_issue_question'] = 'Sind Sie sicher, dass Sie diese Newsletter-Ausgabe löschen wollen?';
 $string['delete_subscription_question'] = 'Sind Sie sicher, dass Sie dieses Newsletter-Abonnement kündigen wollen?';
 $string['edit_issue'] = 'Diese Ausgabe bearbeiten';
-$string['redirect_Message'] = 'Bitte ändern Sie ihren Texteditor, auf den TinyMCE Editor.';
 $string['edit_issue_title'] = 'Newsletter-Ausgabe bearbeiten';
 $string['edit_subscription_title'] = 'Abonnement bearbeiten';
 $string['emailexists'] = 'Es existiert bereits ein Benutzeraccount mit dieser E-Mailadresse, eine erneute Anlage ist daher nicht nötig. Bitte loggen Sie sich ein, um diesen Newsletter zu abonnieren.
 Sollten Sie Ihre Zugangsdaten vergessen haben, benutzen Sie bitte den {$a} Link auf der Login-Seite um Ihr Passwort zurücksetzen zu lassen.';
-$string['aboprofilefield'] = "Nutzerprofilfeld für das Newsletterabonnement";
-$string['aboprofilefield_help'] = 'Hier können Sie auswählen, welche Userprofilfeld für das Newsletter Abonnement verwendet werden soll.
-Es können nur Userprofilfelder vom Typ Checkbox verwendet werden. Diese können unter Website Administration -> Nutzer/innen -> Profilfelder
-angelegt werden. User müssen dann dieses Profilfeld auswählen, um den Newsletter bei der Registrierung zu abonnieren.';
 $string['entries_per_page'] = 'Angezeigte Einträge pro Seite';
+$string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
+$string['equalsnot'] = 'hat nicht genau diesen Wert (Text oder Zahl)';
 $string['eventissuecreated'] = 'Newsletter-Ausgabe wurde erstellt';
 $string['eventissueviewed'] = 'Newsletter-Ausgabe wurde angezeigt';
 $string['eventsubscriptioncreated'] = 'Neues Newsletter-Abonnement';
@@ -88,16 +92,20 @@ $string['eventsubscriptiondeleted'] = 'Newsletter-Abonnement gelöscht';
 $string['eventsubscriptionresubscribed'] = 'Wiederanmeldung zum Newsletter';
 $string['eventsubscriptionsviewed'] = 'Newsletter-Abonnements angezeigt';
 $string['eventsubscriptionunsubscribed'] = 'Abmeldung von Newsletter';
+$string['filteredusercount'] = '{$a} NutzerInnen werden diesen Newsletter erhalten. Wenn Sie den Filter ändern, drücken Sie bitte den Berechnen-Button unten.';
 $string['filteredusers'] = 'Gefilterte Nutzer/innen: ';
 $string['groupby'] = 'Ausgaben gruppieren nach:';
 $string['guestsubscribe'] = 'Jetzt abonnieren';
 $string['guestsubscriptionsuccess'] = 'Ihre E-Mailadresse wurde erfolgreich registriert. <br /> Um Ihr Abonnement zu bestätigen,  überprüfen Sie bitte Ihre Mailbox ({$a}) und klicken Sie auf den darin enthaltenen Bestätigungslink.';
 $string['header_actions'] = 'Aktionen';
+$string['header_bounceratio'] = 'Retourenverhältnis';
 $string['header_content'] = 'Inhalt der Newsletter-Ausgabe';
 $string['header_email'] = 'E-Mail';
+$string['header_filteruser'] = 'Filter User';
+$string['header_filteruserinfo'] = 'Der Empfängerkreis kann durch die Definition eines Profilfeldes der NutzerInnen eingeschränkt werden. Nur NutzerInnen mit diesem Feld erhalten den Newsletter.';
 $string['header_health'] = 'Status (Gesendet / Retouren)';
-$string['header_bounceratio'] = 'Retourenverhältnis';
 $string['header_name'] = 'Name';
+$string['header_profilefield'] = 'Profilfeld für Anmeldung';
 $string['header_publish'] = 'Veröffentlichungsoptionen';
 $string['header_publishinfo'] = 'Hat die Veröffentlichung einer Newsletter-Ausgabe einmal begonnen, kann man das Veröffentlichungsdatum nicht mehr ändern.';
 $string['header_subscriberid'] = 'Angemeldet von';
@@ -108,10 +116,15 @@ $string['health_0'] = 'Aktiv';
 $string['health_1'] = 'Problematisch';
 $string['health_2'] = 'Blacklisted';
 $string['health_4'] = 'Abgemeldet';
+$string['inarray'] = 'TeilnehmerIn hat einen dieser Werte (Komma getrennt)';
+$string['invalidactivationlink'] = 'Der aufgerufene Aktivierungslink ist ungültig.';
+$string['isempty'] = 'TeilnehmerIn hat keinen Wert gesetzt';
+$string['isnotempty'] = 'TeilnehmerIn hat einen Wert gesetzt';
 $string['issue_htmlcontent'] = 'HTML Inhalt';
 $string['issue_stylesheet'] = 'Stylesheet-Datei für HTML Inhalt. ';
 $string['issue_title'] = 'Ausgabentitel';
 $string['issue_title_help'] = 'Geben Sie hier den Titel der Ausgabe ein (erforderlich).';
+$string['lowerthan'] = 'ist kleiner als (Zahl)';
 $string['manage_subscriptions'] = 'Abonnements verwalten';
 $string['mode_group_by_month'] = 'Ausgaben nach Erscheinungsmonat gruppieren';
 $string['mode_group_by_week'] = 'Ausgaben nach Erscheinungswoche gruppieren';
@@ -126,17 +139,70 @@ $string['newsletter:deleteissue'] = 'Eine Newsletter-Ausgabe löschen';
 $string['newsletter:deletesubscription'] = 'Newsletter-Abonnements löschen';
 $string['newsletter:editissue'] = 'Eine Newsletter-Ausgabe bearbeiten';
 $string['newsletter:editsubscription'] = 'Newsletter-Abonnements bearbeiten';
-$string['newsletterintro'] = 'Beschreibung';
 $string['newsletter:manageownsubscription'] = 'Mein Newsletter-Abonnement verwalten';
 $string['newsletter:managesubscriptions'] = 'Newsletter-Abonnements verwalten';
-$string['newslettername'] = 'Name';
-$string['newslettername_help'] = 'Dies ist der Inhalt des Hilfe Werkzeugtipps für das Newsletterfeld. Markdown-Syntax wird unterstützt.';
 $string['newsletter:publishissue'] = 'Eine Newsletter-Ausgabe veröffentlichen';
 $string['newsletter:readissue'] = 'Eine Newsletter-Ausgabe lesen';
 $string['newsletter:subscribecohort'] = 'Globale Gruppe für den Newsletter anmelden';
 $string['newsletter:subscribeuser'] = 'Nutzer/innen für den Newsletter anmelden';
 $string['newsletter:unsubscribecohort'] = 'Globale Gruppe vom Newsletter abmelden';
 $string['newsletter:viewnewsletter'] = 'Newsletter-Instanz anzeigen';
+$string['newsletterintro'] = 'Beschreibung';
+$string['newslettername'] = 'Name';
+$string['newslettername_help'] = 'Dies ist der Inhalt des Hilfe Werkzeugtipps für das Newsletterfeld. Markdown-Syntax wird unterstützt.';
+$string['no_issues'] = 'Zu diesem Newsletter bestehen noch keine Ausgaben.';
+$string['nofieldselected'] = "Kein Nutzerprofilfeld ausgewählt";
+$string['nofilter'] = 'Keinen Filter verwenden';
+$string['notinarray'] = 'TeilnehmerIn hat keinen dieser Werte (Komma getrennt)';
+$string['page_first'] = 'Erste Seite';
+$string['page_last'] = 'Letzte Seite';
+$string['page_next'] = 'Nächste';
+$string['page_previous'] = 'Vorherige';
+$string['pluginadministration'] = 'Newsletter Administration';
+$string['pluginname'] = 'Newsletter';
+$string['privacy:metadata:newsletter_bounces'] = 'Newsletter deren Zustellung verweigert wurde';
+$string['privacy:metadata:newsletter_bounces:issueid'] = 'Newsletterausgabe, die zurückgewiesen wurde';
+$string['privacy:metadata:newsletter_bounces:statuscode'] = 'Statuscode der Zurückweisund';
+$string['privacy:metadata:newsletter_bounces:timecreated'] = 'Zeitpunkt an dem der Eintrag erstellt wurde';
+$string['privacy:metadata:newsletter_bounces:timereceived'] = 'Zeitpunkt an dem die Zurückweisung erhalten wurde';
+$string['privacy:metadata:newsletter_bounces:type'] = 'Bounce-Typ';
+$string['privacy:metadata:newsletter_bounces:userid'] = 'Nutzer/in die/der den Eintrag erstellt hat';
+$string['privacy:metadata:newsletter_deliveries'] = 'Zeige Newsletter, die dem/der Nutzer/in zugestellt wurden';
+$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Zeigt an, ob Newsletter zugestellt wurde';
+$string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID der zugesandten Newsletterausgabe';
+$string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID des Newsletters';
+$string['privacy:metadata:newsletter_deliveries:userid'] = 'Nuetzer/in die/der den Newsletter erhalten hat';
+$string['privacy:metadata:newsletter_subscriptions'] = 'Newsletter-Abo anzeigen';
+$string['privacy:metadata:newsletter_subscriptions:guestsignup'] = 'Gibt an, ob das Konto über das Newsletter-Anmeldeformular für Gäste erstellt wurde';
+$string['privacy:metadata:newsletter_subscriptions:health'] = 'Status der abgewiesenen Newsletter';
+$string['privacy:metadata:newsletter_subscriptions:newsletterid'] = 'ID des abonnierten Newsletters';
+$string['privacy:metadata:newsletter_subscriptions:sentnewsletters'] = 'Anzahl der an die Person gesendeten Newsletter';
+$string['privacy:metadata:newsletter_subscriptions:subscriberid'] = 'ID des/der Nutzer/in, die das Newsletter-Abo erhalten hat';
+$string['privacy:metadata:newsletter_subscriptions:timestatuschanged'] = 'Letzte Änderung';
+$string['privacy:metadata:newsletter_subscriptions:timesubscribed'] = 'Zeitpunk des Abo-Beginns';
+$string['privacy:metadata:newsletter_subscriptions:unsubscriberid'] = 'ID des/der Nutzer/in, die das Abo gekündigt hat';
+$string['privacy:metadata:newsletter_subscriptions:userid'] = 'Nutzer/in, die das Abo initiert hat.';
+$string['process_bounces'] = 'Zurückgewiesene E-Mails verarbeiten';
+$string['publish_in'] = 'Veröffentlichung in {$a->days} Tagen, {$a->hours} Stunden, {$a->minutes} Minuten, {$a->seconds} Sekunden';
+$string['publishon'] = 'Veröffentlichen am';
+$string['redirect_Message'] = 'Bitte ändern Sie ihren Texteditor, auf den TinyMCE Editor.';
+$string['resubscribe'] = 'Wiederanmeldung bestätigen';
+$string['resubscribe_btn'] = 'Anmeldung bestätigen';
+$string['resubscribe_text'] = 'Sie wurden für diesen Newsletter abgemeldet. Möchten Sie sich wirkich wieder anmelden?';
+$string['resubscriptionsuccess'] = 'Ihre neuerliche Registrierung war erfolgreich.';
+$string['search:newsletterissue'] = 'Newsletter Ausgabe';
+$string['send_newsletter'] = 'Newsletter versenden';
+$string['stylesheets'] = 'Newsletter-Stylesheets hochladen';
+$string['stylesheets_help'] = 'Laden Sie hier CSS-Dateien hoch, die als Stylesheets für die Ausgaben des Newsletters Verwendung finden sollen. Sie können mehr als eine Datei hochladen und anschließend aus diesen wählen, wenn Sie neue neue Ausgabe erstellen. Dieses Feld ist optional, da das Modul bereits mit mindestens einer vorhandenen Stylesheet-Datei ausgestattet ist.';
+$string['sub_mode_forced'] = 'Verpflichtend (automatisches Abo ohne Abmeldemöglichkeit)';
+$string['sub_mode_opt_in'] = 'Opt-in (Abo muss durch Nutzer/in iniitiert werden)';
+$string['sub_mode_opt_out'] = 'Opt-out (Automatisches Abonnement, Abmeldung durch Nutzer/in möglich)';
+$string['subscribe'] = 'Jetzt abonnieren';
+$string['subscribe_question'] = 'Möchten Sie den Newsletter "{$a->name}" unter Verwendung der E-Mailadresse "{$a->email}" abonnieren?';
+$string['subscribedusers'] = 'Abonnent/inn/en';
+$string['subscribedusersmatching'] = 'Passende Abonnent/inn/en für Suchkriterium ({$a})';
+$string['subscribercandidates'] = 'Mögliche Abonnent/inn/en';
+$string['subscribercandidatesmatching'] = 'Passende Nutzer/innen für ({$a})';
 $string['subscription_message'] = 'Hallo {$a->fullname},
 
 Du wurdest erfolgreich zum \'{$a->newslettername}\' Newsletter auf \'{$a->sitename}\' hinzugefügt.
@@ -155,45 +221,16 @@ Wenn du dich später auf der Website anmelden möchtest, vergib über den Link
 
 Wenn Sie Hilfe benötigen, kontaktieren Sie bitte den/die Administrator/in der Website,
 {$a->admin}';
-$string['no_issues'] = 'Zu diesem Newsletter bestehen noch keine Ausgaben.';
-$string['nofilter'] = 'Keinen Filter verwenden';
-$string['send_newsletter'] = 'Newsletter versenden';
-$string['process_bounces'] = 'Zurückgewiesene E-Mails verarbeiten';
-$string['page_first'] = 'Erste Seite';
-$string['page_last'] = 'Letzte Seite';
-$string['page_next'] = 'Nächste';
-$string['page_previous'] = 'Vorherige';
-$string['pluginadministration'] = 'Newsletter Administration';
-$string['pluginname'] = 'Newsletter';
-$string['publish_in'] = 'Veröffentlichung in {$a->days} Tagen, {$a->hours} Stunden, {$a->minutes} Minuten, {$a->seconds} Sekunden';
-$string['publishon'] = 'Veröffentlichen am';
-$string['resubscribe'] = 'Wiederanmeldung bestätigen';
-$string['resubscribe_text'] = 'Sie wurden für diesen Newsletter abgemeldet. Möchten Sie sich wirkich wieder anmelden?';
-$string['resubscribe_btn'] = 'Anmeldung bestätigen';
-$string['resubscriptionsuccess'] = 'Ihre neuerliche Registrierung war erfolgreich.';
-$string['stylesheets'] = 'Newsletter-Stylesheets hochladen';
-$string['stylesheets_help'] = 'Laden Sie hier CSS-Dateien hoch, die als Stylesheets für die Ausgaben des Newsletters Verwendung finden sollen. Sie können mehr als eine Datei hochladen und anschließend aus diesen wählen, wenn Sie neue neue Ausgabe erstellen. Dieses Feld ist optional, da das Modul bereits mit mindestens einer vorhandenen Stylesheet-Datei ausgestattet ist.';
-$string['sub_mode_forced'] = 'Verpflichtend (automatisches Abo ohne Abmeldemöglichkeit)';
-$string['sub_mode_opt_in'] = 'Opt-in (Abo muss durch Nutzer/in iniitiert werden)';
-$string['sub_mode_opt_out'] = 'Opt-out (Automatisches Abonnement, Abmeldung durch Nutzer/in möglich)';
-$string['subscribe'] = 'Jetzt abonnieren';
-$string['subscribedusers'] = 'Abonnent/inn/en';
-$string['subscribedusersmatching'] = 'Passende Abonnent/inn/en für Suchkriterium ({$a})';
-$string['subscribe_question'] = 'Möchten Sie den Newsletter "{$a->name}" unter Verwendung der E-Mailadresse "{$a->email}" abonnieren?';
-$string['subscribercandidates'] = 'Mögliche Abonnent/inn/en';
-$string['subscribercandidatesmatching'] = 'Passende Nutzer/innen für ({$a})';
 $string['subscription_mode'] = 'Abonnementeinstellung';
 $string['subscription_mode_help'] = 'Wählen Sie aus, ob eingeschriebene Nutzer/innen für diesen Newsletter automatisch (opt-out) angemeldet werden, oder sie sich manuell anmelden müssen (opt-in). WARNUNG: Opt-out bedeutet die automatische Anmeldung ALLER Nutzer/innen des Kontexts. Bei auf der Startseite angelegten Newslettern bedeutet dies ein Abo aller NutzerInnen der gesamten Moodle-Plattform!';
+$string['taskdeleteunconfirmedsubscribers'] = 'Unbestätigte Newsletter-Gastkonten löschen';
 $string['toc'] = 'Wie die Inhaltsangabe generiert werden soll';
-$string['toc_help'] = 'Bis zu welcher Stufe sollen Überschriften inkludiert werden? Beispiel: Sie haben eine Ausgabe mit einer drei-stufigen Überschriftenstruktur (h1, h2, h3). Wenn Sie aber nur die Stufen 1 und 2 (h1 und h2) in die Inhaltsangabe einbeziehen möchten, wählen Sie die "2". Wenn Sie nur die erste Stufe einbezogen haben möchten, wählen Sie die "1".';
 $string['toc_header'] = 'Inhaltsangabe';
+$string['toc_help'] = 'Bis zu welcher Stufe sollen Überschriften inkludiert werden? Beispiel: Sie haben eine Ausgabe mit einer drei-stufigen Überschriftenstruktur (h1, h2, h3). Wenn Sie aber nur die Stufen 1 und 2 (h1 und h2) in die Inhaltsangabe einbeziehen möchten, wählen Sie die "2". Wenn Sie nur die erste Stufe einbezogen haben möchten, wählen Sie die "1".';
 $string['toc_no'] = 'Keine Inhaltsangabe generieren';
 $string['toc_yes'] = 'Eine {$a}-stufige Inhaltsangabe generieren';
 $string['unsubscribe'] = 'Dieses Newsletter-Abonnement kündigen';
-$string['unsubscribedinfo'] = 'Mit (!) markierte Nutzer/innen sind abgemeldet';
 $string['unsubscribe_link_text'] = 'Klicken Sie hier, um das Abonnement zu kündigen';
-$string['unsubscribe_question'] = 'Möchten Sie das Abonnement der E-Mailadresse "{$a->email}" für den Newsletter "{$a->name}" wirklich kündigen?';
-$string['unsubscription_succesful'] = 'Ihr Abonnement mit der E-Mailadresse "{$a->email}" wurde für den folgenden Newsletter erfolgreich gekündigt: "{$a->name}"';
 $string['unsubscribe_mail_subj'] = 'Sie wurden erfolgreich vom Newsletter abgemeldet';
 $string['unsubscribe_mail_text'] = '<p>
 Dear {$a->firstname} {$a->lastname},
@@ -201,63 +238,18 @@ Dear {$a->firstname} {$a->lastname},
 You were successfully unsubscribed from the newsletter {$a->newslettertitle}. If you did this on purpose, there is nothing more to do. If you did accidentally unsubscribe, you can resubscribe now under the following link:
 <br>
 {$a->newsletterurl}</p>';
-$string['unsubscribe_nounsub_text'] = 'Link zur Newsletter-Abokündigung nicht senden';
 $string['unsubscribe_nounsub'] = 'Distributor';
+$string['unsubscribe_nounsub_text'] = 'Link zur Newsletter-Abokündigung nicht senden';
+$string['unsubscribe_question'] = 'Möchten Sie das Abonnement der E-Mailadresse "{$a->email}" für den Newsletter "{$a->name}" wirklich kündigen?';
+$string['unsubscribedinfo'] = 'Mit (!) markierte Nutzer/innen sind abgemeldet';
+$string['unsubscription_succesful'] = 'Ihr Abonnement mit der E-Mailadresse "{$a->email}" wurde für den folgenden Newsletter erfolgreich gekündigt: "{$a->name}"';
+$string['userprofilefield_addcondition'] = "Eine weitere Bedingung hinzufügen";
+$string['userprofilefield_field'] = "NutzerInnen Profilfeld";
+$string['userprofilefield_operator'] = "Verknüpfung";
+$string['userprofilefield_value'] = "Vergleichswert";
 $string['welcomemessage'] = 'Willkommens-Nachricht';
 $string['welcomemessage_help'] = 'Geben Sie hier die Nachricht an, die dem neuen Abonnenten nach seiner Anmeldung zu einem Newsletter angezeigt werden soll.';
 $string['welcomemessageguestuser'] = 'Willkommens-Nachricht Gastuser-Anmeldung';
 $string['welcomemessageguestuser_help'] = 'Geben Sie hier die Nachricht an, die einem Gastuser nach seiner Anmeldung zu einem Newsletter angezeigt werden soll.';
 $string['welcometonewsletter'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.';
 $string['welcometonewsletter_guestsubscription'] = 'Vielen Dank! Sie erhalten von nun ab diesen Newsletter per E-Mail.<br />Sie können sich von diesem Newsletter wieder abmelden, wenn Sie den Link "Dieses Newsletter-Abonnement kündigen" nach dem Login anklicken oder mittels Klick auf den "Abmelden"-Link in jeder Ausgabe dieses Newsletters.';
-
-// Issue_form.
-$string['header_filteruser'] = 'Filter User';
-$string['header_filteruserinfo'] = 'Der Empfängerkreis kann durch die Definition eines Profilfeldes der NutzerInnen eingeschränkt werden. Nur NutzerInnen mit diesem Feld erhalten den Newsletter.';
-$string['userprofilefield_field'] = "NutzerInnen Profilfeld";
-$string['userprofilefield_operator'] = "Verknüpfung";
-$string['userprofilefield_value'] = "Vergleichswert";
-$string['userprofilefield_addcondition'] = "Eine weitere Bedingung hinzufügen";
-$string['AND'] = "Und";
-$string['OR'] = "Oder";
-$string['nofieldselected'] = "Kein Nutzerprofilfeld ausgewählt";
-
-$string['equals'] = 'hat genau diesen Wert (Text oder Zahl)';
-$string['contains'] = 'beinhaltet (Text)';
-$string['lowerthan'] = 'ist kleiner als (Zahl)';
-$string['biggerthan'] = 'ist größer als (Zahl)';
-$string['equalsnot'] = 'hat nicht genau diesen Wert (Text oder Zahl)';
-$string['containsnot'] = 'beinhaltet nicht (Text)';
-$string['inarray'] = 'TeilnehmerIn hat einen dieser Werte (Komma getrennt)';
-$string['notinarray'] = 'TeilnehmerIn hat keinen dieser Werte (Komma getrennt)';
-$string['isempty'] = 'TeilnehmerIn hat keinen Wert gesetzt';
-$string['isnotempty'] = 'TeilnehmerIn hat einen Wert gesetzt';
-
-$string['filteredusercount'] = '{$a} NutzerInnen werden diesen Newsletter erhalten. Wenn Sie den Filter ändern, drücken Sie bitte den Berechnen-Button unten.';
-$string['calculateusers'] = 'Berechne die Zahl der gefilterten EmpfängerInnen.';
-
-// Privacy API.
-$string['privacy:metadata:newsletter_subscriptions'] = 'Newsletter-Abo anzeigen';
-$string['privacy:metadata:newsletter_subscriptions:userid'] = 'Nutzer/in, die das Abo initiert hat.';
-$string['privacy:metadata:newsletter_subscriptions:newsletterid'] = 'ID des abonnierten Newsletters';
-$string['privacy:metadata:newsletter_subscriptions:health'] = 'Status der abgewiesenen Newsletter';
-$string['privacy:metadata:newsletter_subscriptions:timesubscribed'] = 'Zeitpunk des Abo-Beginns';
-$string['privacy:metadata:newsletter_subscriptions:timestatuschanged'] = 'Letzte Änderung';
-$string['privacy:metadata:newsletter_subscriptions:subscriberid'] = 'ID des/der Nutzer/in, die das Newsletter-Abo erhalten hat';
-$string['privacy:metadata:newsletter_subscriptions:unsubscriberid'] = 'ID des/der Nutzer/in, die das Abo gekündigt hat';
-$string['privacy:metadata:newsletter_subscriptions:sentnewsletters'] = 'Anzahl der an die Person gesendeten Newsletter';
-$string['privacy:metadata:newsletter_subscriptions:guestsignup'] = 'Gibt an, ob das Konto über das Newsletter-Anmeldeformular für Gäste erstellt wurde';
-$string['privacy:metadata:newsletter_bounces'] = 'Newsletter deren Zustellung verweigert wurde';
-$string['privacy:metadata:newsletter_bounces:userid'] = 'Nutzer/in die/der den Eintrag erstellt hat';
-$string['privacy:metadata:newsletter_bounces:issueid'] = 'Newsletterausgabe, die zurückgewiesen wurde';
-$string['privacy:metadata:newsletter_bounces:statuscode'] = 'Statuscode der Zurückweisund';
-$string['privacy:metadata:newsletter_bounces:timecreated'] = 'Zeitpunkt an dem der Eintrag erstellt wurde';
-$string['privacy:metadata:newsletter_bounces:type'] = 'Bounce-Typ';
-$string['privacy:metadata:newsletter_bounces:timereceived'] = 'Zeitpunkt an dem die Zurückweisung erhalten wurde';
-$string['privacy:metadata:newsletter_deliveries'] = 'Zeige Newsletter, die dem/der Nutzer/in zugestellt wurden';
-$string['privacy:metadata:newsletter_deliveries:userid'] = 'Nuetzer/in die/der den Newsletter erhalten hat';
-$string['privacy:metadata:newsletter_deliveries:issueid'] = 'ID der zugesandten Newsletterausgabe';
-$string['privacy:metadata:newsletter_deliveries:newsletterid'] = 'ID des Newsletters';
-$string['privacy:metadata:newsletter_deliveries:delivered'] = 'Zeigt an, ob Newsletter zugestellt wurde';
-
-// Search.
-$string['search:newsletterissue'] = 'Newsletter Ausgabe';

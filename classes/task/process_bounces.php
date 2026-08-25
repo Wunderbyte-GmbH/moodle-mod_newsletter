@@ -24,18 +24,30 @@
  */
 namespace mod_newsletter\task;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Scheduled task that reads the bounce mailbox and records the bounces it finds.
+ *
+ * @package   mod_newsletter
+ * @copyright 2015 onwards David Bogner <info@edulabs.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class process_bounces extends \core\task\scheduled_task {
-
+    /**
+     * Name of the task as shown in the admin screens.
+     *
+     * @return string
+     */
     public function get_name() {
         // Shown in admin screens.
         return get_string('process_bounces', 'mod_newsletter');
     }
 
     /**
+     * Read the bounce mailbox and update the health of the affected subscriptions.
+     *
      * @throws \coding_exception
      * @throws \dml_exception
+     * @return void
      */
     public function execute() {
         $config = get_config('mod_newsletter');
@@ -46,7 +58,8 @@ class process_bounces extends \core\task\scheduled_task {
                 $bounceprocessor->update_health();
             } else {
                 mtrace(
-                        "!!! FAILURE to use IMAP: PHP imap does not seem to be enabled on your server!!!");
+                    "!!! FAILURE to use IMAP: PHP imap does not seem to be enabled on your server!!!"
+                );
             }
         }
     }

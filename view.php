@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 $id = required_param(NEWSLETTER_PARAM_ID, PARAM_INT);
 
@@ -34,40 +34,61 @@ $course = $newsletter->get_course();
 
 require_course_login($course, true, $coursemodule);
 
-$url = new moodle_url('/mod/newsletter/view.php', array(NEWSLETTER_PARAM_ID => $id));
+$url = new moodle_url('/mod/newsletter/view.php', [NEWSLETTER_PARAM_ID => $id]);
 $PAGE->set_url($url);
 
-$params = array(
-        NEWSLETTER_PARAM_ACTION => optional_param(NEWSLETTER_PARAM_ACTION,
-                NEWSLETTER_ACTION_VIEW_NEWSLETTER, PARAM_ALPHA),
-        NEWSLETTER_PARAM_GROUP_BY => optional_param(NEWSLETTER_PARAM_GROUP_BY,
-                get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, NEWSLETTER_GROUP_BY_DEFAULT),
-                PARAM_ALPHA),
+$params = [
+        NEWSLETTER_PARAM_ACTION => optional_param(
+            NEWSLETTER_PARAM_ACTION,
+            NEWSLETTER_ACTION_VIEW_NEWSLETTER,
+            PARAM_ALPHA
+        ),
+        NEWSLETTER_PARAM_GROUP_BY => optional_param(
+            NEWSLETTER_PARAM_GROUP_BY,
+            get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, NEWSLETTER_GROUP_BY_DEFAULT),
+            PARAM_ALPHA
+        ),
         NEWSLETTER_PARAM_ISSUE => optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT),
-        NEWSLETTER_PARAM_FROM => optional_param(NEWSLETTER_PARAM_FROM, NEWSLETTER_FROM_DEFAULT,
-                PARAM_INT),
-        NEWSLETTER_PARAM_COUNT => optional_param(NEWSLETTER_PARAM_COUNT,
-                get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, NEWSLETTER_COUNT_DEFAULT), PARAM_INT),
+        NEWSLETTER_PARAM_FROM => optional_param(
+            NEWSLETTER_PARAM_FROM,
+            NEWSLETTER_FROM_DEFAULT,
+            PARAM_INT
+        ),
+        NEWSLETTER_PARAM_COUNT => optional_param(
+            NEWSLETTER_PARAM_COUNT,
+            get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, NEWSLETTER_COUNT_DEFAULT),
+            PARAM_INT
+        ),
         NEWSLETTER_PARAM_TO => optional_param(NEWSLETTER_PARAM_TO, NEWSLETTER_TO_DEFAULT, PARAM_INT),
-        NEWSLETTER_PARAM_SUBSCRIPTION => optional_param(NEWSLETTER_PARAM_SUBSCRIPTION,
-                NEWSLETTER_SUBSCRIPTION_DEFAULT, PARAM_INT),
-        NEWSLETTER_PARAM_CONFIRM => optional_param(NEWSLETTER_PARAM_CONFIRM, NEWSLETTER_CONFIRM_UNKNOWN,
-                PARAM_INT),
+        NEWSLETTER_PARAM_SUBSCRIPTION => optional_param(
+            NEWSLETTER_PARAM_SUBSCRIPTION,
+            NEWSLETTER_SUBSCRIPTION_DEFAULT,
+            PARAM_INT
+        ),
+        NEWSLETTER_PARAM_CONFIRM => optional_param(
+            NEWSLETTER_PARAM_CONFIRM,
+            NEWSLETTER_CONFIRM_UNKNOWN,
+            PARAM_INT
+        ),
         NEWSLETTER_PARAM_USER => optional_param(NEWSLETTER_PARAM_USER, NEWSLETTER_NO_USER, PARAM_INT),
         NEWSLETTER_PARAM_SEARCH => optional_param(NEWSLETTER_PARAM_SEARCH, '', PARAM_RAW),
         NEWSLETTER_PARAM_STATUS => optional_param(NEWSLETTER_PARAM_STATUS, 10, PARAM_INT),
         NEWSLETTER_PARAM_RESETBUTTON => optional_param(NEWSLETTER_PARAM_RESETBUTTON, '', PARAM_RAW),
         NEWSLETTER_PARAM_ORDERBY => optional_param(NEWSLETTER_PARAM_ORDERBY, '', PARAM_ALPHA),
-        NEWSLETTER_PARAM_EMBED => optional_param(NEWSLETTER_PARAM_EMBED, '', PARAM_BOOL)
-);
+        NEWSLETTER_PARAM_EMBED => optional_param(NEWSLETTER_PARAM_EMBED, '', PARAM_BOOL),
+];
 
-if (get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, false) ||
-        $params[NEWSLETTER_PARAM_GROUP_BY] != NEWSLETTER_GROUP_BY_DEFAULT) {
+if (
+    get_user_preferences(NEWSLETTER_PREFERENCE_GROUP_BY, false) ||
+        $params[NEWSLETTER_PARAM_GROUP_BY] != NEWSLETTER_GROUP_BY_DEFAULT
+) {
     set_user_preference(NEWSLETTER_PREFERENCE_GROUP_BY, $params[NEWSLETTER_PARAM_GROUP_BY]);
 }
 
-if (get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, false) ||
-        $params[NEWSLETTER_PARAM_COUNT] != NEWSLETTER_COUNT_DEFAULT) {
+if (
+    get_user_preferences(NEWSLETTER_PREFERENCE_COUNT, false) ||
+        $params[NEWSLETTER_PARAM_COUNT] != NEWSLETTER_COUNT_DEFAULT
+) {
     set_user_preference(NEWSLETTER_PREFERENCE_COUNT, $params[NEWSLETTER_PARAM_COUNT]);
 }
 

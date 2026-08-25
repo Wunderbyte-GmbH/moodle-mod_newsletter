@@ -36,7 +36,6 @@ require_once($CFG->dirroot . '/cohort/lib.php');
  * Form for subscribing and unsubscribing cohorts to a newsletter
  */
 class mod_newsletter_subscriptions_admin_form extends \moodleform {
-
     /**
      * Defines forms elements
      */
@@ -52,8 +51,11 @@ class mod_newsletter_subscriptions_admin_form extends \moodleform {
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS);
         $mform->setType('action', PARAM_ALPHA);
 
-        $mform->addElement('header', 'cohort_management',
-                get_string('cohortmanagement', 'mod_newsletter'));
+        $mform->addElement(
+            'header',
+            'cohort_management',
+            get_string('cohortmanagement', 'mod_newsletter')
+        );
         $mform->setExpanded('cohort_management', false);
 
         if (isset($CFG->branch) && $CFG->branch < 28) {
@@ -62,22 +64,28 @@ class mod_newsletter_subscriptions_admin_form extends \moodleform {
         } else {
             // This is valid after v2.8.
             $coursecontext = context_course::instance($data['course']->id);
-            $options = cohort_get_available_cohorts($coursecontext,
-                    COHORT_WITH_ENROLLED_MEMBERS_ONLY);
+            $options = cohort_get_available_cohorts(
+                $coursecontext,
+                COHORT_WITH_ENROLLED_MEMBERS_ONLY
+            );
             foreach ($options as $opionobj) {
                 $cohorts[$opionobj->id] = $opionobj->name . " (" . $opionobj->memberscnt . ")";
             }
         }
 
         if (isset($cohorts)) {
-            $cohorts = $mform->addElement('select', 'cohorts',
-                    get_string('cohortsavailable', 'mod_newsletter'), $cohorts);
+            $cohorts = $mform->addElement(
+                'select',
+                'cohorts',
+                get_string('cohortsavailable', 'mod_newsletter'),
+                $cohorts
+            );
             $cohorts->setMultiple(true);
         }
 
-        $buttonarray = array();
+        $buttonarray = [];
         $buttonarray[] = & $mform->createElement('submit', 'subscribe', "Subscribe");
         $buttonarray[] = & $mform->createElement('submit', 'unsubscribe', "Unsubscribe");
-        $mform->addGroup($buttonarray, 'cohorts_submit', '', array(' '), false);
+        $mform->addGroup($buttonarray, 'cohorts_submit', '', [' '], false);
     }
 }

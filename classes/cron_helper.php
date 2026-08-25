@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * cronHelper - Utility script to avoid cron job overlap
  *
@@ -52,15 +53,28 @@
  * @author Abhinav Singh <me@abhinavsingh.com>
  * @copyright Abhinav Singh
  * @link http://abhinavsingh.com/blog/2009/12/how-to-use-locks-in-php-cron-jobs-to-avoid-cron-overlaps/
+ *
+ * @copyright 2009-2010 Abhinav Singh <me@abhinavsingh.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace mod_newsletter;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Utility used to stop the newsletter cron overlapping with itself.
+ *
+ * @package   mod_newsletter
+ * @copyright 2009-2010 Abhinav Singh <me@abhinavsingh.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 abstract class cron_helper {
-
+    /** @var int process id recorded in the lock file */
     private static $pid;
 
+    /**
+     * Whether the process that holds the lock is still alive.
+     *
+     * @return bool true if the recorded pid is still running
+     */
     private static function is_running() {
         $uname = strtolower(php_uname());
         if (strpos($uname, "darwin") !== false || strpos($uname, "linux") !== false) {
@@ -74,6 +88,11 @@ abstract class cron_helper {
         return false;
     }
 
+    /**
+     * Acquire the cron lock, aborting the run if another one already holds it.
+     *
+     * @return void
+     */
     public static function lock() {
 
         if (!is_dir(NEWSLETTER_LOCK_DIR)) {
@@ -87,7 +106,7 @@ abstract class cron_helper {
             if (self::is_running()) {
                 return false;
             } else {
-                \mtrace("==".self::$pid."== Previous job died abruptly...\n");
+                \mtrace("==" . self::$pid . "== Previous job died abruptly...\n");
             }
         }
 
@@ -96,6 +115,11 @@ abstract class cron_helper {
         return self::$pid;
     }
 
+    /**
+     * Release the cron lock.
+     *
+     * @return void
+     */
     public static function unlock() {
 
         $lockfile = NEWSLETTER_LOCK_DIR . '/' . NEWSLETTER_LOCK_SUFFIX;

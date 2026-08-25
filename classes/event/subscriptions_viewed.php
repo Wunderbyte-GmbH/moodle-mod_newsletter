@@ -24,8 +24,6 @@
 
 namespace mod_newsletter\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * The mod_newsletter subscriptions viewed event class.
@@ -36,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscriptions_viewed extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -73,9 +70,11 @@ class subscriptions_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,
-                    NEWSLETTER_PARAM_ID => $this->contextinstanceid));
+        return new \moodle_url(
+            '/mod/newsletter/view.php',
+            [NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS,
+            NEWSLETTER_PARAM_ID => $this->contextinstanceid]
+        );
     }
 
     /**
@@ -92,4 +91,3 @@ class subscriptions_viewed extends \core\event\base {
         }
     }
 }
-

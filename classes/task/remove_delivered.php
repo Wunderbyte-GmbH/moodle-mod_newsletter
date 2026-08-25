@@ -23,12 +23,21 @@
  */
 namespace mod_newsletter\task;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Scheduled task that clears out delivery records of issues that have been sent.
+ *
+ * @package   mod_newsletter
+ * @copyright 2015 onwards David Bogner <info@edulabs.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class remove_delivered extends \core\task\scheduled_task {
-
+    /**
+     * Name of the task as shown in the admin screens.
+     *
+     * @return string
+     */
     public function get_name() {
-        return 'Remove details for delivered newsletters.'; // TODO: Multilang.
+        return 'Remove details for delivered newsletters.'; // TODO: MDL-0000 Multilang.
     }
 
     /**
@@ -46,7 +55,7 @@ class remove_delivered extends \core\task\scheduled_task {
         foreach ($issues as $issue) {
             // Check if they are old enough that nobody cares.
             if ($now > strtotime('+1 month', $issue->publishon)) {
-                $DB->delete_records('newsletter_deliveries', array ('issueid' => $issue->issueid));
+                $DB->delete_records('newsletter_deliveries', ['issueid' => $issue->issueid]);
             }
         }
     }

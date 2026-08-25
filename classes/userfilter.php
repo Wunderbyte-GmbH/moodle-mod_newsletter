@@ -30,7 +30,6 @@ use stdClass;
  * Holds all the functionality of the user filter.
  */
 class userfilter {
-
     /**
      * Add alls the form elements needed.
      *
@@ -47,7 +46,6 @@ class userfilter {
         $customuserprofilefields = $DB->get_records('user_info_field', null, '', 'id, name, shortname');
 
         if (!empty($customuserprofilefields)) {
-
             // Create an array of key => value pairs for the dropdown.
             foreach ($customuserprofilefields as $cpf) {
                 $userprofilefieldsarray['cpf_' . $cpf->shortname] = $cpf->name;
@@ -60,7 +58,6 @@ class userfilter {
         $userprofilefields = $DB->get_columns('user', true);
         // Create an array of key => value pairs for the dropdown.
         foreach ($userprofilefields as $key => $value) {
-
             if (in_array($key, ['password', 'id'])) {
                 continue;
             }
@@ -85,13 +82,13 @@ class userfilter {
             '[]' => get_string('inarray', 'mod_newsletter'),
             '[!]' => get_string('notinarray', 'mod_newsletter'),
             '()' => get_string('isempty', 'mod_newsletter'),
-            '(!)' => get_string('isnotempty', 'mod_newsletter')
+            '(!)' => get_string('isnotempty', 'mod_newsletter'),
         ];
 
         $addcondition = [
             0 => '',
             'AND' => get_string('AND', 'mod_newsletter'),
-            'OR' => get_string('OR', 'mod_newsletter')
+            'OR' => get_string('OR', 'mod_newsletter'),
         ];
 
         $mform->addElement(
@@ -153,15 +150,17 @@ class userfilter {
         $mform->hideIf('userprofilefield2_value', 'userprofilefield2_addcondition', 'eq', 0);
         $mform->hideIf('userprofilefield2_value', 'userprofilefield1_field', 'eq', 0);
 
-        // $mform->createElement('submit', 'submitbutton', get_string('savechanges'));
-
         $count = self::return_number_of_filtered_recipients($newsletterid, $userfilter);
 
         $mform->registerNoSubmitButton('calculatefilteredusers');
         $elements = [
-            $mform->createElement('static', 'filtereduserscount', "filtereduserscount",
-                get_string('filteredusercount', 'mod_newsletter', $count)),
-            $mform->createElement('submit', 'calculatefilteredusers', get_string('calculateusers', 'mod_newsletter'))
+            $mform->createElement(
+                'static',
+                'filtereduserscount',
+                "filtereduserscount",
+                get_string('filteredusercount', 'mod_newsletter', $count)
+            ),
+            $mform->createElement('submit', 'calculatefilteredusers', get_string('calculateusers', 'mod_newsletter')),
         ];
         $mform->addGroup($elements, 'calculateusersgroup', 'calculateusersgroup', [' '], false);
     }
@@ -179,7 +178,6 @@ class userfilter {
 
         // Right now, we only have two possible conditions.
         while ($counter < 3) {
-
             $fieldprefix = 'userprofilefield' . $counter . '_';
 
             // If there is no field set, we don't save.
@@ -195,7 +193,7 @@ class userfilter {
                 continue;
             }
 
-            $filter = new stdClass;
+            $filter = new stdClass();
 
             // We need to know if this is custom profile or normal profile.
             if (substr($data->{$fieldprefix . 'field'}, 0, 4) === 'cpf_') {
@@ -225,11 +223,13 @@ class userfilter {
      * @param string $userfilter
      * @return void
      */
-    public static function add_sql(string &$select,
+    public static function add_sql(
+        string &$select,
         string &$from,
         string &$where,
         array &$params,
-        string $userfilter) {
+        string $userfilter
+    ) {
 
         if (!empty($userfilter)) {
             $filterobjects = json_decode($userfilter);
@@ -244,11 +244,9 @@ class userfilter {
         $addselect = '';
         $addfrom = '';
         foreach ($filterobjects as $filterobject) {
-
             // We don't have an addcondition for the first filter.
             if ($counter > 1) {
                 if (!empty($filterobject->addcondition)) {
-
                     // Make sure we add the right markers, because we have a second condition here.
                     switch ($filterobject->addcondition) {
                         case 'AND':
@@ -268,28 +266,27 @@ class userfilter {
 
             $operator = $filterobject->operator;
 
-            // Decide wether its a userfield or customuserfield
+            // Decide whether it is a user field or a custom user field.
 
             if (isset($filterobject->pf)) {
-
                 $fieldname = $filterobject->pf;
                 $value = $filterobject->value;
 
                 // Add the sql for comparioson.
-                $addwhere .= self::return_where("u.$fieldname",
+                $addwhere .= self::return_where(
+                    "u.$fieldname",
                     $value,
                     $operator,
                     $counter,
-                    $params);
-
+                    $params
+                );
             } else if (isset($filterobject->cpf)) {
-
                 // Add this sql for comparison.
 
                 $shortname = $filterobject->cpf;
                 $value = $filterobject->value;
 
-                $params['paramcpfa'. $counter] = $shortname;
+                $params['paramcpfa' . $counter] = $shortname;
                 $params['paramcpfb' . $counter] = $shortname;
 
                 $addselect .= " , s$counter.data as :paramcpfa$counter ";
@@ -300,11 +297,13 @@ class userfilter {
                     WHERE uif.shortname=:paramcpfb$counter
                 ) as s$counter
                 ON u.id = s$counter.userid ";
-                $addwhere .= self::return_where("s$counter.data",
+                $addwhere .= self::return_where(
+                    "s$counter.data",
                     $value,
                     $operator,
                     $counter,
-                    $params);
+                    $params
+                );
             }
             $counter++;
         }
@@ -326,11 +325,13 @@ class userfilter {
      * @param array $params
      * @return string
      */
-    private static function return_where(string $dbvalue,
+    private static function return_where(
+        string $dbvalue,
         string $formvalue,
         string $operator,
         int $counter,
-        array &$params) {
+        array &$params
+    ) {
         global $DB;
 
         $inparams = [];
@@ -370,12 +371,12 @@ class userfilter {
                 break;
             case '[]':
                 $array = explode(',', $formvalue);
-                list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter");
+                [$fragment, $inparams] = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter");
                 $fragment = $dbvalue . " $fragment";
                 break;
             case '[!]':
                 $array = explode(',', $formvalue);
-                list($fragment, $inparams) = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter", false);
+                [$fragment, $inparams] = $DB->get_in_or_equal($array, SQL_PARAMS_NAMED, "paramop$counter", false);
                 $fragment = $dbvalue . " $fragment";
 
                 // With <> we need to add "OR IS NULL".
@@ -404,7 +405,6 @@ class userfilter {
         $params = array_merge($params, $inparams);
 
         return $sql;
-
     }
 
     /**
@@ -420,7 +420,6 @@ class userfilter {
 
         $counter = 1;
         foreach ($filterobjects as $filterobject) {
-
             $prefix = "userprofilefield$counter" . "_";
 
             if (isset($filterobject->cpf)) {
@@ -447,7 +446,7 @@ class userfilter {
 
         global $USER, $PAGE;
 
-        list($course, $cm) = get_course_and_cm_from_instance($issue->newsletterid, 'newsletter');
+        [$course, $cm] = get_course_and_cm_from_instance($issue->newsletterid, 'newsletter');
         $context = context_module::instance($cm->id);
         // A user having these rights, can always see the issue.
         if (has_capability('mod/newsletter:editissue', $context)) {
@@ -466,25 +465,24 @@ class userfilter {
 
             $counter = 1;
             foreach ($userfilters as $userfilter) {
-
                 if (!empty($userfilter->cp)) {
-
                     $uservalue = $user->{$userfilter->cp} ?? null;
 
-                    $prelimanaryresult = self::check_user_values($userfilter->cp,
+                    $prelimanaryresult = self::check_user_values(
+                        $userfilter->cp,
                         $userfilter->value,
                         $uservalue,
-                        $userfilter->operator);
-
+                        $userfilter->operator
+                    );
                 } else if (!empty($userfilter->cpf)) {
-
                     $uservalue = $user->profile[$userfilter->cpf] ?? null;
 
-                    $prelimanaryresult = self::check_user_values($userfilter->cpf,
+                    $prelimanaryresult = self::check_user_values(
+                        $userfilter->cpf,
                         $userfilter->value,
                         $uservalue,
-                        $userfilter->operator);
-
+                        $userfilter->operator
+                    );
                 } else {
                     // If there is no valid field, we can skip the rest right away.
                     $prelimanaryresult = true;
@@ -494,10 +492,10 @@ class userfilter {
                     switch ($userfilter->addcondition) {
                         case 'AND':
                             $result = $pereviousresult && $prelimanaryresult;
-                        break;
+                            break;
                         case 'OR':
                             $result = $pereviousresult || $prelimanaryresult;
-                        break;
+                            break;
                         default:
                             $result = $pereviousresult;
                     }
@@ -569,6 +567,13 @@ class userfilter {
     }
 
 
+    /**
+     * Count the recipients a given filter leaves.
+     *
+     * @param int $newsletterid the newsletter instance id
+     * @param string $userfilter the encoded filter
+     * @return int the number of matching recipients
+     */
     private static function return_number_of_filtered_recipients($newsletterid, $userfilter) {
 
         return count(newsletter_get_all_valid_recipients($newsletterid, $userfilter));

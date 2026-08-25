@@ -30,27 +30,45 @@
  * Structure step to restore one newsletter activity
  */
 class restore_newsletter_activity_structure_step extends restore_activity_structure_step {
-
+    /**
+     * Define the structure of the newsletter activity restore.
+     *
+     * @return array the restore path elements
+     */
     protected function define_structure() {
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('newsletter', '/activity/newsletter');
         if ($userinfo) {
-            $paths[] = new restore_path_element('newsletter_issue',
-                    '/activity/newsletter/issues/issue');
-            $paths[] = new restore_path_element('newsletter_subscription',
-                    '/activity/newsletter/subscriptions/subscription');
-            $paths[] = new restore_path_element('newsletter_bounce',
-                    '/activity/newsletter/bounces/bounce');
-            $paths[] = new restore_path_element('newsletter_delivery',
-                    '/activity/newsletter/deliveries/delivery');
+            $paths[] = new restore_path_element(
+                'newsletter_issue',
+                '/activity/newsletter/issues/issue'
+            );
+            $paths[] = new restore_path_element(
+                'newsletter_subscription',
+                '/activity/newsletter/subscriptions/subscription'
+            );
+            $paths[] = new restore_path_element(
+                'newsletter_bounce',
+                '/activity/newsletter/bounces/bounce'
+            );
+            $paths[] = new restore_path_element(
+                'newsletter_delivery',
+                '/activity/newsletter/deliveries/delivery'
+            );
         }
 
         // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restore one newsletter instance.
+     *
+     * @param object $data the newsletter record being restored
+     * @return void
+     */
     protected function process_newsletter($data) {
         global $DB;
 
@@ -61,18 +79,30 @@ class restore_newsletter_activity_structure_step extends restore_activity_struct
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * Restore one newsletter issue.
+     *
+     * @param object $data the issue record being restored
+     * @return void
+     */
     protected function process_newsletter_issue($data) {
         global $DB;
 
         $data = (object) $data;
         $oldid = $data->id;
-        // TODO: I don't know how but stylesheetid needs to be updated somehow.
+        // TODO: MDL-0000 stylesheetid needs to be remapped on restore.
 
         $data->newsletterid = $this->get_new_parentid('newsletter');
         $newitemid = $DB->insert_record('newsletter_issues', $data);
         $this->set_mapping('newsletter_issue', $oldid, $newitemid, true); // Fourth parameter is restorefiles.
     }
 
+    /**
+     * Restore one newsletter subscription.
+     *
+     * @param object $data the subscription record being restored
+     * @return void
+     */
     protected function process_newsletter_subscription($data) {
         global $DB;
 
@@ -88,6 +118,12 @@ class restore_newsletter_activity_structure_step extends restore_activity_struct
         $this->set_mapping('newsletter_subscription', $oldid, $newitemid, true);
     }
 
+    /**
+     * Restore one recorded bounce.
+     *
+     * @param object $data the bounce record being restored
+     * @return void
+     */
     protected function process_newsletter_bounce($data) {
         global $DB;
 
@@ -102,6 +138,12 @@ class restore_newsletter_activity_structure_step extends restore_activity_struct
         $this->set_mapping('newsletter_bounce', $oldid, $newitemid, true);
     }
 
+    /**
+     * Restore one delivery record.
+     *
+     * @param object $data the delivery record being restored
+     * @return void
+     */
     protected function process_newsletter_delivery($data) {
         global $DB;
 
@@ -116,6 +158,11 @@ class restore_newsletter_activity_structure_step extends restore_activity_struct
         $this->set_mapping('newsletter_delivery', $oldid, $newitemid, true);
     }
 
+    /**
+     * Add the files belonging to the restored newsletter.
+     *
+     * @return void
+     */
     protected function after_execute() {
         // Add newsletter related files, no need to match by itemname (just internally handled
         // context).

@@ -30,7 +30,11 @@
  * Define the complete newsletter structure for backup, with file and id annotations
  */
 class backup_newsletter_activity_structure_step extends backup_activity_structure_step {
-
+    /**
+     * Define the structure of the newsletter activity backup.
+     *
+     * @return backup_nested_element the root element of the backup structure
+     */
     protected function define_structure() {
 
         // To know if we are including userinfo.
@@ -38,27 +42,44 @@ class backup_newsletter_activity_structure_step extends backup_activity_structur
 
         // Define each element separated.
 
-        $newsletter = new backup_nested_element('newsletter', array('id'),
-                array('name', 'intro', 'introformat', 'timecreated', 'timemodified',
+        $newsletter = new backup_nested_element(
+            'newsletter',
+            ['id'],
+            ['name', 'intro', 'introformat', 'timecreated', 'timemodified',
                     'subscriptionmode', 'allowguestusersubscriptions', 'welcomemessage',
-                    'welcomemessageguestuser'));
+            'welcomemessageguestuser']
+        );
 
         $issues = new backup_nested_element('issues');
-        $issue = new backup_nested_element('issue', array('id'),
-                array('title', 'htmlcontent', 'stylesheetid', 'publishon', 'delivered', 'toc'));
+        $issue = new backup_nested_element(
+            'issue',
+            ['id'],
+            ['title', 'htmlcontent', 'stylesheetid', 'publishon', 'delivered', 'toc']
+        );
 
         $subscriptions = new backup_nested_element('subscriptions');
-        $subscription = new backup_nested_element('subscription', array('id'),
-                array('userid', 'health', 'timesubscribed', 'timestatuschanged', 'subscriberid',
-                    'unsubscriberid', 'sentnewsletters', 'nounsublink'));
+        $subscription = new backup_nested_element(
+            'subscription',
+            ['id'],
+            ['userid', 'health', 'timesubscribed', 'timestatuschanged', 'subscriberid',
+            'unsubscriberid',
+            'sentnewsletters',
+            'nounsublink']
+        );
 
         $bounces = new backup_nested_element('bounces');
-        $bounce = new backup_nested_element('bounce', array('id'),
-                array('userid', 'statuscode', 'timecreated', 'type', 'timereceived'));
+        $bounce = new backup_nested_element(
+            'bounce',
+            ['id'],
+            ['userid', 'statuscode', 'timecreated', 'type', 'timereceived']
+        );
 
         $deliveries = new backup_nested_element('deliveries');
-        $delivery = new backup_nested_element('delivery', array('id'),
-                array('userid', 'deliverytime', 'delivered'));
+        $delivery = new backup_nested_element(
+            'delivery',
+            ['id'],
+            ['userid', 'deliverytime', 'delivered']
+        );
 
         // Build the tree.
 
@@ -75,28 +96,34 @@ class backup_newsletter_activity_structure_step extends backup_activity_structur
         $deliveries->add_child($delivery);
 
         // Define sources.
-        $newsletter->set_source_table('newsletter', array('id' => backup::VAR_ACTIVITYID));
+        $newsletter->set_source_table('newsletter', ['id' => backup::VAR_ACTIVITYID]);
 
         // All these source definitions only happen if we are including user info.
         if ($userinfo) {
             $issue->set_source_sql('
                 SELECT *
                   FROM {newsletter_issues}
-                 WHERE newsletterid = ?', array(backup::VAR_PARENTID));
+                 WHERE newsletterid = ?', [backup::VAR_PARENTID]);
 
-            // Need bounces ordered by id so parents are always before childs on restore
-            $bounce->set_source_table('newsletter_bounces', array(
-                'issueid' => backup::VAR_PARENTID), 'id ASC');
-            $delivery->set_source_table('newsletter_issues',
-                    array('newsletterid' => backup::VAR_PARENTID));
-            $delivery->set_source_table('newsletter_deliveries',
-                    array('issueid' => backup::VAR_PARENTID,
-                        'newsletterid' => backup::VAR_ACTIVITYID));
-            $subscription->set_source_table('newsletter_subscriptions',
-                    array('newsletterid' => backup::VAR_PARENTID));
+            // Need bounces ordered by id so parents are always before children on restore.
+            $bounce->set_source_table('newsletter_bounces', [
+                'issueid' => backup::VAR_PARENTID], 'id ASC');
+            $delivery->set_source_table(
+                'newsletter_issues',
+                ['newsletterid' => backup::VAR_PARENTID]
+            );
+            $delivery->set_source_table(
+                'newsletter_deliveries',
+                ['issueid' => backup::VAR_PARENTID,
+                'newsletterid' => backup::VAR_ACTIVITYID]
+            );
+            $subscription->set_source_table(
+                'newsletter_subscriptions',
+                ['newsletterid' => backup::VAR_PARENTID]
+            );
         }
 
-        // Define id annotations. $issue->annotate_ids('group', 'groupid');
+        // Define id annotations; this activity has none to annotate.
 
         $bounce->annotate_ids('user', 'userid');
         $delivery->annotate_ids('user', 'userid');
@@ -112,5 +139,4 @@ class backup_newsletter_activity_structure_step extends backup_activity_structur
         // Return the root element (newsletter), wrapped into standard activity structure.
         return $this->prepare_activity_structure($newsletter);
     }
-
 }

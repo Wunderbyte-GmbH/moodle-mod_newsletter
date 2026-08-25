@@ -49,7 +49,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__DIR__) . '/vendor/autoload.php');
 require_once(dirname(__DIR__) . '/renderable.php');
-// require_once(dirname(__DIR__) . '/CssToInlineStyles/CssToInlineStyles.php');
 require_once(dirname(__FILE__) . '/subscription/subscription_filter_form.php');
 require_once(dirname(__DIR__) . '/guest_signup_form.php');
 require_once(dirname(__DIR__) . '/resubscribe_form.php');
@@ -997,7 +996,7 @@ class newsletter implements renderable {
                 $this->get_course_module()->id
             )
         );
-        // TODO: remove ugly config hack and provide js for atto.
+        // TODO: MDL-0000 Remove ugly config hack and provide js for atto.
         $texteditors = $CFG->texteditors;
         $CFG->texteditors = 'tiny';
         $output .= $renderer->render(
@@ -1314,7 +1313,7 @@ class newsletter implements renderable {
      * @return NULL|newsletter_section_list
      */
     private function prepare_issue_list($heading, $groupby) {
-        // TODO: Add first day of the week check.
+        // TODO: MDL-0000 Add first day of the week check.
         $editissue = has_capability('mod/newsletter:editissue', $this->get_context());
         $deleteissue = has_capability('mod/newsletter:deleteissue', $this->get_context());
         $duplicateissue = has_capability('mod/newsletter:duplicateissue', $this->get_context());

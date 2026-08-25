@@ -34,8 +34,14 @@ global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
 
+/**
+ * Form used to create and edit a newsletter issue.
+ *
+ * @package   mod_newsletter
+ * @copyright 2013 Ivan Sakic <ivan.sakic3@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class issue_form extends moodleform {
-
     /**
      * Returns the options array to use in filemanager for newsletter attachments
      *
@@ -45,8 +51,8 @@ class issue_form extends moodleform {
     public static function attachment_options($newsletter, $context, $maxfile) {
         global $COURSE, $CFG;
         $maxbytes = get_user_max_upload_file_size($context, $CFG->maxbytes, $COURSE->maxbytes);
-        return array('subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => $maxfile,
-            'accepted_types' => '*', 'return_types' => FILE_INTERNAL);
+        return ['subdirs' => 0, 'maxbytes' => $maxbytes, 'maxfiles' => $maxfile,
+            'accepted_types' => '*', 'return_types' => FILE_INTERNAL];
     }
 
     /**
@@ -59,17 +65,21 @@ class issue_form extends moodleform {
     public static function editor_options(context_module $context, $issueid) {
         global $COURSE, $CFG;
         $maxbytes = get_user_max_upload_file_size($context, $CFG->maxbytes, $COURSE->maxbytes);
-        return array('maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes,
+        return ['maxfiles' => EDITOR_UNLIMITED_FILES, 'maxbytes' => $maxbytes,
             'trusttext' => true, 'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
-            'subdirs' => file_area_contains_subdirs($context, 'mod_newsletter',
-                    NEWSLETTER_FILE_AREA_ISSUE, $issueid));
+            'subdirs' => file_area_contains_subdirs(
+                $context,
+                'mod_newsletter',
+                NEWSLETTER_FILE_AREA_ISSUE,
+                $issueid
+            )];
     }
 
     /**
      * Defines forms elements
      */
     public function definition() {
-        GLOBAL $CFG;
+        global $CFG;
         $mform = &$this->_form;
         $data = &$this->_customdata;
 
@@ -87,65 +97,108 @@ class issue_form extends moodleform {
         $mform->addElement('hidden', 'action', NEWSLETTER_ACTION_EDIT_ISSUE);
         $mform->setType('action', PARAM_ALPHA);
 
-        $mform->addElement('header', 'header_content',
-                get_string('header_content', 'mod_newsletter'));
+        $mform->addElement(
+            'header',
+            'header_content',
+            get_string('header_content', 'mod_newsletter')
+        );
 
-        $mform->addElement('text', 'title', get_string('issue_title', 'mod_newsletter'),
-                array('size' => '64'));
+        $mform->addElement(
+            'text',
+            'title',
+            get_string('issue_title', 'mod_newsletter'),
+            ['size' => '64']
+        );
         $mform->setType('title', PARAM_TEXT);
         $mform->addRule('title', null, 'required', null, 'client');
         $mform->addRule('title', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('title', 'issue_title', 'mod_newsletter');
 
-        $mform->addElement('editor', 'htmlcontent',
-                get_string('issue_htmlcontent', 'mod_newsletter'), null,
-                self::editor_options($context, (empty($issue->id) ? null : $issue->id)));
+        $mform->addElement(
+            'editor',
+            'htmlcontent',
+            get_string('issue_htmlcontent', 'mod_newsletter'),
+            null,
+            self::editor_options($context, (empty($issue->id) ? null : $issue->id))
+        );
         $mform->setType('htmlcontent', PARAM_RAW);
         $mform->addRule('htmlcontent', get_string('required'), 'required', null, 'client');
 
         $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET,
-                $newsletter->get_instance()->id, 'filename', false);
-        $options = array();
+        $files = $fs->get_area_files(
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_STYLESHEET,
+            $newsletter->get_instance()->id,
+            'filename',
+            false
+        );
+        $options = [];
         $options[NEWSLETTER_DEFAULT_STYLESHEET] = get_string('default_stylesheet', 'mod_newsletter');
         foreach ($files as $file) {
             $options[$file->get_id()] = $file->get_filename();
         }
 
-        $mform->addElement('select', 'stylesheetid',
-                get_string('issue_stylesheet', 'mod_newsletter'), $options);
+        $mform->addElement(
+            'select',
+            'stylesheetid',
+            get_string('issue_stylesheet', 'mod_newsletter'),
+            $options
+        );
         $mform->setType('stylesheetid', PARAM_INT);
 
-        $mform->addElement('filemanager', 'attachments', get_string('attachments', 'mod_newsletter'),
-                null, self::attachment_options($newsletter, $context, 1));
+        $mform->addElement(
+            'filemanager',
+            'attachments',
+            get_string('attachments', 'mod_newsletter'),
+            null,
+            self::attachment_options($newsletter, $context, 1)
+        );
         $mform->addHelpButton('attachments', 'attachments', 'mod_newsletter');
 
         $mform->addElement('header', 'toc_header', get_string('toc_header', 'mod_newsletter'));
-        $toctypes = array(0 => get_string('toc_no', 'mod_newsletter'),
+        $toctypes = [0 => get_string('toc_no', 'mod_newsletter'),
             1 => get_string('toc_yes', 'mod_newsletter', 1),
             2 => get_string('toc_yes', 'mod_newsletter', 2),
             3 => get_string('toc_yes', 'mod_newsletter', 3),
-            4 => get_string('toc_yes', 'mod_newsletter', 4));
+            4 => get_string('toc_yes', 'mod_newsletter', 4)];
         $mform->addElement('select', 'toc', get_string('toc', 'mod_newsletter'), $toctypes);
         $mform->addHelpButton('toc', 'toc', 'mod_newsletter');
 
-        $mform->addElement('header', 'header_filteruser',
-                get_string('header_filteruser', 'mod_newsletter'));
-        $mform->addElement('static', 'filteruserinfo', '',
-                get_string('header_filteruserinfo', 'mod_newsletter'));
+        $mform->addElement(
+            'header',
+            'header_filteruser',
+            get_string('header_filteruser', 'mod_newsletter')
+        );
+        $mform->addElement(
+            'static',
+            'filteruserinfo',
+            '',
+            get_string('header_filteruserinfo', 'mod_newsletter')
+        );
 
         userfilter::insert_form_elements($mform, $newsletterid, $userfilter);
 
-        $mform->addElement('header', 'header_publish',
-                get_string('header_publish', 'mod_newsletter'));
-        $mform->addElement('static', 'publishinfo', '',
-                get_string('header_publishinfo', 'mod_newsletter'));
+        $mform->addElement(
+            'header',
+            'header_publish',
+            get_string('header_publish', 'mod_newsletter')
+        );
+        $mform->addElement(
+            'static',
+            'publishinfo',
+            '',
+            get_string('header_publishinfo', 'mod_newsletter')
+        );
 
         $mform->addElement('hidden', 'deliverystarted', 'no');
         $mform->setType('deliverystarted', PARAM_ALPHANUM);
 
-        $mform->addElement('date_time_selector', 'publishon',
-                get_string('publishon', 'mod_newsletter'));
+        $mform->addElement(
+            'date_time_selector',
+            'publishon',
+            get_string('publishon', 'mod_newsletter')
+        );
         $mform->disabledIf('publishon', 'deliverystarted', 'eq', 'yes');
         $this->add_action_buttons(false);
     }

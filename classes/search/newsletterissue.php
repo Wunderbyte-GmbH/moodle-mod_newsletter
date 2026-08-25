@@ -24,8 +24,6 @@
 
 namespace mod_newsletter\search;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * FAQ search area.
  *
@@ -34,8 +32,8 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class newsletterissue extends \core_search\base {
-
-    private array $data = []; // stores data.
+    /** @var array cached issue records keyed by id */
+    private array $data = [];
 
     /**
      * The context levels the search implementation is working on.
@@ -72,12 +70,12 @@ class newsletterissue extends \core_search\base {
      * @param array    $options
      * @return \core_search\document
      */
-    public function get_document($record, $options = array()) {
+    public function get_document($record, $options = []) {
 
         // This is the id of the instance, actually.
         $newsletterid = $record->newsletterid;
 
-        list($course, $cm) = get_course_and_cm_from_instance($newsletterid, 'newsletter');
+        [$course, $cm] = get_course_and_cm_from_instance($newsletterid, 'newsletter');
         $context = \context_module::instance($cm->id);
 
         $this->data['cmid'] = $cm->id;
@@ -87,7 +85,7 @@ class newsletterissue extends \core_search\base {
         $doc->set('title', content_to_text($record->title, false));
         $doc->set('content', content_to_text($record->htmlcontent, FORMAT_HTML));
         $doc->set('contextid', $context->id);
-        // Not associated with a course
+        // Not associated with a course.
         $doc->set('courseid', $course->id);
         $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
         $doc->set('modified', $record->timemodified);
@@ -145,10 +143,10 @@ class newsletterissue extends \core_search\base {
 
         $cmid = $this->return_cmid($doc);
 
-        return new \moodle_url('/mod/newsletter/view.php', array(
+        return new \moodle_url('/mod/newsletter/view.php', [
             'issue' => $doc->get('itemid'),
             'id' => $cmid,
-            'action' => 'readissue'));
+            'action' => 'readissue']);
     }
 
     /**
@@ -161,9 +159,9 @@ class newsletterissue extends \core_search\base {
 
         $cmid = $this->return_cmid($doc);
 
-        return new \moodle_url('/mod/newsletter/view.php', array(
-            'id' => $cmid
-        ));
+        return new \moodle_url('/mod/newsletter/view.php', [
+            'id' => $cmid,
+        ]);
     }
 
 
@@ -189,7 +187,7 @@ class newsletterissue extends \core_search\base {
 
         $params = [
             'module' => 'newsletter',
-            'contextid' => $contextid
+            'contextid' => $contextid,
 
         ];
 

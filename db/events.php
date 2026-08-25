@@ -14,17 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Event observer definitions for the newsletter module.
+ *
+ * @package    mod_newsletter
+ * @copyright  2015 onwards David Bogner <info@edulabs.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
-    array('eventname' => '\core\event\user_created',
-        'callback' => 'mod_newsletter_observer::user_created'),
-    array('eventname' => '\core\event\user_updated',
-        'callback' => 'mod_newsletter_observer::user_updated'),
-    array('eventname' => '\core\event\role_assigned',
-        'callback' => 'mod_newsletter_observer::role_assigned'),
-    array('eventname' => '\core\event\user_deleted',
-        'callback' => 'mod_newsletter_observer::user_deleted'),
-    array('eventname' => '\core\event\user_enrolment_deleted',
-        'callback' => 'mod_newsletter_observer::user_enrolment_deleted')
-    );
+$observers = [
+    ['eventname' => '\core\event\user_created',
+        'callback' => 'mod_newsletter_observer::user_created'],
+    ['eventname' => '\core\event\user_updated',
+        'callback' => 'mod_newsletter_observer::user_updated'],
+    ['eventname' => '\core\event\role_assigned',
+        'callback' => 'mod_newsletter_observer::role_assigned'],
+    ['eventname' => '\core\event\user_deleted',
+        'callback' => 'mod_newsletter_observer::user_deleted'],
+    ['eventname' => '\core\event\user_enrolment_deleted',
+        'callback' => 'mod_newsletter_observer::user_enrolment_deleted'],
+    ];

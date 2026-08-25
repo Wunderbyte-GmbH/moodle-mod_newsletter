@@ -24,8 +24,6 @@
 
 namespace mod_newsletter\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 
 /**
  * The mod_newsletter issue viewed event class.
@@ -36,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class issue_viewed extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -73,10 +70,12 @@ class issue_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE,
+        return new \moodle_url(
+            '/mod/newsletter/view.php',
+            [NEWSLETTER_PARAM_ACTION => NEWSLETTER_ACTION_READ_ISSUE,
                     NEWSLETTER_PARAM_ID => $this->contextinstanceid,
-                    NEWSLETTER_PARAM_ISSUE => $this->objectid));
+            NEWSLETTER_PARAM_ISSUE => $this->objectid]
+        );
     }
 
     /**

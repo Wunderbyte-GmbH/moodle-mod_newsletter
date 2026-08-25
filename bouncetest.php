@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Admin screen that checks the configured bounce mailbox can be reached.
+ *
+ * @package    mod_newsletter
+ * @copyright  2018 onwards David Bogner <info@edulabs.org>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace mod_newsletter\bounce;
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
@@ -26,7 +34,7 @@ $context = \context_system::instance();
 $section = 'modsettingnewsletter';
 
 $PAGE->set_context($context);
-$PAGE->set_url('/admin/settings.php', array('section' => $section));
+$PAGE->set_url('/admin/settings.php', ['section' => $section]);
 $PAGE->set_pagetype('page-admin-setting-modsettingnewsletter');
 $PAGE->set_pagelayout('admin');
 $PAGE->navigation->clear_cache();

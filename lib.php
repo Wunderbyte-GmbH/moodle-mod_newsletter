@@ -25,6 +25,9 @@
 
 use mod_newsletter\userfilter;
 
+// This file defines constants at file scope, so the guard stays even though the sniff sees only
+// declarations. Core keeps it in mod/*/lib.php too.
+// phpcs:ignore moodle.Files.MoodleInternal.MoodleInternalNotNeeded
 defined('MOODLE_INTERNAL') || die();
 
 // Newsletter internal constants.
@@ -150,8 +153,11 @@ function newsletter_supports($feature) {
  * @param moodleform $mform form passed by reference
  */
 function newsletter_reset_course_form_definition(&$mform) {
-    $mform->addElement('header', 'newsletterheader',
-            get_string('modulenameplural', 'mod_newsletter'));
+    $mform->addElement(
+        'header',
+        'newsletterheader',
+        get_string('modulenameplural', 'mod_newsletter')
+    );
     $name = get_string('delete_all_subscriptions', 'mod_newsletter');
     $mform->addElement('advcheckbox', 'reset_newsletter_subscriptions', $name);
 }
@@ -163,7 +169,7 @@ function newsletter_reset_course_form_definition(&$mform) {
  * @return array
  */
 function newsletter_reset_course_form_defaults($course) {
-    return array('reset_newsletter_subscriptions' => 1);
+    return ['reset_newsletter_subscriptions' => 1];
 }
 
 /**
@@ -213,7 +219,7 @@ function newsletter_update_instance(stdClass $data, mod_newsletter_mod_form $mfo
 function newsletter_delete_instance($id) {
     global $DB;
 
-    if (!$newsletter = $DB->get_record('newsletter', array('id' => $id))) {
+    if (!$newsletter = $DB->get_record('newsletter', ['id' => $id])) {
         return false;
     }
 
@@ -221,26 +227,34 @@ function newsletter_delete_instance($id) {
     $context = context_module::instance($cm->id);
 
     $fs = get_file_storage();
-    $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_STYLESHEET,
-            $newsletter->id);
+    $files = $fs->get_area_files(
+        $context->id,
+        'mod_newsletter',
+        NEWSLETTER_FILE_AREA_STYLESHEET,
+        $newsletter->id
+    );
     foreach ($files as $file) {
         $file->delete();
     }
 
-    $issues = $DB->get_records('newsletter_issues', array('newsletterid' => $newsletter->id));
+    $issues = $DB->get_records('newsletter_issues', ['newsletterid' => $newsletter->id]);
     foreach ($issues as $issue) {
-        $files = $fs->get_area_files($context->id, 'mod_newsletter', NEWSLETTER_FILE_AREA_ATTACHMENT,
-                $issue->id);
+        $files = $fs->get_area_files(
+            $context->id,
+            'mod_newsletter',
+            NEWSLETTER_FILE_AREA_ATTACHMENT,
+            $issue->id
+        );
         foreach ($files as $file) {
             $file->delete();
         }
     }
 
     $DB->delete_records_list('newsletter_bounces', 'issueid', array_keys($issues));
-    $DB->delete_records('newsletter_subscriptions', array('newsletterid' => $newsletter->id));
-    $DB->delete_records('newsletter_issues', array('newsletterid' => $newsletter->id));
-    $DB->delete_records('newsletter_deliveries', array('newsletterid' => $newsletter->id));
-    $DB->delete_records('newsletter', array('id' => $newsletter->id));
+    $DB->delete_records('newsletter_subscriptions', ['newsletterid' => $newsletter->id]);
+    $DB->delete_records('newsletter_issues', ['newsletterid' => $newsletter->id]);
+    $DB->delete_records('newsletter_deliveries', ['newsletterid' => $newsletter->id]);
+    $DB->delete_records('newsletter', ['id' => $newsletter->id]);
     return true;
 }
 
@@ -254,10 +268,10 @@ function newsletter_delete_instance($id) {
  */
 function newsletter_reset_userdata($data) {
     global $DB;
-    $status = array();
+    $status = [];
 
     $sql = "SELECT n.id FROM {newsletter} n WHERE n.course = :courseid";
-    $params = array('courseid' => $data->courseid);
+    $params = ['courseid' => $data->courseid];
     if ($newsletterids = $DB->get_fieldset_sql($sql, $params)) {
         foreach ($newsletterids as $newsletterid) {
             $newsletter = mod_newsletter\newsletter::get_newsletter_by_instance($newsletterid);
@@ -323,8 +337,15 @@ function newsletter_print_recent_activity($course, $viewfullnames, $timestart) {
  * @param int $groupid check for a particular group's activity only, defaults to 0 (all groups)
  * @return void adds items into $activities and increases $index
  */
-function newsletter_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid,
-        $userid = 0, $groupid = 0) {
+function newsletter_get_recent_mod_activity(
+    &$activities,
+    &$index,
+    $timestart,
+    $courseid,
+    $cmid,
+    $userid = 0,
+    $groupid = 0
+) {
 }
 
 /**
@@ -332,8 +353,13 @@ function newsletter_get_recent_mod_activity(&$activities, &$index, $timestart, $
  *
  * @return void
  */
-function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $modnames,
-        $viewfullnames) {
+function newsletter_print_recent_mod_activity(
+    $activity,
+    $courseid,
+    $detail,
+    $modnames,
+    $viewfullnames
+) {
 }
 
 /**
@@ -347,10 +373,10 @@ function newsletter_print_recent_mod_activity($activity, $courseid, $detail, $mo
  */
 function newsletter_get_all_valid_recipients($newsletterid, $userfilter = null) {
     global $DB;
-    $validstatuses = array(NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC);
+    $validstatuses = [NEWSLETTER_SUBSCRIBER_STATUS_OK, NEWSLETTER_SUBSCRIBER_STATUS_PROBLEMATIC];
     $guestuserid = guest_user()->id;
 
-    list($insql, $params) = $DB->get_in_or_equal($validstatuses, SQL_PARAMS_NAMED);
+    [$insql, $params] = $DB->get_in_or_equal($validstatuses, SQL_PARAMS_NAMED);
     $params['newsletterid'] = $newsletterid;
     $select = "SELECT ns.* ";
     $from = " FROM {newsletter_subscriptions} ns
@@ -373,14 +399,19 @@ function newsletter_get_all_valid_recipients($newsletterid, $userfilter = null) 
 /**
  * Returns all other caps used in the module
  *
- * @example return array('moodle/site:accessallgroups');
+ * For example: return ['moodle/site:accessallgroups'];
+ *
  * @return array
  */
 function newsletter_get_extra_capabilities() {
-    return array();
+    return [];
 }
 
-// Find the base url from $_GET variables, for print_paging_bar.
+/**
+ * Find the base url from $_GET variables, for print_paging_bar.
+ *
+ * @return moodle_url the current url without the paging parameters
+ */
 function newsletter_get_baseurl() {
     $getcopy  = $_GET;
 
@@ -395,7 +426,7 @@ function newsletter_get_baseurl() {
                 $first = true;
                 $querystring .= "?$var=$val";
             } else {
-                $querystring .= '&amp;'.$var.'='.$val;
+                $querystring .= '&amp;' . $var . '=' . $val;
                 $hasparam = true;
             }
         }
@@ -404,7 +435,6 @@ function newsletter_get_baseurl() {
     }
 
     return strip_querystring(qualified_me()) . $querystring;
-
 }
 // File API.
 
@@ -420,9 +450,9 @@ function newsletter_get_baseurl() {
  * @return array of [(string)filearea] => (string)description
  */
 function newsletter_get_file_areas($course, $cm, $context) {
-    return array(NEWSLETTER_FILE_AREA_ATTACHMENT => 'attachments',
+    return [NEWSLETTER_FILE_AREA_ATTACHMENT => 'attachments',
         NEWSLETTER_FILE_AREA_STYLESHEET => 'stylesheets',
-        NEWSLETTER_FILE_AREA_ISSUE => 'htmlcontent of editor');
+        NEWSLETTER_FILE_AREA_ISSUE => 'htmlcontent of editor'];
 }
 
 /**
@@ -442,8 +472,17 @@ function newsletter_get_file_areas($course, $cm, $context) {
  * @param string $filename
  * @return \file_info instance or null if not found
  */
-function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid,
-        $filepath, $filename) {
+function newsletter_get_file_info(
+    $browser,
+    $areas,
+    $course,
+    $cm,
+    $context,
+    $filearea,
+    $itemid,
+    $filepath,
+    $filename
+) {
     global $CFG, $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -467,16 +506,16 @@ function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $fil
         return new \forum_file_info_container($browser, $course, $cm, $context, $areas, $filearea);
     }
 
-    static $cached = array();
+    static $cached = [];
     // Variable $cached will store last retrieved post, discussion and newsletter. To make sure that the
     // cache is cleared between unit tests we check if this is the same session.
     if (!isset($cached['sesskey']) || $cached['sesskey'] != sesskey()) {
-        $cached = array('sesskey' => sesskey());
+        $cached = ['sesskey' => sesskey()];
     }
 
     if (isset($cached['issue']) && $cached['issue']->id == $itemid) {
         $issue = $cached['issue'];
-    } else if ($issue = $DB->get_record('newsletter_issues', array('id' => $itemid))) {
+    } else if ($issue = $DB->get_record('newsletter_issues', ['id' => $itemid])) {
         $cached['issue'] = $issue;
     } else {
         return null;
@@ -484,7 +523,7 @@ function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $fil
 
     if (isset($cached['newsletter']) && $cached['newsletter']->id == $cm->instance) {
         $newsletter = $cached['newsletter'];
-    } else if ($newsletter = $DB->get_record('newsletter', array('id' => $cm->instance))) {
+    } else if ($newsletter = $DB->get_record('newsletter', ['id' => $cm->instance])) {
         $cached['newsletter'] = $newsletter;
     } else {
         return null;
@@ -493,21 +532,40 @@ function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $fil
     $fs = get_file_storage();
     $filepath = is_null($filepath) ? '/' : $filepath;
     $filename = is_null($filename) ? '.' : $filename;
-    if (!($storedfile = $fs->get_file($context->id, 'mod_newsletter', $filearea, $itemid, $filepath,
-            $filename))) {
+    if (
+        !($storedfile = $fs->get_file(
+            $context->id,
+            'mod_newsletter',
+            $filearea,
+            $itemid,
+            $filepath,
+            $filename
+        ))
+    ) {
         return null;
     }
 
     // Checks to see if the user can manage files or is the owner.
     // TODO MDL-33805 - Do not use userid here and move the capability check above.
-    if (!has_capability('moodle/course:managefiles', $context) &&
-            $storedfile->get_userid() != $USER->id) {
+    if (
+        !has_capability('moodle/course:managefiles', $context) &&
+            $storedfile->get_userid() != $USER->id
+    ) {
         return null;
     }
 
     $urlbase = $CFG->wwwroot . '/pluginfile.php';
-    return new \file_info_stored($browser, $context, $storedfile, $urlbase, $itemid, true, true,
-            false, false);
+    return new \file_info_stored(
+        $browser,
+        $context,
+        $storedfile,
+        $urlbase,
+        $itemid,
+        true,
+        true,
+        false,
+        false
+    );
 }
 
 /**
@@ -524,8 +582,15 @@ function newsletter_get_file_info($browser, $areas, $course, $cm, $context, $fil
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  */
-function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload,
-                               array $options = array()) {
+function newsletter_pluginfile(
+    $course,
+    $cm,
+    $context,
+    $filearea,
+    array $args,
+    $forcedownload,
+    array $options = []
+) {
     global $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -534,7 +599,7 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
 
     require_course_login($course, true, $cm);
 
-    if (!$newsletter = $DB->get_record('newsletter', array('id' => $cm->instance))) {
+    if (!$newsletter = $DB->get_record('newsletter', ['id' => $cm->instance])) {
         return false;
     }
 
@@ -578,8 +643,12 @@ function newsletter_pluginfile($course, $cm, $context, $filearea, array $args, $
  * @param stdClass $module
  * @param cm_info $cm
  */
-function newsletter_extend_navigation(navigation_node $navref, stdclass $course, stdclass $module,
-        cm_info $cm) {
+function newsletter_extend_navigation(
+    navigation_node $navref,
+    stdclass $course,
+    stdclass $module,
+    cm_info $cm
+) {
     global $DB;
 
     $action = optional_param(NEWSLETTER_PARAM_ACTION, NEWSLETTER_ACTION_VIEW_NEWSLETTER, PARAM_ALPHA);
@@ -588,54 +657,71 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
     switch ($action) {
         case NEWSLETTER_ACTION_CREATE_ISSUE:
             require_capability('mod/newsletter:createissue', $context);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE]
+            );
             $issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_DUPLICATE_ISSUE:
             require_capability('mod/newsletter:createissue', $context);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_CREATE_ISSUE]
+            );
             $issuenode = $navref->add(get_string('create_new_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_EDIT_ISSUE:
             require_capability('mod/newsletter:editissue', $context);
             $issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE,
-                        NEWSLETTER_PARAM_ISSUE => $issueid));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_EDIT_ISSUE,
+                NEWSLETTER_PARAM_ISSUE => $issueid]
+            );
             $issuenode = $navref->add(get_string('edit_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_READ_ISSUE:
             require_capability('mod/newsletter:readissue', $context);
             $issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);
-            $issuename = $DB->get_field('newsletter_issues', 'title',
-                    array('id' => $issueid, 'newsletterid' => $module->id));
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_READ_ISSUE,
-                        NEWSLETTER_PARAM_ISSUE => $issueid));
+            $issuename = $DB->get_field(
+                'newsletter_issues',
+                'title',
+                ['id' => $issueid, 'newsletterid' => $module->id]
+            );
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_READ_ISSUE,
+                NEWSLETTER_PARAM_ISSUE => $issueid]
+            );
             $issuenode = $navref->add($issuename, $url);
             $issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_DELETE_ISSUE:
             require_capability('mod/newsletter:deleteissue', $context);
             $issueid = optional_param(NEWSLETTER_PARAM_ISSUE, NEWSLETTER_NO_ISSUE, PARAM_INT);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_DELETE_ISSUE,
-                        NEWSLETTER_PARAM_ISSUE => $issueid));
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id, 'action' => NEWSLETTER_ACTION_DELETE_ISSUE,
+                NEWSLETTER_PARAM_ISSUE => $issueid]
+            );
             $issuenode = $navref->add(get_string('delete_issue', 'mod_newsletter'), $url);
             $issuenode->make_active();
             break;
         case NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS:
             require_capability('mod/newsletter:managesubscriptions', $context);
-            $url = new moodle_url('/mod/newsletter/view.php',
-                    array(NEWSLETTER_PARAM_ID => $cm->id,
-                        'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS));
-            $subnode = $navref->add(get_string('newsletter:managesubscriptions', 'mod_newsletter'),
-                    $url);
+            $url = new moodle_url(
+                '/mod/newsletter/view.php',
+                [NEWSLETTER_PARAM_ID => $cm->id,
+                'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS]
+            );
+            $subnode = $navref->add(
+                get_string('newsletter:managesubscriptions', 'mod_newsletter'),
+                $url
+            );
             $subnode->make_active();
             break;
         default:
@@ -653,8 +739,10 @@ function newsletter_extend_navigation(navigation_node $navref, stdclass $course,
  * @param settings_navigation $settingsnav {@link settings_navigation}
  * @param navigation_node $newsletternode {@link navigation_node}
  */
-function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
-        navigation_node $newsletternode = null) {
+function newsletter_extend_settings_navigation(
+    settings_navigation $settingsnav,
+    navigation_node $newsletternode = null
+) {
     global $PAGE;
 
     if (!isset($PAGE->cm->id)) {
@@ -663,16 +751,24 @@ function newsletter_extend_settings_navigation(settings_navigation $settingsnav,
     $newsletter = mod_newsletter\newsletter::get_newsletter_by_course_module($PAGE->cm->id);
 
     if (has_capability('mod/newsletter:managesubscriptions', $newsletter->get_context())) {
-        $newsletternode->add(get_string('manage_subscriptions', 'mod_newsletter'),
-                new moodle_url('/mod/newsletter/view.php',
-                        array('id' => $newsletter->get_course_module()->id,
-                            'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS)));
+        $newsletternode->add(
+            get_string('manage_subscriptions', 'mod_newsletter'),
+            new moodle_url(
+                '/mod/newsletter/view.php',
+                ['id' => $newsletter->get_course_module()->id,
+                'action' => NEWSLETTER_ACTION_MANAGE_SUBSCRIPTIONS]
+            )
+        );
     }
     if (has_capability('mod/newsletter:createissue', $newsletter->get_context())) {
-        $newsletternode->add(get_string('newsletter:createissue', 'mod_newsletter'),
-                new moodle_url('/mod/newsletter/view.php',
-                        array('id' => $newsletter->get_course_module()->id,
-                            'action' => NEWSLETTER_ACTION_CREATE_ISSUE)));
+        $newsletternode->add(
+            get_string('newsletter:createissue', 'mod_newsletter'),
+            new moodle_url(
+                '/mod/newsletter/view.php',
+                ['id' => $newsletter->get_course_module()->id,
+                'action' => NEWSLETTER_ACTION_CREATE_ISSUE]
+            )
+        );
     }
 }
 

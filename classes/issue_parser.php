@@ -25,10 +25,14 @@
  */
 namespace mod_newsletter;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Expands the placeholder tags used in newsletter issues.
+ *
+ * @package   mod_newsletter
+ * @copyright 2015 onwards David Bogner <info@edulabs.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class issue_parser {
-
     /**
      *
      * @var \DOMDocument to be parsed
@@ -57,31 +61,31 @@ class issue_parser {
      *
      * @var array
      */
-    private $tags = array('issueurl' => 'replace_issueurl', 'issuelink' => 'replace_issuelink',
+    private $tags = ['issueurl' => 'replace_issueurl', 'issuelink' => 'replace_issuelink',
         'firstname' => 'replace_firstname', 'lastname' => 'replace_lastname',
-        'fullname' => 'replace_fullname');
+        'fullname' => 'replace_fullname'];
 
     /**
      *
-     * @var integer context id
+     * @var int context id
      */
     private static $contextid = null;
 
     /**
      *
-     * @var integer issue id
+     * @var int issue id
      */
     private static $issueid = null;
 
     /**
      *
-     * @var integer newsletter id
+     * @var int newsletter id
      */
     private static $newsletterid = null;
 
     /**
      *
-     * @var boolean called from cron: true otherwise false
+     * @var bool called from cron: true otherwise false
      */
     private static $cron = false;
 
@@ -143,14 +147,17 @@ class issue_parser {
 
         // Analyse the HTML.
         $xpath = new \DOMXPath($this->dom);
-        $headlines = array();
+        $headlines = [];
         $highestlevel = 7;
         $lowestlevel = 0;
         $levelstodisplay = $this->tocsetting;
         $count = 0;
         $previouslevel = null;
-        foreach ($xpath->query(
-                '//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]') as $headline) {
+        foreach (
+            $xpath->query(
+                '//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]'
+            ) as $headline
+        ) {
             // Get level of current headline.
             $curr = null;
             sscanf($headline->tagName, 'h%u', $curr);
@@ -283,7 +290,7 @@ class issue_parser {
         }
 
         // Find all registered tag names in $content.
-        $matches = array();
+        $matches = [];
         preg_match_all('@news:\/\/([a-zA-Z0-9_]+)\/@', $content, $matches);
         $tagnames = array_intersect(array_keys($this->tags), $matches[1]);
 
@@ -292,10 +299,13 @@ class issue_parser {
         }
 
         $pattern = $this->get_tag_regex($tagnames);
-        $content = preg_replace_callback("/$pattern/",
-                function ($matches) {
-                    return $this->perform_tag_replacement($matches);
-                }, $content);
+        $content = preg_replace_callback(
+            "/$pattern/",
+            function ($matches) {
+                return $this->perform_tag_replacement($matches);
+            },
+            $content
+        );
         return $content;
     }
 
@@ -343,9 +353,12 @@ class issue_parser {
      * @return \moodle_url issueurl
      */
     public static function replace_issueurl($m) {
-        $url = new \moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => self::$contextid,
-                    NEWSLETTER_PARAM_ISSUE => self::$issueid, NEWSLETTER_PARAM_ACTION => 'readissue'));
+        $url = new \moodle_url(
+            '/mod/newsletter/view.php',
+            [NEWSLETTER_PARAM_ID => self::$contextid,
+            NEWSLETTER_PARAM_ISSUE => self::$issueid,
+            NEWSLETTER_PARAM_ACTION => 'readissue']
+        );
         return $url;
     }
 
@@ -356,9 +369,12 @@ class issue_parser {
      * @return \moodle_url issuelink
      */
     public static function replace_issuelink($m) {
-        $url = new \moodle_url('/mod/newsletter/view.php',
-                array(NEWSLETTER_PARAM_ID => self::$contextid,
-                    NEWSLETTER_PARAM_ISSUE => self::$issueid, NEWSLETTER_PARAM_ACTION => 'readissue'));
+        $url = new \moodle_url(
+            '/mod/newsletter/view.php',
+            [NEWSLETTER_PARAM_ID => self::$contextid,
+            NEWSLETTER_PARAM_ISSUE => self::$issueid,
+            NEWSLETTER_PARAM_ACTION => 'readissue']
+        );
         $link = '<a href="' . $url . '">' . get_string('readonline', 'mod_newsletter') . "</a>";
         if (self::$cron) {
             return $link;
@@ -373,7 +389,7 @@ class issue_parser {
      */
     public static function replace_lastname($m) {
         global $USER;
-        if (!self::$cron and !isloggedin() or isguestuser()) {
+        if ((!self::$cron && !isloggedin()) || isguestuser()) {
             return get_string('user');
         }
         if (self::$cron) {
@@ -390,7 +406,7 @@ class issue_parser {
      */
     public static function replace_firstname($m) {
         global $USER;
-        if (!self::$cron and !isloggedin() or isguestuser()) {
+        if ((!self::$cron && !isloggedin()) || isguestuser()) {
             return get_string('guest');
         }
         if (self::$cron) {
@@ -407,7 +423,7 @@ class issue_parser {
      */
     public static function replace_fullname($m) {
         global $USER;
-        if (!self::$cron and !isloggedin() or isguestuser()) {
+        if ((!self::$cron && !isloggedin()) || isguestuser()) {
             return get_string('guest') . " " . get_string('user');
         }
         if (self::$cron) {

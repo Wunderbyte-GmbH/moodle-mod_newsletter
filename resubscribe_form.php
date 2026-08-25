@@ -31,8 +31,14 @@ require_once($CFG->dirroot . '/user/profile/lib.php');
 require_once($CFG->dirroot . '/mod/newsletter/lib.php');
 
 
+/**
+ * Confirmation form shown to a user who unsubscribed and wants back on the list.
+ *
+ * @package   mod_newsletter
+ * @copyright 2015 onwards David Bogner <info@edulabs.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_newsletter_resubscribe_form extends moodleform {
-
     /**
      * Defines forms elements
      */
@@ -49,19 +55,36 @@ class mod_newsletter_resubscribe_form extends moodleform {
         $mform->addElement('hidden', NEWSLETTER_PARAM_ACTION, $data[NEWSLETTER_PARAM_ACTION]);
         $mform->setType(NEWSLETTER_PARAM_ACTION, PARAM_ALPHANUM);
 
-        $mform->addElement('header', 'resubscribe_header',
-                get_string('resubscribe', 'mod_newsletter'));
+        $mform->addElement(
+            'header',
+            'resubscribe_header',
+            get_string('resubscribe', 'mod_newsletter')
+        );
 
-        $mform->addElement('html',
-                '<p><br />' . get_string('resubscribe_text', 'mod_newsletter') . '</p>');
+        $mform->addElement(
+            'html',
+            '<p><br />' . get_string('resubscribe_text', 'mod_newsletter') . '</p>'
+        );
 
         $this->add_action_buttons(true, get_string('resubscribe_btn', 'mod_newsletter'));
     }
 
+    /**
+     * Nothing to normalise on this form.
+     *
+     * @return bool
+     */
     public function definition_after_data() {
         return true;
     }
 
+    /**
+     * This form only carries a confirmation, so there is nothing to validate.
+     *
+     * @param array $usernew submitted form data
+     * @param array $files submitted files
+     * @return bool
+     */
     public function validation($usernew, $files) {
         return true;
     }

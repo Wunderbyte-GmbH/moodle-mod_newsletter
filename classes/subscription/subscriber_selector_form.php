@@ -64,61 +64,55 @@ class mod_newsletter_subscriber_selector_form extends \moodleform {
             $existingcell->attributes['class'] = 'existing';
         }
         $actioncell = new \html_table_cell();
-        $actioncell->text  = \html_writer::start_tag('div', array());
+        $actioncell->text  = \html_writer::start_tag('div', []);
         if ($CFG->branch >= 33) {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'add',
                             'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
                             'class' => 'btn btn-secondary',
-                            'style' => 'margin-bottom: 3px;')
-            );
+                            'style' => 'margin-bottom: 3px;']);
         } else {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'add',
                             'value' => $leftarrow . ' ' . get_string('subscribe', 'mod_newsletter'),
-                            'class' => 'actionbutton')
-            );
+                            'class' => 'actionbutton']);
         }
-        $actioncell->text .= \html_writer::end_tag('div', array());
+        $actioncell->text .= \html_writer::end_tag('div', []);
 
-        $actioncell->text .= \html_writer::start_tag('div', array());
+        $actioncell->text .= \html_writer::start_tag('div', []);
         if ($CFG->branch >= 33) {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'unsubscribe',
                             'value' => ' ' . get_string('unsubscribe', 'mod_newsletter'),
                             'class' => 'btn btn-secondary',
-                            'style' => 'margin-bottom: 3px;')
-            );
+                            'style' => 'margin-bottom: 3px;']);
         } else {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'unsubscribe',
                             'value' => ' ' . get_string('unsubscribe', 'mod_newsletter'),
-                            'class' => 'actionbutton')
-            );
+                            'class' => 'actionbutton']);
         }
-        $actioncell->text .= \html_writer::end_tag('div', array());
+        $actioncell->text .= \html_writer::end_tag('div', []);
 
-        $actioncell->text .= \html_writer::start_tag('div', array());
+        $actioncell->text .= \html_writer::start_tag('div', []);
         if ($CFG->branch >= 33) {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'remove',
                             'value' => get_string('delete') . ' ' . $rightarrow,
-                            'class' => 'btn btn-secondary')
-            );
+                            'class' => 'btn btn-secondary']);
         } else {
-            $actioncell->text .= \html_writer::empty_tag('input', array(
+            $actioncell->text .= \html_writer::empty_tag('input', [
                             'type' => 'submit',
                             'name' => 'remove',
                             'value' => get_string('delete') . ' ' . $rightarrow,
-                            'class' => 'actionbutton')
-            );
+                            'class' => 'actionbutton']);
         }
-        $actioncell->text .= \html_writer::end_tag('div', array());
+        $actioncell->text .= \html_writer::end_tag('div', []);
         $actioncell->text .= \html_writer::div('<br />' . get_string('unsubscribedinfo', 'mod_newsletter'));
         $actioncell->id = 'buttonscell';
         $actioncell->style = 'vertical-align:middle;';
@@ -136,7 +130,7 @@ class mod_newsletter_subscriber_selector_form extends \moodleform {
         } else {
             $table->attributes['class'] = 'subscribertable boxaligncenter';
         }
-        $table->data = array(new \html_table_row(array($existingcell, $actioncell, $potentialcell)));
+        $table->data = [new \html_table_row([$existingcell, $actioncell, $potentialcell])];
         $mform->addElement('html', \html_writer::table($table));
     }
 }

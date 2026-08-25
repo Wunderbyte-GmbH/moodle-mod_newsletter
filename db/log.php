@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$logs = array(
-    array('module' => 'newsletter', 'action' => 'add', 'mtable' => 'newsletter', 'field' => 'name'),
-    array('module' => 'newsletter', 'action' => 'update', 'mtable' => 'newsletter', 'field' => 'name'),
-    array('module' => 'newsletter', 'action' => 'view', 'mtable' => 'newsletter', 'field' => 'name'),
-    array('module' => 'newsletter', 'action' => 'view all', 'mtable' => 'newsletter',
-        'field' => 'name'));
+$logs = [
+    ['module' => 'newsletter', 'action' => 'add', 'mtable' => 'newsletter', 'field' => 'name'],
+    ['module' => 'newsletter', 'action' => 'update', 'mtable' => 'newsletter', 'field' => 'name'],
+    ['module' => 'newsletter', 'action' => 'view', 'mtable' => 'newsletter', 'field' => 'name'],
+    ['module' => 'newsletter', 'action' => 'view all', 'mtable' => 'newsletter',
+        'field' => 'name']];
